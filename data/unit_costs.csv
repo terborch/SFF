@@ -1,0 +1,8 @@
+﻿Technology,Cost_per_size,Cost_per_unit,Cost_multiplier,Life,Size_units,Full_name,Source
+BAT,970,620,1.33,10,kWh,Battery,Paul regression
+BOI,105,3800,1.8,20,kW,Nat Gas boiler,Paul
+AHP,1240,5680,1.8,20,kW,Air HP,Paul
+SOFC,2100,15542,1.8,10,kW,SOFC,Paul regression
+PV,2656,2495,1.33,20,kW,PV,Paul regression
+AD,1500,5000,1.8,20,kW,Digester,semester project
+GC,2800,3000,1.8,20,kW,Gas Cleaning,W2W work group 2
