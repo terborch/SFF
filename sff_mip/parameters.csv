@@ -1,0 +1,17 @@
+Category,Name,Value,Units,Description,Source
+Biomass,Pigs,55,-,Number of Pigs,swissfuturefarm.ch
+Biomass,Cows,65,-,Number of Pigs,swissfuturefarm.ch
+Biomass,LSU_pigs,0.5,-,LSU per Pigs,ec.europa.eu
+Biomass,LSU,92.5,LSU,Number of LSU,calc
+Biomass,Manure_per_cattle,7.3,kg-dry/day/LSU,Cattle manure production,doi: 10.3390/c5020027
+Biomass,Manure_HHV_dry,4.166666667,kWh/kg-dry,Manure energy content,doi: 10.3390/c5020027
+Biomass,Biomass_prod,117.2309028,kWh/h,Biomass Production,calc
+PV,PV_eff,0.14,-,PV efficiency,Paul
+BAT,BAT_eff,1,-,BAT roundtrip efficiency,guess
+AD,AD_eff,0.3,-,AD efficiency,guess
+AD,AD_elec_cons,0.008,-,AD faction of electricity consumed,doi: 10.3390/en10081165
+AD,SOFC_eff,0.6,-,SOFC electric efficiency,guess
+AD,GC_elec_frac,0.03,-,gas cleaning electric consumption fraction,Projet Semestre nils
+economic,i,0.025,-,Annual interest rate,guess
+economic,n,20,years,years of exploitation,guess
+economic,tau,0.064147129,-,Annualization factor,calc
