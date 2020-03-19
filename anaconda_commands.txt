@@ -1,0 +1,3 @@
+conda remove --name myenv --all
+conda env create -f environment.yml
+conda list

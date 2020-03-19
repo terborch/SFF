@@ -1,0 +1,10 @@
+name: sff_mip
+channels:
+  - conda-forge
+  - gurobi
+dependencies:
+  - numpy=1.18.1
+  - pandas=1.0.2
+  - gurobi=9.0.1
+  - matplotlib-base=3.1.3
+  - spyder
