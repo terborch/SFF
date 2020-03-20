@@ -1,4 +1,9 @@
 """ This module contains all functions necessary to model each unit
+    #   TODO: add actual losses to battery (see Dirk's thesis)
+    #   TODO: add discharge and charge rate limit to battery
+    #   TODO: add depth of discharge limit to battery
+    #   TODO: add self discharge to battery
+    #   TODO: generalise storage unit variables
 """
 
 # External modules
@@ -27,9 +32,8 @@ def pv(unit_prod_t, unit_size, Irradiance):
 def bat(unit_prod_t, unit_cons_t, unit_size, Bound):
     # Variables
     bat_SOC_t = m.addVars(Periods + [24], lb = 0, ub = Bound, name = 'bat_SOC_t')
-    bat_charge_t = m.addVars(Periods, vtype=GRB.BINARY, name="bat_charge_t")
-    bat_discharge_t = m.addVars(Periods, vtype=GRB.BINARY, name="bat_discharge_t")
-    
+    bat_charge_t = m.addVars(Periods, vtype=GRB.BINARY, name='bat_charge_t')
+    bat_discharge_t = m.addVars(Periods, vtype=GRB.BINARY, name='bat_discharge_t')
     
     # Constraints
     o = 'BAT_SOC'
