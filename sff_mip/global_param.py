@@ -42,7 +42,7 @@ def biomass_prod(Pigs, Cows):
 
 def U_costs(file):
     """ Given a file name, return a dataframe of unit costs from the data forlder """
-    df = data.default_data_to_df(file)
+    df = data.default_data_to_df(file, 'economic')
     
     # convert strings of valuesto numpy.int64
     pd.to_numeric(df['Cost_per_size'])
@@ -59,7 +59,7 @@ def U_costs(file):
 
 def resource_costs(file):
     """ Given a file name, return a dataframe of resource costs from the data forlder """
-    df = data.default_data_to_df(file)
+    df = data.default_data_to_df(file, 'economic')
     
     # convert strings of valuesto numpy.int64
     pd.to_numeric(df['Import_cost'])
@@ -84,7 +84,7 @@ Irradiance = list(df_weather['Irradiance'].values) # in [kW/m^2]
 
 # Electricity consumption profile
 file = 'consumption_profile_dummy.csv'
-df_cons = data.default_data_to_df(file, df_weather.index)
+df_cons = data.default_data_to_df(file, 'internal', df_weather.index)
 Farm_cons_t = electric_cons(df_cons['Electricity'].values, P['Annual_Elec_cons'])
 
 # Unit and resource costs

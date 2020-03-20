@@ -19,9 +19,12 @@ import os.path
 ##################################################################################################
 
 
-def open_csv(file, separator):
-    """ Open a csv file in the model_data folder given a file name and a separator. """
-    path = os.path.join('data', file)
+def open_csv(file, folder, separator):
+    """ Open a csv file in a inputs subfolder given a file name, a folder and a separator. """
+    if folder != 'inputs':
+        path = os.path.join('inputs', folder, file)
+    else:
+        path = os.path.join('inputs', file)
     return pd.read_csv(path , sep = separator, engine='python')
  
 
@@ -43,7 +46,8 @@ def weather_data_to_df(file, period_start, period_end, timestep):
     """ Create a dataframe from a csv file of meteorological data for a given period and with a 
         given timestep
     """
-    df = open_csv(file, ';')
+    folder = 'external'
+    df = open_csv(file, folder, ';')
     to_date_time(df, 'Date')
     
     df = df.truncate(before = period_start, after = period_end)
@@ -67,11 +71,11 @@ def rename_csv(df):
     df.rename(columns={df.columns[0] : name}, inplace = True)
 
 
-def default_data_to_df(file, df_index=None):
+def default_data_to_df(file, folder, df_index=None):
     """ Open a hand made csv file. Rename its first column. Either set a given timestep as index 
         or the first column.
     """
-    df = open_csv(file,',')
+    df = open_csv(file, folder, ',')
     
     if df.columns[0][0] == 'ï':
         rename_csv(df)
@@ -128,7 +132,8 @@ def display_inputs():
     
     # get a user made csv file into a dataframe
     file = 'Consumption_profile_dummy.csv'
-    df_cons = default_data_to_df(file, df_weather.index)
+    folder = 'internal'
+    df_cons = default_data_to_df(file, folder, df_weather.index)
     
     # Plot daily profiles as a function of time
     df_cons.plot()

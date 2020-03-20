@@ -6,17 +6,17 @@
     #   initialize the global Gurobi MILP model called m
 """
 
-
+# External modules
 import gurobipy as gp
 import numpy as np
-import pandas as pd
-
+# Internal modules
+import data
 
 def get_param(file):
     """ Get values and metadata from csv files in this directory and store them 
         into separate dictionaries 
     """
-    df = pd.read_csv(file, engine = 'python')
+    df = data.open_csv(file, 'inputs', ',')
 
     # Change every value into float format except the values in category Time
     for i in df.index:
