@@ -1,11 +1,19 @@
 """ This contains all functions necessary get data out of the 'model_data'
     folder and into useable dataframes. 
 """
+
+# External modules
 from matplotlib import pyplot as plt
+import pandas as pd
+# Internal modules
+from initialize_model import V_meta
+vars_name, vars_value, vars_unit, vars_lb, vars_ub = [], [], [], [], []
 
 
-# Store every variable without the _t indicator (time independent)
-def time_indep(m, vars_name, vars_value, vars_unit, vars_lb, vars_ub, dic_vars_unit, U_c):
+def time_indep(m, U_c):
+    """ Take values and metada of time independent variables (without _t indicator) and return a 
+        dataframe of results
+    """
     
     for v in m.getVars():
         if not "_t" in v.varName:
@@ -16,8 +24,8 @@ def time_indep(m, vars_name, vars_value, vars_unit, vars_lb, vars_ub, dic_vars_u
 
         # Attribute physical units to variables according to differnet criterias
         # By default the units are 'None'
-            if v.varName in dic_vars_unit:
-                vars_unit.append(dic_vars_unit[v.varName])
+            if v.varName in V_meta:
+                vars_unit.append(V_meta[v.varName])
             elif "_size" in v.varName:
                 vars_unit.append(U_c['Size_units'][v.varName.split('_')[0]])
             elif "_install" in v.varName:
@@ -26,6 +34,9 @@ def time_indep(m, vars_name, vars_value, vars_unit, vars_lb, vars_ub, dic_vars_u
                 vars_unit.append('kCHF')
             else:
                 vars_unit.append(None)
+    
+    return pd.DataFrame.from_dict(dict_variables)
+
 
 def time_dep_var_names(m):
     full_list = []
@@ -72,3 +83,14 @@ def get_all_var(m, vars_name_t, Periods):
         
     return time_indep_dic, time_dep_dic
 
+
+dict_variables = {'Variable Name': vars_name, 
+                  'Result': vars_value, 
+                  'Unit': vars_unit, 
+                  'Lower Bound': vars_lb, 
+                  'Upper Bound': vars_ub}
+
+
+##################################################################################################
+### END
+##################################################################################################

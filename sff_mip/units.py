@@ -1,14 +1,18 @@
 """ This module contains all functions necessary to model each unit
 """
 
-
+# External modules
+from gurobipy import GRB
+# Internal modules
+from initialize_model import m, P
+from global_set import Periods
 
 ##################################################################################################
 ### Photovoltaïc
 ##################################################################################################
 
 
-def pv(m, P, unit_prod_t, unit_size, Periods, Irradiance):
+def pv(unit_prod_t, unit_size, Irradiance):
     o = 'PV_production'
     m.addConstrs((unit_prod_t[('Elec',p)] == Irradiance[p] * P['PV_eff'] * unit_size 
                   for p in Periods), o);
@@ -20,14 +24,24 @@ def pv(m, P, unit_prod_t, unit_size, Periods, Irradiance):
 ##################################################################################################
 
 
-def bat(m, P, unit_prod_t, unit_cons_t, unit_size, Periods, Bound):
+def bat(unit_prod_t, unit_cons_t, unit_size, Bound):
     # Variables
     bat_SOC_t = m.addVars(Periods + [24], lb = 0, ub = Bound, name = 'bat_SOC_t')
+    bat_charge_t = m.addVars(Periods, vtype=GRB.BINARY, name="bat_charge_t")
+    bat_discharge_t = m.addVars(Periods, vtype=GRB.BINARY, name="bat_discharge_t")
+    
     
     # Constraints
     o = 'BAT_SOC'
     m.addConstrs((bat_SOC_t[p + 1] - bat_SOC_t[p] == P['BAT_eff'] * 
                   (unit_cons_t[('Elec',p)] - unit_prod_t[('Elec',p)]) for p in Periods), o);
+    
+    o = 'BAT_charge_discharge'
+    m.addConstrs((bat_charge_t[p] + bat_discharge_t[p] <= 1 for p in Periods), o);
+    o = 'BAT_charge'
+    m.addConstrs((bat_charge_t[p]*Bound >= unit_cons_t[('Elec',p)] for p in Periods), o);
+    o = 'BAT_discharge'
+    m.addConstrs((bat_discharge_t[p]*Bound >= unit_prod_t[('Elec',p)] for p in Periods), o);
     
     o = 'BAT_daily_cycle'
     m.addConstr((bat_SOC_t[0] == bat_SOC_t[24]), o);
@@ -48,7 +62,7 @@ def bat(m, P, unit_prod_t, unit_cons_t, unit_size, Periods, Bound):
 ##################################################################################################
 
 
-def ad(m, P, unit_prod_t, unit_cons_t, unit_size, Periods):
+def ad(unit_prod_t, unit_cons_t, unit_size):
     o = 'AD_production'
     m.addConstrs((unit_prod_t[('Biogas',p)] == 
                   unit_cons_t[('Biomass',p)]*P['AD_eff'] for p in Periods), o);
@@ -67,7 +81,7 @@ def ad(m, P, unit_prod_t, unit_cons_t, unit_size, Periods):
 ##################################################################################################
 
 
-def sofc(m, P, unit_prod_t, unit_cons_t, unit_size, Periods):
+def sofc(unit_prod_t, unit_cons_t, unit_size):
     o = 'SOFC_production'
     m.addConstrs((unit_prod_t[('Elec',p)] == unit_cons_t[('Biogas',p)]*
                   (P['SOFC_eff'] - P['GC_elec_frac']) for p in Periods), o);
@@ -76,3 +90,6 @@ def sofc(m, P, unit_prod_t, unit_cons_t, unit_size, Periods):
     m.addConstrs((unit_prod_t[('Elec',p)] <= unit_size for p in Periods), o);
 
 
+##################################################################################################
+### END
+##################################################################################################

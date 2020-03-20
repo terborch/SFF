@@ -1,230 +1,63 @@
 """ This module contains all functions necessary to build the Mixed Interger Linear Programming
     Model (MILP) of SFF using Gurobipy and given inputs (parameter.csv, setting.csv, data folder)
+
+    #   TODO: add C_meta constrain description and source
+    #   TODO: storage of metadata 
+    #   TODO: storage of inputs
+    #   TODO: add heat cascade
+    #   TODO: add farm thermal model
 """
 
-# Extenral modules
-import gurobipy as gp
+# External modules
 from gurobipy import GRB
-import numbers
-import numpy as np
-import pandas as pd
-
-# Internal Modules
-import data
+# Internal modules
 
 
-##################################################################################################
+"""
 ### Model setup and initialization
-    #   get parameter values from Parameters.csv
-    #   get settings values from Settings.csv
-    #   create global dictionaries of calculated parameters and units of model variables 
-    #   initialize the global Gurobi MILP model called m
-##################################################################################################
+    #   get parameter values from 'parameters.csv' into dictionnary P
+    #   get settings values from 'settings.csv' into dictionnary S
+    #   get the parameter Bound, the upper limit of most var from 'settings.csv'
+    #   initialize the Gurobi MILP model called m
+"""
+
+from initialize_model import m, P, P_meta, S, V_meta, Bound
 
 
+"""
+### Declare global sets of units, resources and time periods
+    #   Set of all units in the list Units
+    #   Set of all resources in the list Resources
+    #   Set of resource each unit produce and consume in dict Units_prod and Units_cons
+    #   Set of units involved with each resource in dict U_res
+    #   Set of time periods (index o to P) in list Periods
+"""
 
-def param_value(file):
-    """ Get values only from csv files in this directy and store them into dictionaries """
-    df = pd.read_csv(file, engine = 'python')
-
-    # Change every value into float format except the values in category Time
-    for i in df.index:
-        if df['Category'][i] != 'Time' and  type(df['Value'][i]) != np.float64:
-            df['Value'][i] = float(df['Value'][i])
-    
-    df.index = df['Name']
-    for c in df.columns:
-        if c != 'Value':
-            df.drop(columns = c, inplace = True)
-    dic = df.to_dict()
-    return dic['Value']
+from global_set import Units, Units_prod, Units_cons, U_res, Periods
 
 
-def intialize_model():
-    """ Return a blank Gurobi model and set solver timelimit """
-    # Create a new model
-    m = gp.Model("MIP_SFF_v0.25")
-    # Remove previous model parameters and data
-    m.resetParams()
-    m.reset()
-    # Set solver time limit
-    m.setParam("TimeLimit", S['Solver_time_limit'])
-    
-    return m
-
-
-# The dictionnary P contains all model parameter values from 'Parameters.csv'
-P = param_value('parameters.csv')
-# The dictionnary S contains all model parameter values from 'Settings.csv'
-S = param_value('settings.csv')
-# Default upper bound for most variables
-Bound = S['Var_bound']
-
-# Dictionnary of the units of variables: dic_vars_unit['elec_import']
-dic_vars_unit = {}
-# Dictionnary of all calculated parameters: 'Name': ['Value', 'Units', 'Description', 'Category']
-P_calc = {}
-        
-m = intialize_model()
-
-
-
-##################################################################################################
-### Global sets of units, resources and time periods
-##################################################################################################
-
-
-# Units and resources
-Units_full_name = ['Photovoltaic Panels', 'Battery', 'Solid Oxide Fuel cell', 
-                   'Anaerobic Digester']
-Units = ['PV', 'BAT', 'SOFC', 'AD']
-Resources = ['Elec', 'Biogas', 'Biomass']
-
-# The resources each unit produce
-Units_prod = {
-    'PV':   ['Elec'],
-    'BAT':  ['Elec'], 
-    'SOFC': ['Elec'], 
-    'AD':   ['Biogas']
-    }
-
-# The resources each unit consumes
-Units_cons = {
-    'BAT':  ['Elec'], 
-    'SOFC': ['Biogas'], 
-    'AD':   ['Biomass', 'Elec']
-    }
-
-# The units producing and consuming a given resource
-U_res = {
-    'prod_Elec':['PV', 'BAT', 'SOFC'],
-    'cons_Elec':['BAT', 'AD']
-    }
-
-# Time sets
-Hours = range(0,24)     # Index h
-Periods = list(Hours)   # Index p
-Hours_per_year = 365*24
-
-
-
-##################################################################################################
+"""
 ### Parameter declaration
-    #   Weather parameters
-    #   Farm parameters
-    #   Electric consumption
-    #   Biomass production
-    #   Unit costs
-    #   Resource costs
-##################################################################################################
+    #   Weather parameters in list Irradiance
+    #   Electric consumption in list Farm_cons_t
+    #   Biomass production in list Biomass_prod_t
+    #   Unit costs in dataframe U_c
+    #   Resource costs in dataframe Resource_c
+"""
+
+from global_param import Irradiance, Farm_cons_t, Biomass_prod_t, U_c, Resource_c
 
 
-def electric_cons(Cons_profile, Annual_Elec_cons):
-    """ Take the an anual electric consumption and a daily normalized consumption profile. 
-        Calculate the corresponding peak load to match the profile with the consumption. 
-        Return the scaled electricity consumption profile in kW.
-    """
-    Avrg_cons = Annual_Elec_cons/Hours_per_year
-    Avrg_profile = np.mean(Cons_profile)
-    Peak_load = Avrg_cons/Avrg_profile
-    
-    return list(Cons_profile*Peak_load)
-
-
-def biomass_prod(Pigs, Cows):
-    """ Given an number of cows and pigs, calculate the biomass potential in kW"""
-    category = 'Biomass'
-    metadata = ['LSU', 'Number of LSU', category]
-    P_calc['LSU'] = [P['Pigs']*P['LSU_pigs'] + P['Cows'], metadata]
-    
-    metadata = ['kW', 'Biomass Production', 'calc', category]
-    P_calc['Biomass_prod'] = [P_calc['LSU'][0]*P['Manure_per_cattle']*P['Manure_HHV_dry']/24, 
-                              metadata]
-    
-    return [P_calc['Biomass_prod'][0] for p in Periods]
-
-
-def U_costs(file):
-    """ Given a file name, return a dataframe of unit costs from the data forlder """
-    df = data.default_data_to_df(file)
-    
-    # convert strings of valuesto numpy.int64
-    pd.to_numeric(df['Cost_per_size'])
-    pd.to_numeric(df['Cost_per_unit'])
-    pd.to_numeric(df['Cost_multiplier'])
-    pd.to_numeric(df['Life'])
-    
-    # unit conversion from CHF to kCHF
-    df['Cost_per_size'] /= 1000
-    df['Cost_per_unit'] /= 1000
-
-    return df
-
-
-def resource_costs(file):
-    """ Given a file name, return a dataframe of resource costs from the data forlder """
-    df = data.default_data_to_df(file)
-    
-    # convert strings of valuesto numpy.int64
-    pd.to_numeric(df['Import_cost'])
-    pd.to_numeric(df['Export_cost'])
-    
-    # unit conversion from CHF to kCHF
-    df['Import_cost'] /= 1000
-    df['Export_cost'] /= 1000
-    df['Units'] = 'kCHF/kWh'
-    
-    return df
-
-
-# Weather parameters for a summer day at Liebensberg
-day = S['Date']
-period_start = day
-period_end = day + ' 23:50:00'
-timestep = S['Timestep']
-file = 'meteo_Liebensberg_10min.csv'
-df_weather = data.weather_data_to_df(file, period_start, period_end, timestep)
-Irradiance = list(df_weather['Irradiance'].values) # in [kW/m^2]
-
-# Electricity consumption profile
-Annual_Elec_cons = 787000 # kWh
-file = 'consumption_profile_dummy.csv'
-df_cons = data.default_data_to_df(file, df_weather.index)
-Farm_cons_t = electric_cons(df_cons['Electricity'].values, Annual_Elec_cons)
-
-# Unit and resource costs
-U_c = U_costs('unit_costs.csv')
-Resource_c = resource_costs('resource_costs.csv')
-
-# Biomass potential
-Biomass_prod_t = biomass_prod(P['Pigs'], P['Cows'])
-
-
-
-##################################################################################################
+"""
 ### Variable declaration
-##################################################################################################
+    #   unit_prod_t - dict of vars - What each unit produce during one time period
+    #   unit_cons_t - dict of vars - What each unit consume during one time period
+    #   unit_size - vars - The size of each unit
+    #   unit_install - vars - Whether or not each unit is installed
+    #   u_CAPEX - vars - capex of each unit
+"""
 
-
-# Unit production and consumption of each resource during one period
-# Variable format : unit_prod_t['PV'][('Elec',0)]
-# Result format : PV_prod_t[Elec,0]
-# Result format details: <unit>_<pord or cons>_t[<resource>,<period>]
-unit_prod_t, U_cons_t = {}, {}
-for u in Units:
-    if u in Units_prod:
-        unit_prod_t[u] = m.addVars(Units_prod[u], Periods, lb = 0, ub = Bound, name= u + "_prod_t")
-    if u in Units_cons:
-        U_cons_t[u] = m.addVars(Units_cons[u], Periods, lb = 0, ub = Bound, name= u + "_cons_t")
-
-# Size of the installed unit
-unit_size = m.addVars(Units, lb = 0, ub = Bound, name="size")
-
-# Whether or not the unit is installed
-unit_install = m.addVars(Units, lb = 0, ub = Bound, vtype=GRB.BINARY, name="install")
-
-# CAPEX of the installed unit
-U_cAPEX = m.addVars(Units, lb = 0, ub = Bound, name="CAPEX")
+from global_var import unit_prod_t, unit_cons_t, unit_install, unit_size, u_CAPEX
 
 
 
@@ -252,16 +85,16 @@ def cstr_unit_size(S):
 cstr_unit_size(S)
 
 u = 'PV'
-units.pv(m, P, unit_prod_t[u], unit_size[u], Periods, Irradiance)
+units.pv(unit_prod_t[u], unit_size[u], Irradiance)
 
 u = 'BAT'
-units.bat(m, P, unit_prod_t[u], U_cons_t[u], unit_size[u], Periods, Bound)
+units.bat(unit_prod_t[u], unit_cons_t[u], unit_size[u], Bound)
 
 u = 'AD'
-units.ad(m, P, unit_prod_t[u], U_cons_t[u], unit_size[u], Periods)
+units.ad(unit_prod_t[u], unit_cons_t[u], unit_size[u])
 
 u = 'SOFC'
-units.sofc(m, P, unit_prod_t[u], U_cons_t[u], unit_size[u], Periods)
+units.sofc(unit_prod_t[u], unit_cons_t[u], unit_size[u])
 
 
 
@@ -287,11 +120,13 @@ units.sofc(m, P, unit_prod_t[u], U_cons_t[u], unit_size[u], Periods)
 
 # Variables
 o = 'grid_elec_export'
+V_meta[o] = ['kWh', 'Electricity sold by the farm']
 elec_export = m.addVar(lb=0, ub=Bound, name= o)
-dic_vars_unit[o] = 'kWh'
+
 o = 'grid_elec_import'
+V_meta[o] = ['kWh', 'Electricity purchased by the farm']
 elec_import = m.addVar(lb=0, ub=Bound, name= o)
-dic_vars_unit[o] = 'kWh'
+
 o = 'grid_elec_export_t'
 elec_export_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
 o = 'grid_elec_import_t'
@@ -300,12 +135,12 @@ elec_import_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
 # Resource balances
 o = 'Balance_Electricity'
 m.addConstrs((elec_import_t[p] + sum(unit_prod_t[up][('Elec',p)] for up in U_res['prod_Elec'])  == 
-              elec_export_t[p] + sum(U_cons_t[uc][('Elec',p)] for uc in U_res['cons_Elec']) + 
+              elec_export_t[p] + sum(unit_cons_t[uc][('Elec',p)] for uc in U_res['cons_Elec']) + 
               Farm_cons_t[p] for p in Periods), o);
 o = 'Balance_Biomass'
-m.addConstrs((Biomass_prod_t[p] >= U_cons_t['AD'][('Biomass',p)] for p in Periods), o);
+m.addConstrs((Biomass_prod_t[p] >= unit_cons_t['AD'][('Biomass',p)] for p in Periods), o);
 o = 'Balance_Biogas'
-m.addConstrs((unit_prod_t['AD'][('Biogas',p)] >= U_cons_t['SOFC'][('Biogas',p)] 
+m.addConstrs((unit_prod_t['AD'][('Biogas',p)] >= unit_cons_t['SOFC'][('Biogas',p)] 
               for p in Periods), o);
 
 # Total annual import / export
@@ -325,30 +160,32 @@ m.addConstr(elec_export == sum(elec_export_t[p] for p in Periods), o);
 
 
 # Annualization factor Tau
-metadata = ['-', 'Annualization factor', 'economic']
-P_calc['tau'] = [(P['i']*(1 + P['i'])**P['n']) / ((1 + P['i'])**P['n'] - 1), metadata]
+P_meta['tau'] = ['-', 'Annualization factor', 'calc', 'economic']
+P['tau'] = (P['i']*(1 + P['i'])**P['n']) / ((1 + P['i'])**P['n'] - 1)
 
 # Variable
 o = 'capex'
+V_meta[o] = ['kCHF', 'total CAPEX']
 capex = m.addVar(lb=-Bound, ub=Bound, name= o)
-dic_vars_unit[o] = 'kCHF'
+
 o = 'opex'
+V_meta[o] = ['kCHF/year', 'total annual opex']
 opex = m.addVar(lb=-Bound, ub=Bound, name= o)
-dic_vars_unit[o] = 'kCHF/year'
+
 o = 'totex'
+V_meta[o] = ['kCHF/year', 'total annualized expenses']
 totex = m.addVar(lb=-Bound, ub=Bound, name= o)
-dic_vars_unit[o] = 'kCHF/year'
 
 # Constraints
 o = 'is_installed'
 m.addConstrs((unit_install[u]*Bound >= unit_size[u] for u in Units), o);
 o = 'capex'
-m.addConstrs((U_cAPEX[u] == U_c['Cost_multiplier'][u]*
+m.addConstrs((u_CAPEX[u] == U_c['Cost_multiplier'][u]*
               (unit_size[u]*U_c['Cost_per_size'][u] + unit_install[u]*U_c['Cost_per_unit'][u]) 
               for u in Units), o);
 
 o = 'capex_sum'
-m.addConstr(capex == sum([U_cAPEX[u] for u in Units]), o);
+m.addConstr(capex == sum([u_CAPEX[u] for u in Units]), o);
 
 o = 'opex_sum'
 m.addConstr(opex == (elec_import*Resource_c['Import_cost']['Elec'] - 
@@ -363,64 +200,23 @@ m.addConstr(totex == opex + P['tau']*capex, o);
 ### Objective and resolution
 ##################################################################################################
 
+def run(relax):
 
-m.setObjective(totex, GRB.MINIMIZE)
-
-m.optimize()
-
-# Relaxion in case of infeasible model
-if m.status == GRB.INFEASIBLE:
-    m.feasRelaxS(1, False, False, True)
-    m.optimize()
-    print('Model INFEASIBLE!!!')
-
-
-
-##################################################################################################
-### Output
-##################################################################################################
-
-
-import results
-import os.path
-
-from datetime import datetime
-
-# datetime object containing current date and time
-now = datetime.now()
-now = now.strftime("%Y-%m-%d")
- 
-print("now =", now)
-
-vars_name, vars_value, vars_unit, vars_lb, vars_ub = [], [], [], [], []
+    m.setObjective(totex, GRB.MINIMIZE)
     
-dict_variables = {'Variable Name': vars_name, 
-                  'Result': vars_value, 
-                  'Unit': vars_unit, 
-                  'Lower Bound': vars_lb, 
-                  'Upper Bound': vars_ub}
-
-results.time_indep(m, vars_name, vars_value, vars_unit, vars_lb, vars_ub, dic_vars_unit, U_c)
-
-df_results = pd.DataFrame.from_dict(dict_variables)
-
-vars_name_t = results.time_dep_var_names(m)
-
-
-
-run_nbr = 1
-
-cd = os.path.join('results', 'run_{}_on_{}'.format(run_nbr, now), 'result_summary.pkl')
-
-os.makedirs(os.path.dirname(cd), exist_ok=True)
-
-df_results.to_pickle(cd)
-
-df = pd.read_pickle(cd)
+    m.optimize()
+    
+    # Relaxion in case of infeasible model
+    if m.status == GRB.INFEASIBLE and relax:
+        m.feasRelaxS(1, False, False, True)
+        m.optimize()
+        
+        print('******************************************************************')
+        print('******************* Model INFEASIBLE!!! **************************')
+        print('******************************************************************')
 
 
 ##################################################################################################
-### Input
+### END
 ##################################################################################################
-
 
