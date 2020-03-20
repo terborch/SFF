@@ -2,7 +2,9 @@
 Energetic, Environmental and Economic Model of a Farm: Case study Swiss Future Farm
 
 Optimization tool: Gurobi - Academic Licencs
+
 Support for writing the optimization problem: Gurobipy - Jupyter Notebook - Spyer 4
+
 Recommended jupyter extension: ndextensions - collapsable headings
 
 ## sff_mip module structure
