@@ -52,3 +52,19 @@ To facilitate tracking of parameters and variables and settings, it is possible 
 
 TODO: lots of things todo in the run.py file, options to display inputs, save outputs, options to change inputs, iterative solving, time solving process at the python level, set what input file to use, option to save inputs along with outputs, option to save the model as .lp file...  
 
+## HowTo install and run the module.
+
+This module was created on windows 10 using Spyder 4 from Anaconda. It should run on Mac and Linux as well
+
+1. Installing anaconda https://www.anaconda.com/distribution/
+
+2. Run the anaconda command consol
+
+3. Navigate to the module folder sff_mip in the consol
+
+4. Install anaconda the environment sff_mip using the provided .yml file (only few external packages are used) and the following command: conda env create -f environment.yml
+
+5. Activate the environment using this command: conda activate sff_mip
+
+6. Run Spyder (or any other IDE you'd like) using this command: spyder
+
