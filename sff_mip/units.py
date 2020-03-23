@@ -30,15 +30,25 @@ def pv(unit_prod_t, unit_size, Irradiance):
 
 
 def bat(unit_prod_t, unit_cons_t, unit_size, Bound):
+    """ MILP model of a battery
+        Charge and discharge efficiency follows Dirk Lauinge MA thesis
+        Unit is force to cycle once a day
+        TODO: Self discharge
+        TODO: Discharge rate dependent on size and time step
+    """
     # Variables
     bat_SOC_t = m.addVars(Periods + [24], lb = 0, ub = Bound, name = 'bat_SOC_t')
     bat_charge_t = m.addVars(Periods, vtype=GRB.BINARY, name='bat_charge_t')
     bat_discharge_t = m.addVars(Periods, vtype=GRB.BINARY, name='bat_discharge_t')
     
+    # Parameters
+    eff = P['BAT_eff']**0.5
+    
     # Constraints
     o = 'BAT_SOC'
-    m.addConstrs((bat_SOC_t[p + 1] - bat_SOC_t[p] == P['BAT_eff'] * 
-                  (unit_cons_t[('Elec',p)] - unit_prod_t[('Elec',p)]) for p in Periods), o);
+    m.addConstrs((bat_SOC_t[p + 1] - bat_SOC_t[p] ==  
+                  (eff*unit_cons_t[('Elec',p)] - (1/eff)*unit_prod_t[('Elec',p)]) 
+                  for p in Periods), o);
     
     o = 'BAT_charge_discharge'
     m.addConstrs((bat_charge_t[p] + bat_discharge_t[p] <= 1 for p in Periods), o);

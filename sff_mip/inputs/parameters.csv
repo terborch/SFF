@@ -7,7 +7,7 @@ Biomass,Manure_per_cattle,7.3,kg-dry/day/LSU,Cattle manure production,doi: 10.33
 Biomass,Manure_HHV_dry,4.166666667,kWh/kg-dry,Manure energy content,doi: 10.3390/c5020027
 Biomass,Biomass_prod,117.2309028,kWh/h,Biomass Production,calc
 PV,PV_eff,0.14,-,PV efficiency,Paul
-BAT,BAT_eff,1,-,BAT roundtrip efficiency,guess
+BAT,BAT_eff,0.9,-,BAT roundtrip efficiency,guess
 AD,AD_eff,0.3,-,AD efficiency,guess
 AD,AD_elec_cons,0.008,-,AD faction of electricity consumed,doi: 10.3390/en10081165
 AD,SOFC_eff,0.6,-,SOFC electric efficiency,guess
