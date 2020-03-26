@@ -44,7 +44,7 @@ def biomass_prod(Pigs, Cows):
 
 def U_costs(file):
     """ Given a file name, return a dataframe of unit costs from the data forlder """
-    df = data.default_data_to_df(file, 'economic')
+    df = data.default_data_to_df(file, 'economic', 0)
     
     # convert strings of valuesto numpy.int64
     pd.to_numeric(df['Cost_per_size'])
@@ -61,7 +61,7 @@ def U_costs(file):
 
 def resource_costs(file):
     """ Given a file name, return a dataframe of resource costs from the data forlder """
-    df = data.default_data_to_df(file, 'economic')
+    df = data.default_data_to_df(file, 'economic', 0)
     
     # convert strings of valuesto numpy.int64
     pd.to_numeric(df['Import_cost'])
@@ -92,7 +92,7 @@ Farm_cons_t = annual_to_instant(P['Annual_Elec_cons'], df_cons['Electricity'].va
 
 # Building heated surface area
 file = 'buildings.csv'
-df_buildings = data.default_data_to_df(file, 'inputs')
+df_buildings = data.default_data_to_df(file, 'inputs', 0)
 Heated_area = 0
 for i in df_buildings.index:
     Heated_area += (df_buildings['Ground_surface'][i] * df_buildings['Floors'][i])
