@@ -15,5 +15,10 @@ AD,GC_elec_frac,0.03,-,gas cleaning electric consumption fraction,Projet Semestr
 economic,i,0.025,-,Annual interest rate,guess
 economic,n,20,years,years of exploitation,guess
 economic,tau,0.064147129,-,Annualization factor,calc
-Farm,Annual_Elec_cons,787000,kWh/yearAnnual electric consumption,,SFF excel
+Farm,Annual_Elec_cons,787000,kWh/year,Annual electric consumption,SFF excel
 General,Hours_per_year,8760,h/year,Hours in a year,
+Building,Gains_ppl,23.9,kWh/m^2/year,Heating Gains from People,Paul - SIA 2024
+Building,Building_absorptance,0.08,-,Fraction of solar radiation absorbed relative to ground surface,guess
+Building,Elec_heat_frac,0.9,-,Fraction of heat produced by electricity consumber,Dirk MA
+Building,U_b,0.00304,kW/C/m^2,Building heat transmittance ,Paul - SIA 2024
+Building,C_b,0.06,kWh/C/m^2,Building heat capacity,Paul - SIA 2024

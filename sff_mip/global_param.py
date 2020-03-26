@@ -3,6 +3,7 @@
     #   Weather parameters in list Irradiance
     #   Electric consumption in list Farm_cons_t
     #   Biomass production in list Biomass_prod_t
+    #   Heated surface area (TODO: differenciate building types)
     #   Unit costs in dataframe U_c
     #   Resource costs in dataframe Resource_c
 """
@@ -16,16 +17,17 @@ from global_set import Periods
 import data
 
 
-def electric_cons(Cons_profile, Annual_Elec_cons):
-    """ Take the an anual electric consumption and a daily normalized consumption profile. 
-        Calculate the corresponding peak load to match the profile with the consumption. 
-        Return the scaled electricity consumption profile in kW.
+def annual_to_instant(Annual, Profile_norm):
+    """ Take an annual total and a corresponding daily profile normalized from 1 to 0. Calculate 
+        the average instant, then the average of the normalized profile, then the corresponding
+        peak value. It returns the product of the peak and normalized profile, i.e. the
+        actual profile or instanteneous load.
     """
-    Avrg_cons = Annual_Elec_cons/P['Hours_per_year']
-    Avrg_profile = np.mean(Cons_profile)
-    Peak_load = Avrg_cons/Avrg_profile
-    
-    return list(Cons_profile*Peak_load)
+    Average = Annual / P['Hours_per_year']
+    Average_profile_norm = np.mean(Profile_norm)
+    Peak = Average / Average_profile_norm
+
+    return list(Peak * Profile_norm)
 
 
 def biomass_prod(Pigs, Cows):
@@ -81,11 +83,19 @@ timestep = S['Timestep']
 file = 'meteo_Liebensberg_10min.csv'
 df_weather = data.weather_data_to_df(file, period_start, period_end, timestep)
 Irradiance = list(df_weather['Irradiance'].values) # in [kW/m^2]
+Temperature = list(df_weather['Temperature'].values) # in [°C]
 
 # Electricity consumption profile
 file = 'consumption_profile_dummy.csv'
 df_cons = data.default_data_to_df(file, 'internal', df_weather.index)
-Farm_cons_t = electric_cons(df_cons['Electricity'].values, P['Annual_Elec_cons'])
+Farm_cons_t = annual_to_instant(P['Annual_Elec_cons'], df_cons['Electricity'].values)
+
+# Building heated surface area
+file = 'buildings.csv'
+df_buildings = data.default_data_to_df(file, 'inputs')
+Heated_area = 0
+for i in df_buildings.index:
+    Heated_area += (df_buildings['Ground_surface'][i] * df_buildings['Floors'][i])
 
 # Unit and resource costs
 U_c = U_costs('unit_costs.csv')

@@ -45,8 +45,9 @@ from global_set import Units, Units_prod, Units_cons, U_res, Periods
     #   Resource costs in dataframe Resource_c
 """
 
-from global_param import Irradiance, Farm_cons_t, Biomass_prod_t, U_c, Resource_c
-
+from global_param import Irradiance, Farm_cons_t, Biomass_prod_t, U_c, Resource_c, df_cons, Heated_area, Temperature
+# Functions
+from global_param import annual_to_instant
 
 """
 ### Variable declaration
@@ -97,12 +98,37 @@ u = 'SOFC'
 units.sofc(unit_prod_t[u], unit_cons_t[u], unit_size[u])
 
 
-
 ##################################################################################################
 ### Farm thermodynamic model
 ##################################################################################################
 
+o = 'building_temperature'
+V_meta[o] = ['°C', 'Interior temperature of the building']
+T_build_t = m.addVars(Periods + [Periods[-1] + 1] + [Periods[-1] + 2], lb=-1000, ub=1000, name= o)
 
+P_meta['Gains_ppl_t'] = ['kW/m^2', 'Heat gains from people', 'calc', 'Building']
+Gains_ppl_t = annual_to_instant(P['Gains_ppl'], df_cons['Gains'].values)
+
+P_meta['Gains_elec_t'] = ['kW/m^2', 'Heat gains from appliances', 'calc', 'Building']
+Gains_elec_t = [P['Elec_heat_frac'] * Farm_cons_t[p] for p in Periods]
+
+P_meta['Gains_solar_t'] = ['kW/m^2', 'Heat gains from irradiation', 'calc', 'Building']
+Gains_solar_t = [P['Building_absorptance'] * Irradiance[p] for p in Periods ]
+
+P_meta['Gains_t'] = ['kW/m^2', 'Sum of all heat gains', 'calc', 'Building']
+Gains_t = Gains_ppl_t + Gains_elec_t + Gains_solar_t
+
+o = 'Building_temperature'
+m.addConstrs((P['C_b']*(T_build_t[p+1] - T_build_t[p]) == 
+              P['U_b']*(Temperature[p] - T_build_t[p]) + Gains_t[p] for p in Periods), o);
+
+o = 'Building_final_temperature'
+m.addConstr( T_build_t[Periods[-1] + 1] == 20, o);
+o = 'Building_initial_temperature'
+m.addConstr( T_build_t[0] == T_build_t[Periods[-1] + 2], o);
+
+#o = 'Gains_people'
+#m.addConstrs((gains_t['people', p] ==  for p in Periods), o);
 
 ##################################################################################################
 ### Heat cascade

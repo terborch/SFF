@@ -17,10 +17,11 @@
 import os.path
 from datetime import datetime
 import pandas as pd
+import matplotlib.pyplot as plt
 # Internal modules
 import results
 from initialize_model import m
-from global_param import U_c
+from global_param import U_c, Periods, Temperature, Irradiance
 import model
 
 
@@ -51,6 +52,11 @@ df = pd.read_pickle(cd)
 
 print(df_results)
 
+time_indep_dic, time_dep_dic = results.get_all_var(m, vars_name_t, Periods)
+
+plt.plot(Periods, Temperature)
+plt.plot(Periods, time_dep_dic['building_temperature'])
+plt.show()
 
 ##################################################################################################
 ### END
