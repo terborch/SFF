@@ -68,3 +68,5 @@ This module was created on windows 10 using Spyder 4 from Anaconda. It should ru
 
 6. Run Spyder (or any other IDE you'd like) using this command: spyder
 
+7. Alternatively run jupyter notebook using this command: jupyter notebook
+and open the only notebook in the folder called run. This is also usefull for testing bits of code
