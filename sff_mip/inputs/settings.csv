@@ -2,7 +2,8 @@ Category,Name,Value,Units,Description
 Model,Solver_time_limit,100,s,Maximum solving time allowed
 Model,Var_bound,10000,-,Default upper bound for all variables
 Time,Timestep,01:00:00,,
-Time,Date,2019-07-05,,
+Time,Period_start,2019-07-05,,
+Time,Period_end,2019-07-06,,
 Units,PV_max,100,kW,Maximum PV installed capacity
 Units,BAT_max,100,kWh,Maximum BAT installed capacity
 Units,AD_max,100,kW,Maximum AD installed capacity

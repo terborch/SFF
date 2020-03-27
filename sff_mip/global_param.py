@@ -76,12 +76,9 @@ def resource_costs(file):
 
 
 # Weather parameters for a summer day at Liebensberg
-day = S['Date']
-period_start = day
-period_end = day + ' 23:50:00'
 timestep = S['Timestep']
 file = 'meteo_Liebensberg_10min.csv'
-df_weather = data.weather_data_to_df(file, period_start, period_end, timestep)
+df_weather = data.weather_data_to_df(file, S['Period_start'], S['Period_end'], timestep)
 Irradiance = list(df_weather['Irradiance'].values) # in [kW/m^2]
 Temperature = list(df_weather['Temperature'].values) # in [°C]
 

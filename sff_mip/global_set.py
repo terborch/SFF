@@ -35,5 +35,6 @@ U_res = {
     }
 
 # Time sets
-Hours = range(0,24)     # Index h
+Hours = list(range(0,24))     # Index h
+###ays = 
 Periods = list(Hours)   # Index p

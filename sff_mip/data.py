@@ -73,8 +73,7 @@ def rename_csv(df):
 
 def default_data_to_df(file, folder, df_index=None):
     """ Open a hand made csv file. Rename its first column. Either set a given timestep as index 
-        or a given column. If the file is a consumption file from SFF, transpose the df, rename
-        each index into the day.month.year format and drop the 'last_day' column
+        or a given column.
     """
     df = open_csv(file, folder, ',')
     
@@ -86,20 +85,6 @@ def default_data_to_df(file, folder, df_index=None):
         
     elif type(df_index) == int:
         df.set_index(df.columns[df_index], inplace = True)
-        
-    elif 'consumption_SFF' in file:
-        df = df.transpose()
-        df.rename(columns={0: 'last_day', 1: 'Elec_cons'}, inplace = True)
-        months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-        for i in range(0, len(months)):
-            index = months[i] + '-19'
-            day = int(df['last_day'][index])
-            month = i + 1
-            if month <= 9:
-                df.rename(index={index: '{}.0{}.2019'.format(day, month)}, inplace = True)
-            else:
-                df.rename(index={index: '{}.{}.2019'.format(day, month)}, inplace = True)
-        df.drop(columns='last_day', inplace = True)
         
     return df
 
