@@ -41,7 +41,7 @@ The module model.py build the MIP optimization model. Here is a summary of how i
 
 ### 3. outputs
 
-The module results.py can be called to display and or save the time independent results in dataframes and the time dependent results as graphs. All results are stored in the pickle format. (TODO: save graphs, option for .csv format, unique folder for each run)
+The module results.py can be called to display and or save the time independent results in dataframes and the time dependent results as graphs. All results are stored in the pickle format. (TODO: save graphs, option for HDF5, .csv format, unique folder for each run)
 
 
 ## Using the module
