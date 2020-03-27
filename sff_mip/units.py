@@ -9,8 +9,8 @@
 # External modules
 from gurobipy import GRB
 # Internal modules
-from initialize_model import m, P
-from global_set import Periods
+from initialize_model import m, P, Periods
+
 
 ##################################################################################################
 ### Photovoltaïc
@@ -37,7 +37,7 @@ def bat(unit_prod_t, unit_cons_t, unit_size, Bound):
         TODO: Discharge rate dependent on size and time step
     """
     # Variables
-    bat_SOC_t = m.addVars(Periods + [24], lb = 0, ub = Bound, name = 'bat_SOC_t')
+    bat_SOC_t = m.addVars(Periods + [Periods[-1] + 1], lb = 0, ub = Bound, name = 'bat_SOC_t')
     bat_charge_t = m.addVars(Periods, vtype=GRB.BINARY, name='bat_charge_t')
     bat_discharge_t = m.addVars(Periods, vtype=GRB.BINARY, name='bat_discharge_t')
     
@@ -58,7 +58,7 @@ def bat(unit_prod_t, unit_cons_t, unit_size, Bound):
     m.addConstrs((bat_discharge_t[p]*Bound >= unit_prod_t[('Elec',p)] for p in Periods), o);
     
     o = 'BAT_daily_cycle'
-    m.addConstr((bat_SOC_t[0] == bat_SOC_t[24]), o);
+    m.addConstr((bat_SOC_t[0] == bat_SOC_t[Periods[-1]]), o);
     o = 'BAT_daily_initial'
     m.addConstr((bat_SOC_t[0] == 0), o);
     

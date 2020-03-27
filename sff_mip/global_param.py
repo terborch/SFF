@@ -12,8 +12,7 @@
 import numpy as np
 import pandas as pd
 # Internal modules
-from initialize_model import P, P_meta, S
-from global_set import Periods
+from initialize_model import P, P_meta, S, Periods, Time, Days
 import data
 
 
@@ -28,6 +27,15 @@ def annual_to_instant(Annual, Profile_norm):
     Peak = Average / Average_profile_norm
 
     return list(Peak * Profile_norm)
+
+
+def time_index_dict(l):
+    dic = {}
+    i = 0
+    for t in Time:
+        dic[t] = l[i]
+        i += 1
+    return dic
 
 
 def biomass_prod(Pigs, Cows):
@@ -76,9 +84,9 @@ def resource_costs(file):
 
 
 # Weather parameters for a summer day at Liebensberg
-timestep = S['Timestep']
 file = 'meteo_Liebensberg_10min.csv'
-df_weather = data.weather_data_to_df(file, S['Period_start'], S['Period_end'], timestep)
+df_weather = data.weather_data_to_df(file, S['Period_start'], S['Period_end'], S['Time_step'])
+df_weather.drop(df_weather.tail(1).index,inplace=True)
 Irradiance = list(df_weather['Irradiance'].values) # in [kW/m^2]
 Temperature = list(df_weather['Temperature'].values) # in [°C]
 
@@ -86,6 +94,8 @@ Temperature = list(df_weather['Temperature'].values) # in [°C]
 file = 'consumption_profile_dummy.csv'
 df_cons = data.default_data_to_df(file, 'internal', df_weather.index)
 Farm_cons_t = annual_to_instant(P['Annual_Elec_cons'], df_cons['Electricity'].values)
+###Farm_cons_t = time_index_dict(Farm_cons_t)
+Farm_cons_t = len(Days)*Farm_cons_t
 
 # Building heated surface area
 file = 'buildings.csv'

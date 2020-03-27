@@ -94,31 +94,29 @@ def default_data_to_df(file, folder, df_index=None):
 ### Display input data
 ##################################################################################################
     
-def display_inputs():
-    # Display options for pandas.
-    pd.set_option("display.precision", 3)
+
+def display_inputs(S, Disp_cons):
     
-    # Uncomment to choose a signle day for simplification
-    # day = '2020-01-01' # Winter
-    day = '2019-07-05' # Summer
-    period_start = day
-    period_end = day + ' 23:50:00'
-    timestep = "01:00:00"
+    plt.rcParams['figure.figsize'] = [15, 5]
+    period_start = S['Period_start'] + ' ' + S['Period_start_time']
+    period_end = S['Period_end'] + ' ' + S['Period_start_time']
+    timestep = S['Time_step']
     file = 'meteo_Liebensberg_10min.csv'
     
     df_weather = weather_data_to_df(file, period_start, period_end, timestep)
     
-    time = df_weather.index.hour
+    time = df_weather.index
     irr = df_weather['Irradiance']
     temp = df_weather['Temperature']
     
     fig, ax1 = plt.subplots()
     
     c = 'red'
-    ax1.set_xlabel('Hours')
+    ax1.set_xlabel('Date')
     ax1.set_ylabel('Irradiance in kW')
     ax1.plot(time, irr, color=c)
     ax1.tick_params(axis='y', labelcolor=c)
+    fig.autofmt_xdate()
     
     ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
     
@@ -128,15 +126,17 @@ def display_inputs():
     ax2.tick_params(axis='y', labelcolor=c)
     
     fig.tight_layout()  # otherwise the right y-label is slightly clipped
-    plt.title('Weather data for Liebensberg on ' + day)
-    plt.show()
+    plt.title('Weather data for Liebensberg from ' + S['Period_start']  + 'to' + S['Period_end'])
     
-    # get a user made csv file into a dataframe
-    file = 'Consumption_profile_dummy.csv'
-    folder = 'internal'
-    df_cons = default_data_to_df(file, folder, df_weather.index)
+    return plt
     
-    # Plot daily profiles as a function of time
-    df_cons.plot()
-    plt.title('Daily consumption and internal gains profiles')
-    plt.show()
+    if Disp_cons:
+        # get a user made csv file into a dataframe
+        file = 'Consumption_profile_dummy.csv'
+        folder = 'internal'
+        df_cons = default_data_to_df(file, folder, df_weather.index)
+        
+        # Plot daily profiles as a function of time
+        df_cons.plot()
+        plt.title('Daily consumption and internal gains profiles')
+        plt.show()

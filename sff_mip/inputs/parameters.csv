@@ -20,5 +20,5 @@ General,Hours_per_year,8760,h/year,Hours in a year,
 Building,Gains_ppl,23.9,kWh/m^2/year,Heating Gains from People,Paul - SIA 2024
 Building,Building_absorptance,0.08,-,Fraction of solar radiation absorbed relative to ground surface,guess
 Building,Elec_heat_frac,0.9,-,Fraction of heat produced by electricity consumber,Dirk MA
-Building,U_b,0.00304,kW/C/m^2,Building heat transmittance ,Paul - SIA 2024
-Building,C_b,0.06,kWh/C/m^2,Building heat capacity,Paul - SIA 2024
+Building,U_b,0.00204,kW/C/m^2,Building heat transmittance ,Paul - SIA 2024
+Building,C_b,0.12,kWh/C/m^2,Building heat capacity,Paul - SIA 2024

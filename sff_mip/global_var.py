@@ -9,8 +9,8 @@
 # External modules
 from gurobipy import GRB
 # Internal modules
-from initialize_model import m, Bound
-from global_set import Units, Units_prod, Units_cons, Periods
+from initialize_model import m, Bound, Periods
+from global_set import Units, Units_prod, Units_cons
 
 
 # Unit production and consumption of each resource during one period

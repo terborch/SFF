@@ -7,7 +7,6 @@
     #   Set of time periods (index o to P) in list Periods
 """
 
-
 # Units and resources
 Units_full_name = ['Photovoltaic Panels', 'Battery', 'Solid Oxide Fuel cell', 'Anaerobic Digester']
 Units = ['PV', 'BAT', 'SOFC', 'AD']
@@ -33,8 +32,3 @@ U_res = {
     'prod_Elec':['PV', 'BAT', 'SOFC'],
     'cons_Elec':['BAT', 'AD']
     }
-
-# Time sets
-Hours = list(range(0,24))     # Index h
-###ays = 
-Periods = list(Hours)   # Index p

@@ -19,9 +19,10 @@ from gurobipy import GRB
     #   get settings values from 'settings.csv' into dictionnary S
     #   get the parameter Bound, the upper limit of most var from 'settings.csv'
     #   initialize the Gurobi MILP model called m
+    #   Set of time periods (index o to P) in list Periods
 """
 
-from initialize_model import m, P, P_meta, S, V_meta, Bound
+from initialize_model import m, P, P_meta, S, V_meta, Bound, Periods
 
 
 """
@@ -30,10 +31,9 @@ from initialize_model import m, P, P_meta, S, V_meta, Bound
     #   Set of all resources in the list Resources
     #   Set of resource each unit produce and consume in dict Units_prod and Units_cons
     #   Set of units involved with each resource in dict U_res
-    #   Set of time periods (index o to P) in list Periods
 """
 
-from global_set import Units, Units_prod, Units_cons, U_res, Periods
+from global_set import Units, Units_prod, Units_cons, U_res
 
 
 """
@@ -104,13 +104,13 @@ units.sofc(unit_prod_t[u], unit_cons_t[u], unit_size[u])
 
 o = 'building_temperature'
 V_meta[o] = ['°C', 'Interior temperature of the building']
-T_build_t = m.addVars(Periods + [Periods[-1] + 1] + [Periods[-1] + 2], lb=-1000, ub=1000, name= o)
+T_build_t = m.addVars(Periods + [Periods[-1] + 1], lb=-1000, ub=1000, name= o)
 
 P_meta['Gains_ppl_t'] = ['kW/m^2', 'Heat gains from people', 'calc', 'Building']
 Gains_ppl_t = annual_to_instant(P['Gains_ppl'], df_cons['Gains'].values)
 
 P_meta['Gains_elec_t'] = ['kW/m^2', 'Heat gains from appliances', 'calc', 'Building']
-Gains_elec_t = [P['Elec_heat_frac'] * Farm_cons_t[p] for p in Periods]
+Gains_elec_t = [P['Elec_heat_frac'] * Farm_cons_t[p] / Heated_area for p in Periods]
 
 P_meta['Gains_solar_t'] = ['kW/m^2', 'Heat gains from irradiation', 'calc', 'Building']
 Gains_solar_t = [P['Building_absorptance'] * Irradiance[p] for p in Periods ]
@@ -120,15 +120,11 @@ Gains_t = Gains_ppl_t + Gains_elec_t + Gains_solar_t
 
 o = 'Building_temperature'
 m.addConstrs((P['C_b']*(T_build_t[p+1] - T_build_t[p]) == 
-              P['U_b']*(Temperature[p] - T_build_t[p]) + Gains_t[p] for p in Periods), o);
+              P['U_b']*(Temperature[p] - T_build_t[p]) + Gains_t[p]/1000 for p in Periods), o);
 
 o = 'Building_final_temperature'
-m.addConstr( T_build_t[Periods[-1] + 1] == 20, o);
-o = 'Building_initial_temperature'
-m.addConstr( T_build_t[0] == T_build_t[Periods[-1] + 2], o);
+m.addConstr( T_build_t[Periods[-1] + 1] == T_build_t[0], o);
 
-#o = 'Gains_people'
-#m.addConstrs((gains_t['people', p] ==  for p in Periods), o);
 
 ##################################################################################################
 ### Heat cascade
