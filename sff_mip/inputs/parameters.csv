@@ -17,8 +17,17 @@ economic,n,20,years,years of exploitation,guess
 economic,tau,0.064147129,-,Annualization factor,calc
 Farm,Annual_Elec_cons,787000,kWh/year,Annual electric consumption,SFF excel
 General,Hours_per_year,8760,h/year,Hours in a year,
-Building,Gains_ppl,23.9,kWh/m^2/year,Heating Gains from People,Paul - SIA 2024
+Building,Gains_ppl,56,kWh/m^2/year,Heating Gains from People,Paul - SIA 2024
 Building,Building_absorptance,0.08,-,Fraction of solar radiation absorbed relative to ground surface,guess
 Building,Elec_heat_frac,0.9,-,Fraction of heat produced by electricity consumber,Dirk MA
-Building,U_b,0.00204,kW/C/m^2,Building heat transmittance ,Paul - SIA 2024
+Building,U_b,0.00136,kW/C/m^2,Building heat transmittance ,Paul - SIA 2024
 Building,C_b,0.12,kWh/C/m^2,Building heat capacity,Paul - SIA 2024
+BOI,BOI_eff,0.9,-,Boiler efficiency,guess
+Thermo,Cp_water,0.001162222222222,kWh/°C/Kg,Heat capacity of water,guess
+Thermo,Tc_boiler,50,°C,Temperature at the boiler inlet,guess
+Thermo,Th_boiler,90,°C,Temperature at the boiler outlet,guess
+Thermo,Tc_building,50,°C,Return heating temperature,guess
+Thermo,Th_building,65,°C,Supply heating temperature,guess
+Thermo,T_min_building,16,°C,Minimum indoor temperature,guess
+Thermo,T_max_building,50,°C,Maximum indoor temperature,guess
+Thermo,T_amb,20,°C,Comfort indoor temperature,guess

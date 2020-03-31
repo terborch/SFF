@@ -58,7 +58,7 @@ from global_param import annual_to_instant
     #   u_CAPEX - vars - capex of each unit
 """
 
-from global_var import unit_prod_t, unit_cons_t, unit_install, unit_size, u_CAPEX
+from global_var import unit_prod_t, unit_cons_t, unit_install, unit_size, u_CAPEX, flow_t
 
 
 
@@ -85,6 +85,9 @@ def cstr_unit_size(S):
 
 cstr_unit_size(S)
 
+u = 'BOI'
+units.boi(unit_cons_t[u], unit_size[u], flow_t)
+
 u = 'PV'
 units.pv(unit_prod_t[u], unit_size[u], Irradiance)
 
@@ -102,9 +105,13 @@ units.sofc(unit_prod_t[u], unit_cons_t[u], unit_size[u])
 ### Farm thermodynamic model
 ##################################################################################################
 
+
 o = 'building_temperature'
 V_meta[o] = ['°C', 'Interior temperature of the building']
-T_build_t = m.addVars(Periods + [Periods[-1] + 1], lb=-1000, ub=1000, name= o)
+T_build_t = m.addVars(Periods + [Periods[-1] + 1], lb=-100, ub=100, name= o)
+
+o = 'heating_load_t'
+q_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
 
 P_meta['Gains_ppl_t'] = ['kW/m^2', 'Heat gains from people', 'calc', 'Building']
 Gains_ppl_t = annual_to_instant(P['Gains_ppl'], df_cons['Gains'].values)
@@ -120,10 +127,21 @@ Gains_t = Gains_ppl_t + Gains_elec_t + Gains_solar_t
 
 o = 'Building_temperature'
 m.addConstrs((P['C_b']*(T_build_t[p+1] - T_build_t[p]) == 
-              P['U_b']*(Temperature[p] - T_build_t[p]) + Gains_t[p]/1000 for p in Periods), o);
+              P['U_b']*(Temperature[p] - T_build_t[p]) + Gains_t[p] + q_t[p]/Heated_area
+              for p in Periods), o);
 
 o = 'Building_final_temperature'
 m.addConstr( T_build_t[Periods[-1] + 1] == T_build_t[0], o);
+
+o = 'Building_temperature_constraint'
+m.addConstrs((T_build_t[p] >= P['T_min_building'] for p in Periods), o);
+m.addConstrs((T_build_t[p] <= P['T_max_building'] for p in Periods), o);
+
+o = 'penalty_t'
+penalty_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
+
+o = 'Building_temperature_penalty'
+m.addConstrs((penalty_t[p] == (P['T_amb'] - T_build_t[p])*0.427 for p in Periods), o);
 
 
 ##################################################################################################
@@ -131,6 +149,17 @@ m.addConstr( T_build_t[Periods[-1] + 1] == T_build_t[0], o);
 ##################################################################################################
 
 
+# Constraints
+o = 'flow_balance'
+m.addConstrs(( flow_t['m1', p] + flow_t['m2', p] == flow_t['m3', p] for p in Periods), o);
+
+o = 'temperature_balance'
+m.addConstrs((P['Th_boiler']*flow_t['m1', p] + P['Tc_building']*flow_t['m2', p] == 
+              P['Th_building']*(flow_t['m1', p] + flow_t['m2', p])  for p in Periods), o);
+
+o = 'heat_balance'
+m.addConstrs((q_t[p] == flow_t['m3', p]*(P['Th_building'] - P['Tc_building'])*P['Cp_water'] 
+              for p in Periods), o);
 
 ##################################################################################################
 ### Mass and energy balance
@@ -154,6 +183,13 @@ elec_export_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
 o = 'grid_elec_import_t'
 elec_import_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
 
+o = 'grid_gas_import'
+V_meta[o] = ['kWh', 'Gas bought by the farm']
+gas_import = m.addVar(lb=0, ub=Bound, name= o)
+
+o = 'grid_gas_import_t'
+gas_import_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
+
 # Resource balances
 o = 'Balance_Electricity'
 m.addConstrs((elec_import_t[p] + sum(unit_prod_t[up][('Elec',p)] for up in U_res['prod_Elec'])  == 
@@ -164,13 +200,16 @@ m.addConstrs((Biomass_prod_t[p] >= unit_cons_t['AD'][('Biomass',p)] for p in Per
 o = 'Balance_Biogas'
 m.addConstrs((unit_prod_t['AD'][('Biogas',p)] >= unit_cons_t['SOFC'][('Biogas',p)] 
               for p in Periods), o);
+o = 'Balance_Gas'
+m.addConstrs((unit_cons_t['BOI'][('Gas',p)] == gas_import_t[p] for p in Periods), o);
 
 # Total annual import / export
 o = 'Electricity_grid_import'
 m.addConstr(elec_import == sum(elec_import_t[p] for p in Periods), o);
 o = 'Electricity_grid_export'
 m.addConstr(elec_export == sum(elec_export_t[p] for p in Periods), o);
-
+o = 'Gas_grid_import'
+m.addConstr(gas_import == sum(gas_import_t[p] for p in Periods), o);
 
 
 ##################################################################################################
@@ -211,7 +250,8 @@ m.addConstr(capex == sum([u_CAPEX[u] for u in Units]), o);
 
 o = 'opex_sum'
 m.addConstr(opex == (elec_import*Resource_c['Import_cost']['Elec'] - 
-                     elec_export*Resource_c['Export_cost']['Elec'])*356*P['n'], o);
+                     elec_export*Resource_c['Export_cost']['Elec'] +
+                     gas_import*Resource_c['Import_cost']['Gas'])*12*P['n'], o);
 
 o = 'totex_sum'
 m.addConstr(totex == opex + P['tau']*capex, o);
@@ -224,7 +264,7 @@ m.addConstr(totex == opex + P['tau']*capex, o);
 
 def run(relax):
 
-    m.setObjective(totex, GRB.MINIMIZE)
+    m.setObjective(totex + penalty_t.sum('*'), GRB.MINIMIZE)
     
     m.optimize()
     

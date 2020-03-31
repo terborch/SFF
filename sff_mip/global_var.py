@@ -33,3 +33,7 @@ unit_install = m.addVars(Units, vtype=GRB.BINARY, name="install")
 # CAPEX of the installed unit
 u_CAPEX = m.addVars(Units, lb = 0, ub = Bound, name="CAPEX")
 
+### Temporary
+Water_flows = ['m1', 'm2', 'm3']
+o = 'water_flow_t'
+flow_t = m.addVars(Water_flows, Periods, lb=0, ub=Bound, name= o)

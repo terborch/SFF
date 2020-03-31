@@ -42,13 +42,15 @@ vars_name_t = results.time_dep_var_names(m)
 
 run_nbr = 1
 
-cd = os.path.join('results', 'run_{}_on_{}'.format(run_nbr, now), 'result_summary.pkl')
+cd = os.path.join('results', 'run_{}_on_{}'.format(run_nbr, now), 'result_summary')
 
 os.makedirs(os.path.dirname(cd), exist_ok=True)
 
-df_results.to_pickle(cd)
+df_results.to_csv(cd + '.csv')
 
-df = pd.read_pickle(cd)
+df_results.to_pickle(cd + '.pkl')
+
+df = pd.read_pickle(cd + '.pkl')
 
 print(df_results)
 
@@ -90,13 +92,15 @@ ax2.plot(time, temp, color=c, label='External Temperature')
 ax2.tick_params(axis='y', labelcolor=c)
 
 fig.tight_layout()  # otherwise the right y-label is slightly clipped
-plt.title('Weather data for Liebensberg from ' + S['Period_start']  + 'to' + S['Period_end'])
+plt.title('Weather data for Liebensberg from ' + S['Period_start']  + ' to ' + S['Period_end'])
     
 time_indep_dic, time_dep_dic = results.get_all_var(m, vars_name_t, Periods)
 ax2.plot(time[:-1], time_dep_dic['building_temperature'], color='green', label='Internal Temperature')
 plt.legend()
 
 plt.show()
+
+print('gas import in kwh: ', m.getVarByName('grid_gas_import').x)
 
 
 ##################################################################################################

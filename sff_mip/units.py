@@ -13,6 +13,22 @@ from initialize_model import m, P, Periods
 
 
 ##################################################################################################
+### Boiler
+##################################################################################################
+
+
+def boi(unit_cons_t, unit_size, flow_t):
+    o = 'PV_production'
+    m.addConstrs((unit_cons_t[('Gas',p)] * P['BOI_eff'] == 
+                  flow_t['m1',p] * (P['Th_boiler'] - P['Tc_boiler']) * P['Cp_water']
+                  for p in Periods), o);
+    
+    o = 'BOI_size'
+    m.addConstrs((unit_cons_t[('Gas',p)]*P['BOI_eff'] <= unit_size for p in Periods), o);
+
+
+
+##################################################################################################
 ### Photovoltaïc
 ##################################################################################################
 

@@ -8,9 +8,9 @@
 """
 
 # Units and resources
-Units_full_name = ['Photovoltaic Panels', 'Battery', 'Solid Oxide Fuel cell', 'Anaerobic Digester']
-Units = ['PV', 'BAT', 'SOFC', 'AD']
-Resources = ['Elec', 'Biogas', 'Biomass']
+Units_full_name = ['Gas Boiler', 'Photovoltaic Panels', 'Battery', 'Solid Oxide Fuel cell', 'Anaerobic Digester']
+Units = ['BOI', 'PV', 'BAT', 'SOFC', 'AD']
+Resources = ['Elec', 'Gas', 'Biogas', 'Biomass']
 
 # The resources each unit produce
 Units_prod = {
@@ -22,6 +22,7 @@ Units_prod = {
 
 # The resources each unit consumes
 Units_cons = {
+    'BOI':  ['Gas'],
     'BAT':  ['Elec'], 
     'SOFC': ['Biogas'], 
     'AD':   ['Biomass', 'Elec']

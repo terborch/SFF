@@ -1,0 +1,22 @@
+,Variable Name,Result,Unit,Lower Bound,Upper Bound
+0,size[BOI],298.7860974535478,,0.0,100000000.0
+1,size[PV],0.0,,0.0,100000000.0
+2,size[BAT],0.0,,0.0,100000000.0
+3,size[SOFC],20.046484376603715,,0.0,100000000.0
+4,size[AD],35.16927083614687,,0.0,100000000.0
+5,install[BOI],1.0,,0.0,1.0
+6,install[PV],-0.0,,0.0,1.0
+7,install[BAT],0.0,,0.0,1.0
+8,install[SOFC],1.0,,0.0,1.0
+9,install[AD],1.0,,0.0,1.0
+10,CAPEX[BOI],63.31057241872054,,0.0,100000000.0
+11,CAPEX[PV],0.0,,0.0,100000000.0
+12,CAPEX[BAT],0.0,,0.0,100000000.0
+13,CAPEX[SOFC],103.75131094356205,,0.0,100000000.0
+14,CAPEX[AD],103.95703125759655,,0.0,100000000.0
+15,grid_elec_export,2087.3903598309757,"['kWh', 'Electricity sold by the farm']",0.0,100000000.0
+16,grid_elec_import,54223.229374065384,"['kWh', 'Electricity purchased by the farm']",0.0,100000000.0
+17,grid_gas_import,245691.88684519686,"['kWh', 'Gas bought by the farm']",0.0,100000000.0
+18,capex,271.0189146198791,"['kCHF', 'total CAPEX']",-100000000.0,100000000.0
+19,opex,7800.464344465192,"['kCHF/year', 'total annual opex']",-100000000.0,100000000.0
+20,totex,7817.849429670791,"['kCHF/year', 'total annualized expenses']",-100000000.0,100000000.0
