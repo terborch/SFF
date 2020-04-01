@@ -3,7 +3,7 @@ Model,Solver_time_limit,100,s,Maximum solving time allowed
 Model,Var_bound,1000000,-,Default upper bound for all variables
 Time,Time_step,01:00:00,time,Number of minutes in a time step
 Time,Period_start,2019-01-01,date,Period starting from this date
-Time,Period_end,2019-12-01,date,Period lasting until this date
+Time,Period_end,2020-01-01,date,Period lasting until this date
 Time,Period_start_time,00:00:00,time,Period start and end time
 Time,Date_format,%Y-%m-%d,string,Date format
 Time,Time_format,%H:%M:%S,string,Time format

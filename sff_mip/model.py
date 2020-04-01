@@ -143,25 +143,17 @@ penalty_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
 o = 'penalty_b'
 penalty_b = m.addVars(Periods, vtype=GRB.BINARY, name= o)
 
-o = 'Building_temperature_bool'
-#m.addConstrs((penalty_b[p]*Bound >= P['T_amb'] - T_build_t[p] for p in Periods), o);
 
-o = 'Building_dT_int_ext'
-delta_T = m.addVars(Periods, lb=-100, ub=100, name= o)
-m.addConstrs((delta_T[p] == P['T_amb'] - T_build_t[p] for p in Periods), o);
-o = 'Building_dT_int_ext_abs'
+o = 'comfort_delta_T'
+delta_T_1 = m.addVars(Periods, lb=-100, ub=100, name=o)
+m.addConstrs((delta_T_1[p] == P['T_amb'] - T_build_t[p] for p in Periods), o);
+
+o = 'comfort_delta_T_abs'
 delta_T_abs = m.addVars(Periods, lb=0, ub=100, name= o)
-###x5 = abs(x1)
-for p in Periods:
-    m.addGenConstrAbs(delta_T_abs[p], delta_T[p], "absconstr_{}".format(p));
+m.addConstrs((delta_T_abs[p] == gp.abs_(delta_T_1[p]) for p in Periods), o);
 
-###o = 'Building_dT_int_ext_2'
-###delta_T_2 = m.addVars(Periods, lb=0, ub=Bound, name= o)
-###m.addConstrs((delta_T_2[p] == T_build_t[p] - P['T_amb'] for p in Periods), o);
-
-
-o = 'Building_temperature_penalty'
-m.addConstrs((penalty_t[p] == delta_T_abs[p]*0.427 for p in Periods), o);
+o = 'comfort_T_penalty'
+m.addConstrs((penalty_t[p] == delta_T_abs[p]*3.3e-5 for p in Periods), o);
 
 
 ##################################################################################################
