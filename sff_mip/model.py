@@ -10,6 +10,7 @@
 
 # External modules
 from gurobipy import GRB
+import gurobipy as gp
 # Internal modules
 
 
@@ -139,9 +140,28 @@ m.addConstrs((T_build_t[p] <= P['T_max_building'] for p in Periods), o);
 
 o = 'penalty_t'
 penalty_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
+o = 'penalty_b'
+penalty_b = m.addVars(Periods, vtype=GRB.BINARY, name= o)
+
+o = 'Building_temperature_bool'
+#m.addConstrs((penalty_b[p]*Bound >= P['T_amb'] - T_build_t[p] for p in Periods), o);
+
+o = 'Building_dT_int_ext'
+delta_T = m.addVars(Periods, lb=-100, ub=100, name= o)
+m.addConstrs((delta_T[p] == P['T_amb'] - T_build_t[p] for p in Periods), o);
+o = 'Building_dT_int_ext_abs'
+delta_T_abs = m.addVars(Periods, lb=0, ub=100, name= o)
+###x5 = abs(x1)
+for p in Periods:
+    m.addGenConstrAbs(delta_T_abs[p], delta_T[p], "absconstr_{}".format(p));
+
+###o = 'Building_dT_int_ext_2'
+###delta_T_2 = m.addVars(Periods, lb=0, ub=Bound, name= o)
+###m.addConstrs((delta_T_2[p] == T_build_t[p] - P['T_amb'] for p in Periods), o);
+
 
 o = 'Building_temperature_penalty'
-m.addConstrs((penalty_t[p] == (P['T_amb'] - T_build_t[p])*0.427 for p in Periods), o);
+m.addConstrs((penalty_t[p] == delta_T_abs[p]*0.427 for p in Periods), o);
 
 
 ##################################################################################################
@@ -171,11 +191,11 @@ m.addConstrs((q_t[p] == flow_t['m3', p]*(P['Th_building'] - P['Tc_building'])*P[
 
 # Variables
 o = 'grid_elec_export'
-V_meta[o] = ['kWh', 'Electricity sold by the farm']
+V_meta[o] = ['MWh', 'Electricity sold by the farm']
 elec_export = m.addVar(lb=0, ub=Bound, name= o)
 
 o = 'grid_elec_import'
-V_meta[o] = ['kWh', 'Electricity purchased by the farm']
+V_meta[o] = ['MWh', 'Electricity purchased by the farm']
 elec_import = m.addVar(lb=0, ub=Bound, name= o)
 
 o = 'grid_elec_export_t'
@@ -184,7 +204,7 @@ o = 'grid_elec_import_t'
 elec_import_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
 
 o = 'grid_gas_import'
-V_meta[o] = ['kWh', 'Gas bought by the farm']
+V_meta[o] = ['MWh', 'Gas bought by the farm']
 gas_import = m.addVar(lb=0, ub=Bound, name= o)
 
 o = 'grid_gas_import_t'
@@ -205,11 +225,11 @@ m.addConstrs((unit_cons_t['BOI'][('Gas',p)] == gas_import_t[p] for p in Periods)
 
 # Total annual import / export
 o = 'Electricity_grid_import'
-m.addConstr(elec_import == sum(elec_import_t[p] for p in Periods), o);
+m.addConstr(elec_import == sum(elec_import_t[p]/1000 for p in Periods), o);
 o = 'Electricity_grid_export'
-m.addConstr(elec_export == sum(elec_export_t[p] for p in Periods), o);
+m.addConstr(elec_export == sum(elec_export_t[p]/1000 for p in Periods), o);
 o = 'Gas_grid_import'
-m.addConstr(gas_import == sum(gas_import_t[p] for p in Periods), o);
+m.addConstr(gas_import == sum(gas_import_t[p]/1000 for p in Periods), o);
 
 
 ##################################################################################################
@@ -226,16 +246,16 @@ P['tau'] = (P['i']*(1 + P['i'])**P['n']) / ((1 + P['i'])**P['n'] - 1)
 
 # Variable
 o = 'capex'
-V_meta[o] = ['kCHF', 'total CAPEX']
-capex = m.addVar(lb=-Bound, ub=Bound, name= o)
+V_meta[o] = ['MCHF', 'total CAPEX']
+capex = m.addVar(lb=0, ub=Bound, name= o)
 
 o = 'opex'
-V_meta[o] = ['kCHF/year', 'total annual opex']
-opex = m.addVar(lb=-Bound, ub=Bound, name= o)
+V_meta[o] = ['MCHF/year', 'total annual opex']
+opex = m.addVar(lb=0, ub=Bound, name= o)
 
 o = 'totex'
-V_meta[o] = ['kCHF/year', 'total annualized expenses']
-totex = m.addVar(lb=-Bound, ub=Bound, name= o)
+V_meta[o] = ['MCHF/year', 'total annualized expenses']
+totex = m.addVar(lb=0, ub=Bound, name= o)
 
 # Constraints
 o = 'is_installed'
@@ -246,12 +266,12 @@ m.addConstrs((u_CAPEX[u] == U_c['Cost_multiplier'][u]*
               for u in Units), o);
 
 o = 'capex_sum'
-m.addConstr(capex == sum([u_CAPEX[u] for u in Units]), o);
+m.addConstr(capex == sum([u_CAPEX[u] for u in Units])/1000, o);
 
 o = 'opex_sum'
 m.addConstr(opex == (elec_import*Resource_c['Import_cost']['Elec'] - 
                      elec_export*Resource_c['Export_cost']['Elec'] +
-                     gas_import*Resource_c['Import_cost']['Gas'])*12*P['n'], o);
+                     gas_import*Resource_c['Import_cost']['Gas'])*12, o);
 
 o = 'totex_sum'
 m.addConstr(totex == opex + P['tau']*capex, o);

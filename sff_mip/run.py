@@ -56,7 +56,14 @@ print(df_results)
 
 
 
-
+with open('vars_above_10k.txt', 'w') as f:
+    for v in m.getVars():
+        if v.x > 10000:
+            print(v.varName + ': {:.2f}\n'.format(v.x), file=f)
+            
+with open('vars_all.txt', 'w') as f:
+    for v in m.getVars():
+            print(v.varName + ': {:.2f}\n'.format(v.x), file=f)
 
 ##################################################################################################
 ### Messy result plot

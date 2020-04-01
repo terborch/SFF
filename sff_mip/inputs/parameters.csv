@@ -23,7 +23,7 @@ Building,Elec_heat_frac,0.9,-,Fraction of heat produced by electricity consumber
 Building,U_b,0.00136,kW/C/m^2,Building heat transmittance ,Paul - SIA 2024
 Building,C_b,0.12,kWh/C/m^2,Building heat capacity,Paul - SIA 2024
 BOI,BOI_eff,0.9,-,Boiler efficiency,guess
-Thermo,Cp_water,0.001162222222222,kWh/°C/Kg,Heat capacity of water,guess
+Thermo,Cp_water,1.16222222222222,kWh/°C/m^3,Heat capacity of water,guess
 Thermo,Tc_boiler,50,°C,Temperature at the boiler inlet,guess
 Thermo,Th_boiler,90,°C,Temperature at the boiler outlet,guess
 Thermo,Tc_building,50,°C,Return heating temperature,guess
