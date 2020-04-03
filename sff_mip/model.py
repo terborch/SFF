@@ -115,7 +115,7 @@ o = 'heating_load_t'
 q_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
 
 P_meta['Gains_ppl_t'] = ['kW/m^2', 'Heat gains from people', 'calc', 'Building']
-Gains_ppl_t = annual_to_instant(P['Gains_ppl'], df_cons['Gains'].values)
+Gains_ppl_t = annual_to_instant(P['Gains_ppl'], df_cons['Gains'].values) * int(len(Periods)/24)
 
 P_meta['Gains_elec_t'] = ['kW/m^2', 'Heat gains from appliances', 'calc', 'Building']
 Gains_elec_t = [P['Elec_heat_frac'] * Farm_cons_t[p] / Heated_area for p in Periods]
@@ -140,9 +140,8 @@ m.addConstrs((T_build_t[p] <= P['T_max_building'] for p in Periods), o);
 
 o = 'penalty_t'
 penalty_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
-o = 'penalty_b'
-penalty_b = m.addVars(Periods, vtype=GRB.BINARY, name= o)
-
+o = 'penalty'
+penalty = m.addVar(lb=0, ub=Bound, name= o)
 
 o = 'comfort_delta_T'
 delta_T_1 = m.addVars(Periods, lb=-100, ub=100, name=o)
@@ -153,7 +152,10 @@ delta_T_abs = m.addVars(Periods, lb=0, ub=100, name= o)
 m.addConstrs((delta_T_abs[p] == gp.abs_(delta_T_1[p]) for p in Periods), o);
 
 o = 'comfort_T_penalty'
-m.addConstrs((penalty_t[p] == delta_T_abs[p]*3.3e-5 for p in Periods), o);
+m.addConstrs((penalty_t[p] == delta_T_abs[p]*3.3013330297486014e-05 for p in Periods), o);
+
+o = 'comfort_T_penalty_tot'
+m.addConstr(penalty == penalty_t.sum('*'), o);
 
 
 ##################################################################################################
@@ -276,7 +278,7 @@ m.addConstr(totex == opex + P['tau']*capex, o);
 
 def run(relax):
 
-    m.setObjective(totex + penalty_t.sum('*'), GRB.MINIMIZE)
+    m.setObjective(totex + penalty, GRB.MINIMIZE)
     
     m.optimize()
     

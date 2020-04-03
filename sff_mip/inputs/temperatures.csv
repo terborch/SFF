@@ -1,5 +1,1 @@
 Name,Value,Description
-Tc_boiler,50,Temperature at the boiler inlet
-Th_boiler,90,Temperature at the boiler outlet
-Tc_building,50,Return heating temperature
-Th_building,65,Supply heating temperature
