@@ -59,7 +59,7 @@ from global_param import annual_to_instant
     #   unit_capex - vars - capex of each unit
 """
 
-from global_var import unit_prod, unit_cons, unit_install, unit_size, unit_capex, flow_t, unit_T
+from global_var import unit_prod, unit_cons, unit_install, unit_size, unit_capex, unit_T, build_cons, v, Heat_cons, Heat_prod
 
 
 
@@ -75,7 +75,7 @@ def cstr_unit_size(S):
     """ Size constraints for each units """
     Unit_size_limit = {}
     for u in Units:
-        Unit_size_limit[u] = [0, S[u + '_max']]
+        Unit_size_limit[u] = [S[u + '_min'], S[u + '_max']]
     
     o = 'unit_max_size'
     m.addConstrs((unit_size[u] <= Unit_size_limit[u][1] for u in Units), o);
@@ -87,7 +87,7 @@ def cstr_unit_size(S):
 cstr_unit_size(S)
 
 u = 'BOI'
-units.boi(unit_cons[u], unit_size[u], flow_t)
+units.boi(unit_prod[u], unit_cons[u], unit_size[u])
 
 u = 'PV'
 units.pv(unit_prod[u], unit_size[u], Irradiance)
@@ -107,13 +107,9 @@ units.sofc(unit_prod[u], unit_cons[u], unit_size[u])
 ##################################################################################################
 
 
-o = 'building_temperature'
+o = 'build_T'
 V_meta[o] = ['°C', 'Interior temperature of the building']
 build_T = m.addVars(Periods + [Periods[-1] + 1], lb=-100, ub=100, name= o)
-
-build_cons={}
-o = 'build_cons[Heat]'
-build_cons['Heat'] = m.addVars(Periods, lb=0, ub=Bound, name= o)
 
 P_meta['Gains_ppl_t'] = ['kW/m^2', 'Heat gains from people', 'calc', 'Building']
 Gains_ppl = annual_to_instant(P['Gains_ppl'], df_cons['Gains'].values) * int(len(Periods)/24)
@@ -129,7 +125,7 @@ Gains = Gains_ppl + Gains_elec + Gains_solar
 
 o = 'Building_temperature'
 m.addConstrs((P['C_b']*(build_T[p+1] - build_T[p]) == 
-              P['U_b']*(Ext_T[p] - build_T[p]) + Gains[p] + build_cons['Heat'][p]/Heated_area
+              P['U_b']*(Ext_T[p] - build_T[p]) + Gains[p] + build_cons[('Heat',p)]/Heated_area
               for p in Periods), o);
 
 o = 'Building_final_temperature'
@@ -164,17 +160,41 @@ m.addConstr(penalty == penalty_t.sum('*'), o);
 ### Heat cascade
 ##################################################################################################
 
-
-# Constraints
-o = 'flow_balance'
-m.addConstrs(( flow_t['m1', p] + flow_t['m2', p] == flow_t['m3', p] for p in Periods), o);
-
-o = 'temperature_balance'
-m.addConstrs((P['Th_boiler']*flow_t['m1', p] + P['Tc_building']*flow_t['m2', p] == 
-              P['Th_building']*(flow_t['m1', p] + flow_t['m2', p])  for p in Periods), o);
-
-o = 'heat_balance'
-m.addConstrs((build_cons['Heat'][p] == flow_t['m3', p]*(P['Th_building'] - P['Tc_building'])*P['Cp_water'] 
+P['Th_build'], P['Tc_build'], P['Th_AD'], P['Tc_AD']
+# exceptional abbreviations
+b = 'build'
+DT_b = P['Th_build'] - P['Tc_build']
+DT_AD = P['Th_build'] - P['Tc_AD']
+# Constraints on water flow mass balances
+o = 'Volume_flow_balance_node_1'
+m.addConstrs((v['AD'][('supp', p)] == v[b][('supp', p)] - v['build'][('ret', p)]
+              for p in Periods), o);
+i = 1
+for u in Heat_cons:
+    o = 'Volume_flow_balance_node_{}'.format(1 + i)
+    m.addConstrs((v[u][('reheat[BOI]', p)] + v[u][('reheat[SOFC]', p)] == 
+                  v[u][('ret', p)] - v[u][('recirc', p)] for p in Periods), o);
+    i += 1
+o = 'Volume_flow_balance_mixer'
+m.addConstrs((v[b][('supp', p)] == v['BOI'][p] + v['SOFC'][p] + v[b][('recirc', p)] + 
+              v['AD'][('recirc', p)] for p in Periods), o);
+# Constraints on water temperature balance
+o = 'Temperature_balance_mixer'
+m.addConstrs((v[b][('supp', p)]*P['Th_build'] == (v['BOI'][p] + v['SOFC'][p])*P['Th_build'] + 
+              v[b][('recirc', p)]*P['Tc_build'] + v['AD'][('recirc', p)]*P['Tc_AD'] 
+              for p in Periods), o);
+# Constraints on heat loads
+for u in Heat_prod:
+    o = 'Heat_load_balance_{}'.format(u)
+    r = 'reheat[{}]'.format(u)
+    m.addConstrs((unit_prod[u][('Heat', p)] == 
+                  P['Cp_water']*(v[b][(r, p)]*DT_b + v['AD'][(r, p)]*DT_AD)
+                  for p in Periods), o);
+o = 'Heat_load_balance_building'
+m.addConstrs((build_cons[('Heat',p)] == P['Cp_water']*v[b][('supp', p)]*(P['Th_build'] - P['Tc_build'])
+              for p in Periods), o);
+o = 'Heat_load_balance_AD'
+m.addConstrs((unit_cons['AD'][('Heat',p)] == P['Cp_water']*v['AD'][('supp', p)]*(P['Th_AD'] - P['Tc_AD'])
               for p in Periods), o);
 
 ##################################################################################################

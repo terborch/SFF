@@ -11,7 +11,7 @@
 from gurobipy import GRB
 # Internal modules
 from initialize_model import m, Bound, Periods, V_meta
-from global_set import Units, Units_prod, Units_cons
+from global_set import Units, Units_prod, Units_cons, Heat_cons, Heat_prod, Heat_flow
 
 
 # Unit production and consumption of each resource during one period
@@ -38,8 +38,16 @@ unit_T = {}
 V_meta['unit_T[AD]'] = ['°C', 'Interior temperature of the AD']
 unit_T['AD'] = m.addVars(Periods + [Periods[-1] + 1], lb=-100, ub=100, name='unit_T[AD]')
 
+# Heat consuming units and building
+build_cons={}
+o = 'build_cons'
+build_cons = m.addVars(['Heat'], Periods, lb=0, ub=Bound, name= o)
 
-### Temporary
-Water_flows = ['m1', 'm2', 'm3']
-o = 'water_flow_t'
-flow_t = m.addVars(Water_flows, Periods, lb=0, ub=Bound, name= o)
+# Volum flows of water transporting heat in m^3
+v = {}
+for u in Heat_prod:
+    v[u] = m.addVars(Periods, lb = 0, ub = Bound, name='v[{}]'.format(u))
+              
+for b in Heat_cons:
+    v[b] = m.addVars(Heat_flow, Periods, lb = 0, ub = Bound, name='v[{}]'.format(b))
+                

@@ -2,13 +2,18 @@ Category,Name,Value,Units,Description
 Model,Solver_time_limit,100,s,Maximum solving time allowed
 Model,Var_bound,10000,-,Default upper bound for all variables
 Time,Time_step,01:00:00,time,Number of minutes in a time step
-Time,Period_start,2019-01-01,date,Period starting from this date
-Time,Period_end,2019-01-02,date,Period lasting until this date
+Time,Period_start,2019-04-01,date,Period starting from this date
+Time,Period_end,2019-04-10,date,Period lasting until this date
 Time,Period_start_time,00:00:00,time,Period start and end time
 Time,Date_format,%Y-%m-%d,string,Date format
 Time,Time_format,%H:%M:%S,string,Time format
 Units,PV_max,100,kW,Maximum PV installed capacity
+Units,PV_min,0,kW,Minimum PV installed capacity
 Units,BAT_max,0,kWh,Maximum BAT installed capacity
+Units,BAT_min,0,kWh,Minimum BAT installed capacity
 Units,AD_max,100,kW,Maximum AD installed capacity
+Units,AD_min,100,kW,Minimum AD installed capacity
 Units,SOFC_max,100,kW,Maximum SOFC installed capacity
-Units,BOI_max,1000,kW,Maximum BOI installed capacity
+Units,SOFC_min,0,kW,Minimum SOFC installed capacity
+Units,BOI_max,0,kW,Maximum BOI installed capacity
+Units,BOI_min,0,kW,Minimum BOI installed capacity

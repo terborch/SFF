@@ -47,7 +47,7 @@ vars_name, vars_value, vars_unit, vars_lb, vars_ub = [], [], [], [], []
     
 df_results = results.time_indep(m, Costs_u)
 
-vars_name_t = results.time_dep_var_names(m)
+time_indep_var, time_dep_var = results.var_names(m)
 
 run_nbr = 1
 
@@ -110,8 +110,9 @@ ax2.tick_params(axis='y', labelcolor=c)
 fig.tight_layout()  # otherwise the right y-label is slightly clipped
 plt.title('Weather data for Liebensberg from ' + S['Period_start']  + ' to ' + S['Period_end'])
     
-time_indep_dic, time_dep_dic = results.get_all_var(m, vars_name_t, Periods)
-ax2.plot(date[:-1], time_dep_dic['building_temperature'], color='green', label='Internal Temperature')
+time_indep_dic, time_dep_dic = results.get_all_var(m, time_dep_var, Periods)
+ax2.plot(date[:-1], time_dep_dic['build_T'], color='black', label='Building Temperature')
+ax2.plot(date[:-1], time_dep_dic['unit_T[AD]'], color='green', label='AD Temperature')
 plt.legend()
 
 plt.show()

@@ -37,3 +37,15 @@ U_res = {
     'prod_Heat':['BOI', 'SOFC'],
     'cons_Heat':['AD']
     }
+
+# The buildings and units consuming heat
+Heat_cons = ['build', 'AD']
+Heat_prod = []
+for u in Units and Units_prod:
+    if 'Heat' in Units_prod[u]:
+        Heat_prod.append(u)
+
+# Volumetric flows of water transporting heat, standing for supply, return and recirculation
+Heat_flow = ['supp', 'ret', 'recirc']
+for u in Heat_prod:
+        Heat_flow.append('reheat[{}]'.format(u))

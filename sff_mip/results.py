@@ -5,6 +5,7 @@
 # External modules
 from matplotlib import pyplot as plt
 import pandas as pd
+import numpy as np
 # Internal modules
 from initialize_model import V_meta
 
@@ -15,9 +16,10 @@ def time_indep(m, Costs_u):
     """ Take values and metada of time independent variables (without _t indicator) and return a 
         dataframe of results
     """
+    time_indep_var, time_dep_var = var_names(m)
     
-    for v in m.getVars():
-        if not "_t" in v.varName:
+    for v in m.getVars(): 
+        if v.varName in time_indep_var:
             vars_name.append(v.varName)
             vars_value.append(v.x)
             vars_lb.append(v.lb)
@@ -39,22 +41,21 @@ def time_indep(m, Costs_u):
     return pd.DataFrame.from_dict(dict_variables)
 
 
-def time_dep_var_names(m):
-    full_list = []
-    unique_list = []
-
+def var_names(m):
+    time_indep_var, time_dep_var   = [], []
+    number = np.arange(0, 10).tolist()
+    number = [str(n) for n in number]
+    
     # get all variable names, store the time dependent ones and cut the period index
     for v in m.getVars():
-        if "_t" and "," in v.varName:
-            full_list.append(v.varName.split(",")[0])
-        elif "_t" in v.varName and "," not in v.varName:
-            full_list.append(v.varName.split("[")[0])
-
-    # remove repetitions
-    for i in full_list:
-        if i not in unique_list:
-            unique_list.append(i)
-    return unique_list 
+        if ',0' in v.varName:
+            time_dep_var.append(v.varName.split(',0')[0])
+        elif '[0' in v.varName:
+            time_dep_var.append(v.varName.split('[0')[0])
+        elif all(n not in v.varName for n in number):
+            time_indep_var.append(v.varName)
+                   
+    return time_indep_var, time_dep_var  
 
 
 def plot_time_dep_result(var, all_dic, m, Periods):
@@ -68,19 +69,21 @@ def get_all_var(m, vars_name_t, Periods):
     
     time_indep_dic['objective'] = m.objVal
     for v in m.getVars():
-        if not "_t" in v.varName:
+        if not '0' in v.varName:
             time_indep_dic[v.varName] = v.x
     
-    for v in vars_name_t:
-        res_list = []
-        if '[' in v:
+    for v in m.getVars():
+        results = []
+        if ',0' in v.varName:
+            name = v.varName.split(',0')[0]
             for p in Periods:
-                res_list.append(m.getVarByName(v + ',{}]'.format(p)).x)
-            time_dep_dic[v + ']'] = res_list
-        else:
+                results.append(m.getVarByName(name + ',{}]'.format(p)).x)
+            time_dep_dic[name + ']'] = results
+        elif '[0' in v.varName:
+            name = v.varName.split('[0')[0]
             for p in Periods:
-                res_list.append(m.getVarByName(v + '[{}]'.format(p)).x)
-            time_dep_dic[v] = res_list
+                results.append(m.getVarByName(name + '[{}]'.format(p)).x)
+            time_dep_dic[name] = results
         
     return time_indep_dic, time_dep_dic
 
