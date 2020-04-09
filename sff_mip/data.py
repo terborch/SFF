@@ -3,7 +3,7 @@
     weather_data_to_df(file, period_start, period_end, timestep)
     default_data_to_df(file, df_index=None)
     
-    #   TODO: add a way to calculate typical days
+    #   TODO: add a way to calculate typical days and extreme days and their position
 """
 
 import pandas as pd
@@ -92,6 +92,13 @@ def default_data_to_df(file, folder, df_index=None):
 
 ##################################################################################################
 ### Display input data
+##################################################################################################
+    
+
+
+
+##################################################################################################
+### END --- Unused functions
 ##################################################################################################
     
 

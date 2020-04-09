@@ -3,25 +3,37 @@ Biomass,Pigs,55,-,Number of Pigs,swissfuturefarm.ch
 Biomass,Cows,65,-,Number of Pigs,swissfuturefarm.ch
 Biomass,LSU_pigs,0.5,-,LSU per Pigs,ec.europa.eu
 Biomass,LSU,92.5,LSU,Number of LSU,calc
-Biomass,Manure_per_cattle,7.3,kg-dry/day/LSU,Cattle manure production,doi: 10.3390/c5020027
-Biomass,Manure_HHV_dry,4.166666667,kWh/kg-dry,Manure energy content,doi: 10.3390/c5020027
+Biomass,Manure_per_cattle,7.3,kg-dry/day/LSU,Cattle manure production dry basis,doi: 10.3390/c5020027
+Biomass,Manure_HHV_dry,3.694444444,kWh/kg-dry,Fresh cattle manure energy content HHV dry basis,doi: 10.3390/c5020027
+Biomass,Biomass_water,0.9,-,Water fraction of the digestate,guess
 Biomass,Biomass_prod,117.2309028,kWh/h,Biomass Production,calc
 PV,PV_eff,0.14,-,PV efficiency,Paul
 BAT,BAT_eff,0.9,-,BAT roundtrip efficiency,guess
 AD,AD_eff,0.3,-,AD efficiency,guess
 AD,AD_elec_cons,0.008,-,AD faction of electricity consumed,doi: 10.3390/en10081165
-AD,SOFC_eff,0.6,-,SOFC electric efficiency,guess
-AD,GC_elec_frac,0.03,-,gas cleaning electric consumption fraction,Projet Semestre nils
+AD,U_AD_cap,0.00208,kW/°C/m^2,AD heat transmittance,doi: 10.12911/22998993/89660
+AD,U_AD_wall,0.1,-,Fraction of heat lost through walls other than the cap,doi: 10.12911/22998993/89660
+AD,AD_cap_loss,0.9,-,Fraction of heat losses through the top cap,doi: 10.12911/22998993/89660
+AD,AD_cap_V_ratio,0.4,-,Ratio of the cap volume over the digestate volume,doi: 10.1016/j.cherd.2017.01.007
+AD,AD_cap_h_ratio,2.2,-,Ratio of the cap raius over the cap height,doi: 10.1016/j.cherd.2017.01.007
+AD,AD_cyl_fill,0.9,-,Ratio of the cylinder volume over the digestate volume,doi: 10.1016/j.cherd.2017.01.007
+AD,AD_cap_abs,0.9,-,Solar Irradiance absorption coefficient for a black painted cap,Gad Helmy 2015
+AD,T_AD_min,30,°C,Minimum allowed temperature for the digester,guess
+AD,T_AD_max,40,°C,Maximum allowed temperature for the digester,guess
+AD,T_AD_mean,35,°C,Mean AD Temperature,guess
+SOFC,SOFC_eff,0.6,-,SOFC electric efficiency,guess
+SOFC,GC_elec_frac,0.03,-,gas cleaning electric consumption fraction,Projet Semestre nils
+Biomass,AD_residence_time,30,day,AD Hydraulic Residence Time,guess
 economic,i,0.025,-,Annual interest rate,guess
 economic,n,20,years,years of exploitation,guess
 economic,tau,0.064147129,-,Annualization factor,calc
 Farm,Annual_Elec_cons,787000,kWh/year,Annual electric consumption,SFF excel
-General,Hours_per_year,8760,h/year,Hours in a year,
+General,Hours_per_year,8760,h/year,Hours in a year,fact
 Building,Gains_ppl,26,kWh/m^2/year,Heating Gains from People,Paul - SIA 2024
 Building,Building_absorptance,0.08,-,Fraction of solar radiation absorbed relative to ground surface,guess
 Building,Elec_heat_frac,0.9,-,Fraction of heat produced by electricity consumber,Dirk MA
-Building,U_b,0.00206,kW/C/m^2,Building heat transmittance ,Paul - SIA 2024
-Building,C_b,0.12,kWh/C/m^2,Building heat capacity,Paul - SIA 2024
+Building,U_b,0.00206,kW/°C/m^2,Building heat transmittance,Paul - SIA 2024
+Building,C_b,0.12,kWh/°C/m^2,Building heat capacity,Paul - SIA 2024
 BOI,BOI_eff,0.9,-,Boiler efficiency,guess
 Thermo,Cp_water,1.16222222222222,kWh/°C/m^3,Heat capacity of water,guess
 Thermo,Tc_boiler,50,°C,Temperature at the boiler inlet,guess
@@ -31,3 +43,4 @@ Thermo,Th_building,65,°C,Supply heating temperature,guess
 Thermo,T_min_building,16,°C,Minimum indoor temperature,guess
 Thermo,T_max_building,50,°C,Maximum indoor temperature,guess
 Thermo,T_amb,20,°C,Comfort indoor temperature,guess
+Weather,Temp_ext_mean,10,°C,Annual average external temperature,calc

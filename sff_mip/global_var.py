@@ -9,7 +9,7 @@
 # External modules
 from gurobipy import GRB
 # Internal modules
-from initialize_model import m, Bound, Periods
+from initialize_model import m, Bound, Periods, V_meta
 from global_set import Units, Units_prod, Units_cons
 
 
@@ -20,6 +20,7 @@ from global_set import Units, Units_prod, Units_cons
 unit_prod_t, unit_cons_t = {}, {}
 for u in Units:
     if u in Units_prod:
+        ###V_meta['unit_prod_t[{}]'.format(u)]
         unit_prod_t[u] = m.addVars(Units_prod[u], Periods, lb = 0, ub = Bound, name= u + "_prod_t")
     if u in Units_cons:
         unit_cons_t[u] = m.addVars(Units_cons[u], Periods, lb = 0, ub = Bound, name= u + "_cons_t")

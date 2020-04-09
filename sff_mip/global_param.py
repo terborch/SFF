@@ -50,6 +50,43 @@ def biomass_prod(Pigs, Cows):
     return [P['Biomass_prod'] for p in Periods]
 
 
+def AD_dimentions(P, P_meta):
+    """ Given a number of LSU and a Hydrolic Residence Time (HTR) defined in the parameter.csv 
+        file estimate the AD cylindrical body volume and add it as a parameter.
+        Then given dimention ratios, the cap surface area is calculated. Similarly the cap height,
+        body height and body diameter are calculated and stored.
+    """
+    name = 'AD_digestate_volume'
+    P_meta[name] = ['m^3', 'AD digestate volume', 'AD']
+    P[name] = np.ceil( P['AD_residence_time']*P['LSU']*P['Manure_per_cattle']/
+                       (1 - P['Biomass_water'])/1000 )
+    
+    name = 'AD_cyl_volume'
+    P_meta[name] = ['m^3', 'AD cylinder volume', 'AD']
+    P[name] = np.ceil( P['AD_digestate_volume']/P['AD_cyl_fill'] )
+
+    name = 'AD_cap_height'
+    P_meta[name] = ['m', 'Height of the AD top cap', 'AD']
+    P[name] = np.round( (P['AD_digestate_volume']*P['AD_cap_V_ratio']*(6/np.pi)/
+                         (3*P['AD_cap_h_ratio']**2 + 1))**(1/3), 2)
+    
+    name = 'AD_diameter'
+    P_meta[name] = ['m', 'Diameter of the AD cylindrical body', 'AD']
+    P[name] = np.round( P['AD_cap_h_ratio']*P['AD_cap_height']*2, 2)
+    
+    name = 'AD_ground_area'
+    P_meta[name] = ['m^2', 'AD ground floor area', 'AD']
+    P[name] = np.round( np.pi*P['AD_diameter']**2, 2)
+    
+    name = 'AD_cap_area'
+    P_meta[name] = ['m^2', 'Surface area of the AD top cap', 'AD']
+    P[name] = np.round( np.pi*(P['AD_cap_height']**2 + (P['AD_diameter']/2)**2), 2)
+    
+    name = 'AD_cyl_height'
+    P_meta[name] = ['m', 'Height of the AD cylindrical body', 'AD']
+    P[name] = np.round( P['AD_cyl_volume']/(np.pi*(P['AD_diameter']/2)**2), 2)
+
+
 def U_costs(file):
     """ Given a file name, return a dataframe of unit costs from the data forlder """
     df = data.default_data_to_df(file, 'economic', 0)
@@ -103,6 +140,9 @@ df_buildings = data.default_data_to_df(file, 'inputs', 0)
 Heated_area = 0
 for i in df_buildings.index:
     Heated_area += (df_buildings['Ground_surface'][i] * df_buildings['Floors'][i])
+
+# Dimentions of the AD
+AD_dimentions(P, P_meta)
 
 # Unit and resource costs
 U_c = U_costs('unit_costs.csv')

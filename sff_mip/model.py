@@ -93,10 +93,10 @@ u = 'PV'
 units.pv(unit_prod_t[u], unit_size[u], Irradiance)
 
 u = 'BAT'
-units.bat(unit_prod_t[u], unit_cons_t[u], unit_size[u], Bound)
+units.bat(unit_prod_t[u], unit_cons_t[u], unit_size[u])
 
 u = 'AD'
-units.ad(unit_prod_t[u], unit_cons_t[u], unit_size[u])
+units.ad(unit_prod_t[u], unit_cons_t[u], unit_size[u], Temperature, Irradiance)
 
 u = 'SOFC'
 units.sofc(unit_prod_t[u], unit_cons_t[u], unit_size[u])
@@ -156,6 +156,7 @@ m.addConstrs((penalty_t[p] == delta_T_abs[p]*3.3013330297486014e-05 for p in Per
 
 o = 'comfort_T_penalty_tot'
 m.addConstr(penalty == penalty_t.sum('*'), o);
+
 
 
 ##################################################################################################

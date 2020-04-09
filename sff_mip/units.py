@@ -4,12 +4,13 @@
     #   TODO: add depth of discharge limit to battery
     #   TODO: add self discharge to battery
     #   TODO: generalise storage unit variables
+    #   TODO: add better aprox for biomass temperature
 """
 
 # External modules
 from gurobipy import GRB
 # Internal modules
-from initialize_model import m, P, Periods
+from initialize_model import m, P, Periods, P_meta, V_meta, Bound, dt
 
 
 ##################################################################################################
@@ -45,7 +46,7 @@ def pv(unit_prod_t, unit_size, Irradiance):
 ##################################################################################################
 
 
-def bat(unit_prod_t, unit_cons_t, unit_size, Bound):
+def bat(unit_prod_t, unit_cons_t, unit_size):
     """ MILP model of a battery
         Charge and discharge efficiency follows Dirk Lauinge MA thesis
         Unit is force to cycle once a day
@@ -92,7 +93,7 @@ def bat(unit_prod_t, unit_cons_t, unit_size, Bound):
 ##################################################################################################
 
 
-def ad(unit_prod_t, unit_cons_t, unit_size):
+def ad(unit_prod_t, unit_cons_t, unit_size, Temperature, Irradiance):
     o = 'AD_production'
     m.addConstrs((unit_prod_t[('Biogas',p)] == 
                   unit_cons_t[('Biomass',p)]*P['AD_eff'] for p in Periods), o);
@@ -104,6 +105,47 @@ def ad(unit_prod_t, unit_cons_t, unit_size):
     o = 'AD_size'
     m.addConstrs((unit_prod_t[('Biogas',p)] <= unit_size for p in Periods), o);
 
+    # Thermodynamics
+    name = 'U_AD'
+    P_meta[name] = ['kW/°C', 'AD heat conductance', 'AD']
+    P[name] = P['AD_cap_area']*P['U_AD_cap']*(1 + P['U_AD_wall'])
+    
+    name = 'C_AD'
+    P_meta[name] = ['kWh/°C', 'Heat capacity of the AD', 'AD']
+    P[name] = P['Cp_water']*P['AD_digestate_volume'] + P['C_b']*P['AD_ground_area']
+    
+    o = 'T_AD_t'
+    V_meta[o] = ['°C', 'Interior temperature of the AD']
+    T_AD_t = m.addVars(Periods + [Periods[-1] + 1], lb=-1000, ub=1000, name= o)
+    
+    o = 'q_AD_t'
+    q_AD_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
+    
+    o = 'ad_loss_biomass_t'
+    V_meta[o] = ['kW', 'Heat loss from biomass input', 'calc', 'AD']
+    loss_biomass_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
+    m.addConstrs(( loss_biomass_t[p] == ((unit_cons_t[('Biomass',p)]/P['Manure_HHV_dry'])/
+                  (1 - P['Biomass_water'])/1000)*P['Cp_water']*(P['T_AD_mean'] - P['Temp_ext_mean']) for p in Periods), o);
+    
+    P_meta['Gains_solar_t'] = ['kW', 'Heat gains from irradiation', 'calc', 'AD']
+    Gains_solar_AD_t = [P['AD_cap_abs']*P['AD_ground_area']*Irradiance[p] for p in Periods]
+    
+    P_meta['Gains_AD_t'] = ['kW', 'Sum of all heat gains', 'calc', 'AD']
+    Gains_AD_t = [unit_cons_t[('Elec',p)] + Gains_solar_AD_t[p] - loss_biomass_t[p] 
+                  for p in Periods]
+    
+    o = 'AD_temperature'
+    m.addConstrs((P['C_AD']*(T_AD_t[p+1] - T_AD_t[p])/dt == 
+                  P['U_AD']*(Temperature[p] - T_AD_t[p]) + Gains_AD_t[p] + q_AD_t[p]
+                  for p in Periods), o);
+    
+    o = 'AD_final_temperature'
+    m.addConstr( T_AD_t[Periods[-1] + 1] == T_AD_t[0], o);
+    
+    ###o = 'AD_temperature_constraint'
+    ###m.addConstrs((T_AD_t[p] >= P['T_AD_min'] for p in Periods), o);
+    ###m.addConstrs((T_AD_t[p] <= P['T_AD_max'] for p in Periods), o);
+    
 
 
 ##################################################################################################

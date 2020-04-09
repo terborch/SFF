@@ -34,7 +34,7 @@ def get_param(file):
 
     # Change every value into float format except the values in category Time
     for i in df.index:
-        if df['Category'][i] != 'Time' and  type(df['Value'][i]) != np.float64:
+        if df['Category'][i] != 'Time' and type(df['Value'][i]) != np.float64:
             df['Value'][i] = float(df['Value'][i])
     
     df.index = df['Name']
