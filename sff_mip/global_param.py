@@ -12,7 +12,7 @@
 import numpy as np
 import pandas as pd
 # Internal modules
-from initialize_model import P, P_meta, P_t, S, Periods, Time, Days
+from initialize_model import P, P_meta, P_t, P_all, S, Periods, Days
 import data
 
 
@@ -148,7 +148,10 @@ AD_dimentions(P, P_meta)
 # Unit and resource costs
 Costs_u = costs_u('unit_costs.csv')
 Costs_r = resource_costs('resource_costs.csv')
+P_all['Economic'] = [Costs_u, Costs_r]
 
 # Biomass potential
 Biomass_prod = biomass_prod(P['Pigs'], P['Cows'])
 param_t('Biomass_prod', Biomass_prod, ['kW', 'Biomass production', 'Biomass'])
+
+

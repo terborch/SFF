@@ -8,7 +8,8 @@
 """
 
 # Units and resources
-Units_full_name = ['Gas Boiler', 'Photovoltaic Panels', 'Battery', 'Solid Oxide Fuel cell', 'Anaerobic Digester']
+Units_full_name = ['Gas Boiler', 'Photovoltaic Panels', 'Battery', 'Solid Oxide Fuel cell', 
+                   'Anaerobic Digester']
 Units = ['BOI', 'PV', 'BAT', 'SOFC', 'AD']
 Resources = ['Elec', 'Gas', 'Biogas', 'Biomass']
 

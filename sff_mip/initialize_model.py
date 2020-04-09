@@ -95,7 +95,7 @@ def time_param():
 def intialize_model():
     """ Return a blank Gurobi model and set solver timelimit """
     # Create a new model
-    m = gp.Model("MIP_SFF_v0.25")
+    m = gp.Model("MIP_SFF_v0.31")
     # Remove previous model parameters and data
     m.resetParams()
     m.reset()
@@ -103,6 +103,12 @@ def intialize_model():
     m.setParam("TimeLimit", S['Solver_time_limit'])
     
     return m
+
+
+def crate_param_meta(name, param):
+    """ Gather information on a given parameter (other than int or float) and add it to P_all """
+    P_all[name] = [type(param), param[0], param[-1], len(param)]
+        
 
 
 # Dictionnaries of values and metadata from the file 'parameters.csv'
@@ -116,6 +122,15 @@ Periods, Time_steps, dt, Days, Time = time_param()
 Bound = S['Var_bound']
 # Dictionnary of the min, max and average value of time dependent parameters
 P_t = {}
+# Dictionnary of parameter containers
+P_all = {'Setings': S, 
+         'Time_independent': P, 
+         'Time_dependent': P_t, 
+         'Time_steps': Time_steps,
+         'dt': dt}
+crate_param_meta('Periods', Periods)
+crate_param_meta('Days', Days)
+crate_param_meta('Time', Time)
 # Dictionnary of the units of variables and their description
 V_meta = {}
 # Dictionnary describing each constraint and its source if applicable

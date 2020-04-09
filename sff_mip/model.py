@@ -43,10 +43,10 @@ from global_set import Units, Units_prod, Units_cons, U_res
     #   Electric consumption in list Build_cons_elec
     #   Biomass production in list Biomass_prod
     #   Unit costs in dataframe Costs_u
-    #   Resource costs in dataframe Costs_r
+    #   Resource costs in dataframe Costs_res
 """
 
-from global_param import Irradiance, Build_cons_elec, Biomass_prod, Costs_u, Costs_r, df_cons, Heated_area, Ext_T
+from global_param import Irradiance, Build_cons_elec, Biomass_prod, Costs_u, Costs_res, df_cons, Heated_area, Ext_T
 # Functions
 from global_param import annual_to_instant
 
@@ -264,9 +264,9 @@ o = 'capex_sum'
 m.addConstr(capex == sum([u_CAPEX[u] for u in Units])/1000, o);
 
 o = 'opex_sum'
-m.addConstr(opex == (elec_import*Costs_r['Import_cost']['Elec'] - 
-                     elec_export*Costs_r['Export_cost']['Elec'] +
-                     gas_import*Costs_r['Import_cost']['Gas']), o);
+m.addConstr(opex == (elec_import*Costs_res['Import_cost']['Elec'] - 
+                     elec_export*Costs_res['Export_cost']['Elec'] +
+                     gas_import*Costs_res['Import_cost']['Gas']), o);
 
 o = 'totex_sum'
 m.addConstr(totex == opex + P['tau']*capex, o);
