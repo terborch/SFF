@@ -5,7 +5,7 @@
     #   Biomass production in list Biomass_prod
     #   Heated surface area (TODO: differenciate building types)
     #   Unit costs in dataframe Costs_u
-    #   Resource costs in dataframe Resource_c
+    #   Resource costs in dataframe Costs_r
 """
 
 # External modules
@@ -147,7 +147,7 @@ AD_dimentions(P, P_meta)
 
 # Unit and resource costs
 Costs_u = costs_u('unit_costs.csv')
-Resource_c = resource_costs('resource_costs.csv')
+Costs_r = resource_costs('resource_costs.csv')
 
 # Biomass potential
 Biomass_prod = biomass_prod(P['Pigs'], P['Cows'])
