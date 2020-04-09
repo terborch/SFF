@@ -54,33 +54,33 @@ def bat(unit_prod, unit_cons, unit_size):
         TODO: Discharge rate dependent on size and time step
     """
     # Variables
-    bat_SOC_t = m.addVars(Periods + [Periods[-1] + 1], lb = 0, ub = Bound, name = 'bat_SOC_t')
-    bat_charge_t = m.addVars(Periods, vtype=GRB.BINARY, name='bat_charge_t')
-    bat_discharge_t = m.addVars(Periods, vtype=GRB.BINARY, name='bat_discharge_t')
+    bat_SOC = m.addVars(Periods + [Periods[-1] + 1], lb = 0, ub = Bound, name = 'bat_SOC')
+    bat_charge = m.addVars(Periods, vtype=GRB.BINARY, name='bat_charge')
+    bat_discharge = m.addVars(Periods, vtype=GRB.BINARY, name='bat_discharge')
     
     # Parameters
     eff = P['BAT_eff']**0.5
     
     # Constraints
     o = 'BAT_SOC'
-    m.addConstrs((bat_SOC_t[p + 1] - bat_SOC_t[p] ==  
+    m.addConstrs((bat_SOC[p + 1] - bat_SOC[p] ==  
                   (eff*unit_cons[('Elec',p)] - (1/eff)*unit_prod[('Elec',p)]) 
                   for p in Periods), o);
     
     o = 'BAT_charge_discharge'
-    m.addConstrs((bat_charge_t[p] + bat_discharge_t[p] <= 1 for p in Periods), o);
+    m.addConstrs((bat_charge[p] + bat_discharge[p] <= 1 for p in Periods), o);
     o = 'BAT_charge'
-    m.addConstrs((bat_charge_t[p]*Bound >= unit_cons[('Elec',p)] for p in Periods), o);
+    m.addConstrs((bat_charge[p]*Bound >= unit_cons[('Elec',p)] for p in Periods), o);
     o = 'BAT_discharge'
-    m.addConstrs((bat_discharge_t[p]*Bound >= unit_prod[('Elec',p)] for p in Periods), o);
+    m.addConstrs((bat_discharge[p]*Bound >= unit_prod[('Elec',p)] for p in Periods), o);
     
     o = 'BAT_daily_cycle'
-    m.addConstr((bat_SOC_t[0] == bat_SOC_t[Periods[-1]]), o);
+    m.addConstr((bat_SOC[0] == bat_SOC[Periods[-1]]), o);
     o = 'BAT_daily_initial'
-    m.addConstr((bat_SOC_t[0] == 0), o);
+    m.addConstr((bat_SOC[0] == 0), o);
     
     o = 'BAT_size_SOC'
-    m.addConstrs((bat_SOC_t[p] <= unit_size for p in Periods), o);
+    m.addConstrs((bat_SOC[p] <= unit_size for p in Periods), o);
     o = 'BAT_size_discharge'
     m.addConstrs((unit_prod[('Elec',p)] <= unit_size for p in Periods), o);
     o = 'BAT_size_charge'
