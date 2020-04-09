@@ -54,18 +54,18 @@ def AD_dimentions(P, P_meta):
         Then given dimention ratios, the cap surface area is calculated. Similarly the cap height,
         body height and body diameter are calculated and stored.
     """
-    name = 'AD_digestate_volume'
+    name = 'AD_sludge_volume'
     P_meta[name] = ['m^3', 'AD digestate volume', 'AD']
     P[name] = np.ceil( P['AD_residence_time']*P['LSU']*P['Manure_per_cattle']/
                        (1 - P['Biomass_water'])/1000 )
     
     name = 'AD_cyl_volume'
     P_meta[name] = ['m^3', 'AD cylinder volume', 'AD']
-    P[name] = np.ceil( P['AD_digestate_volume']/P['AD_cyl_fill'] )
+    P[name] = np.ceil( P['AD_sludge_volume']/P['AD_cyl_fill'] )
 
     name = 'AD_cap_height'
     P_meta[name] = ['m', 'Height of the AD top cap', 'AD']
-    P[name] = np.round( (P['AD_digestate_volume']*P['AD_cap_V_ratio']*(6/np.pi)/
+    P[name] = np.round( (P['AD_sludge_volume']*P['AD_cap_V_ratio']*(6/np.pi)/
                          (3*P['AD_cap_h_ratio']**2 + 1))**(1/3), 2)
     
     name = 'AD_diameter'

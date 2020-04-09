@@ -112,7 +112,7 @@ def ad(unit_prod_t, unit_cons_t, unit_size, Ext_T, Irradiance):
     
     name = 'C_AD'
     P_meta[name] = ['kWh/°C', 'Heat capacity of the AD', 'AD']
-    P[name] = P['Cp_water']*P['AD_digestate_volume'] + P['C_b']*P['AD_ground_area']
+    P[name] = P['Cp_water']*P['AD_sludge_volume'] + P['C_b']*P['AD_ground_area']
     
     o = 'T_AD_t'
     V_meta[o] = ['°C', 'Interior temperature of the AD']
