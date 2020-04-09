@@ -1,8 +1,8 @@
 """
 ### Parameter declaration
-    #   Weather parameters in list Irradiance
-    #   Electric consumption in list Farm_cons_t
-    #   Biomass production in list Biomass_prod_t
+    #   Weather parameters in lists Irradiance and Ext_T (Exterior Temperature)
+    #   Electric consumption in list Build_cons_elec
+    #   Biomass production in list Biomass_prod
     #   Heated surface area (TODO: differenciate building types)
     #   Unit costs in dataframe U_c
     #   Resource costs in dataframe Resource_c
@@ -12,10 +12,17 @@
 import numpy as np
 import pandas as pd
 # Internal modules
-from initialize_model import P, P_meta, S, Periods, Time, Days
+from initialize_model import P, P_meta, P_t, S, Periods, Time, Days
 import data
 
 
+def param_t(name, param, meta):
+    """ Given a time dependent parameter adds its maximum, minimum and average value to the P_t{}
+        dictionnary. Takes the given meta data and adds it to the P_meta dictionnary
+    """
+    P_t[name] = [min(param), max(param), np.mean(param)]
+    P_meta[name] = meta
+    
 def annual_to_instant(Annual, Profile_norm):
     """ Take an annual total and a corresponding daily profile normalized from 1 to 0. Calculate 
         the average instant, then the average of the normalized profile, then the corresponding
@@ -27,15 +34,6 @@ def annual_to_instant(Annual, Profile_norm):
     Peak = Average / Average_profile_norm
 
     return list(Peak * Profile_norm)
-
-
-def time_index_dict(l):
-    dic = {}
-    i = 0
-    for t in Time:
-        dic[t] = l[i]
-        i += 1
-    return dic
 
 
 def biomass_prod(Pigs, Cows):
@@ -124,15 +122,16 @@ def resource_costs(file):
 file = 'meteo_Liebensberg_10min.csv'
 df_weather = data.weather_data_to_df(file, S['Period_start'], S['Period_end'], S['Time_step'])
 df_weather.drop(df_weather.tail(1).index,inplace=True)
-Irradiance = list(df_weather['Irradiance'].values) # in [kW/m^2]
-Temperature = list(df_weather['Temperature'].values) # in [°C]
+Irradiance = list(df_weather['Irradiance'].values)
+param_t('Irradiance', Irradiance, ['kW/m^2', 'Global irradiance', 'weather'])
+Ext_T = list(df_weather['Temperature'].values)
+param_t('Ext_T', Ext_T, ['°C', 'Exterior temperature', 'weather'])
 
 # Electricity consumption profile
 file = 'consumption_profile_dummy.csv'
 df_cons = data.default_data_to_df(file, 'internal', df_weather.index)
-Farm_cons_t = annual_to_instant(P['Annual_Elec_cons'], df_cons['Electricity'].values)
-###Farm_cons_t = time_index_dict(Farm_cons_t)
-Farm_cons_t = len(Days)*Farm_cons_t
+Build_cons_elec = len(Days)*annual_to_instant(P['Annual_Elec_cons'], df_cons['Electricity'].values)
+param_t('Build_cons_elec', Build_cons_elec, ['kW', 'Building electricity consumption', 'Building'])
 
 # Building heated surface area
 file = 'buildings.csv'
@@ -140,6 +139,8 @@ df_buildings = data.default_data_to_df(file, 'inputs', 0)
 Heated_area = 0
 for i in df_buildings.index:
     Heated_area += (df_buildings['Ground_surface'][i] * df_buildings['Floors'][i])
+P['Heated_area'] = Heated_area
+P_meta['Heated_area'] = ['m^2', 'Building heated surface area', 'Building']
 
 # Dimentions of the AD
 AD_dimentions(P, P_meta)
@@ -149,4 +150,5 @@ U_c = U_costs('unit_costs.csv')
 Resource_c = resource_costs('resource_costs.csv')
 
 # Biomass potential
-Biomass_prod_t = biomass_prod(P['Pigs'], P['Cows'])
+Biomass_prod = biomass_prod(P['Pigs'], P['Cows'])
+param_t('Biomass_prod', Biomass_prod, ['kW', 'Biomass production', 'Biomass'])

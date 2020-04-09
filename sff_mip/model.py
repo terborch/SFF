@@ -40,13 +40,13 @@ from global_set import Units, Units_prod, Units_cons, U_res
 """
 ### Parameter declaration
     #   Weather parameters in list Irradiance
-    #   Electric consumption in list Farm_cons_t
-    #   Biomass production in list Biomass_prod_t
+    #   Electric consumption in list Build_cons_elec
+    #   Biomass production in list Biomass_prod
     #   Unit costs in dataframe U_c
     #   Resource costs in dataframe Resource_c
 """
 
-from global_param import Irradiance, Farm_cons_t, Biomass_prod_t, U_c, Resource_c, df_cons, Heated_area, Temperature
+from global_param import Irradiance, Build_cons_elec, Biomass_prod, U_c, Resource_c, df_cons, Heated_area, Ext_T
 # Functions
 from global_param import annual_to_instant
 
@@ -96,7 +96,7 @@ u = 'BAT'
 units.bat(unit_prod_t[u], unit_cons_t[u], unit_size[u])
 
 u = 'AD'
-units.ad(unit_prod_t[u], unit_cons_t[u], unit_size[u], Temperature, Irradiance)
+units.ad(unit_prod_t[u], unit_cons_t[u], unit_size[u], Ext_T, Irradiance)
 
 u = 'SOFC'
 units.sofc(unit_prod_t[u], unit_cons_t[u], unit_size[u])
@@ -118,7 +118,7 @@ P_meta['Gains_ppl_t'] = ['kW/m^2', 'Heat gains from people', 'calc', 'Building']
 Gains_ppl_t = annual_to_instant(P['Gains_ppl'], df_cons['Gains'].values) * int(len(Periods)/24)
 
 P_meta['Gains_elec_t'] = ['kW/m^2', 'Heat gains from appliances', 'calc', 'Building']
-Gains_elec_t = [P['Elec_heat_frac'] * Farm_cons_t[p] / Heated_area for p in Periods]
+Gains_elec_t = [P['Elec_heat_frac'] * Build_cons_elec[p] / Heated_area for p in Periods]
 
 P_meta['Gains_solar_t'] = ['kW/m^2', 'Heat gains from irradiation', 'calc', 'Building']
 Gains_solar_t = [P['Building_absorptance'] * Irradiance[p] for p in Periods ]
@@ -128,7 +128,7 @@ Gains_t = Gains_ppl_t + Gains_elec_t + Gains_solar_t
 
 o = 'Building_temperature'
 m.addConstrs((P['C_b']*(T_build_t[p+1] - T_build_t[p]) == 
-              P['U_b']*(Temperature[p] - T_build_t[p]) + Gains_t[p] + q_t[p]/Heated_area
+              P['U_b']*(Ext_T[p] - T_build_t[p]) + Gains_t[p] + q_t[p]/Heated_area
               for p in Periods), o);
 
 o = 'Building_final_temperature'
@@ -209,9 +209,9 @@ gas_import_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
 o = 'Balance_Electricity'
 m.addConstrs((elec_import_t[p] + sum(unit_prod_t[up][('Elec',p)] for up in U_res['prod_Elec'])  == 
               elec_export_t[p] + sum(unit_cons_t[uc][('Elec',p)] for uc in U_res['cons_Elec']) + 
-              Farm_cons_t[p] for p in Periods), o);
+              Build_cons_elec[p] for p in Periods), o);
 o = 'Balance_Biomass'
-m.addConstrs((Biomass_prod_t[p] >= unit_cons_t['AD'][('Biomass',p)] for p in Periods), o);
+m.addConstrs((Biomass_prod[p] >= unit_cons_t['AD'][('Biomass',p)] for p in Periods), o);
 o = 'Balance_Biogas'
 m.addConstrs((unit_prod_t['AD'][('Biogas',p)] >= unit_cons_t['SOFC'][('Biogas',p)] 
               for p in Periods), o);
@@ -277,6 +277,7 @@ m.addConstr(totex == opex + P['tau']*capex, o);
 ### Objective and resolution
 ##################################################################################################
 
+
 def run(relax):
 
     m.setObjective(totex + penalty, GRB.MINIMIZE)
@@ -284,6 +285,11 @@ def run(relax):
     m.optimize()
     
     # Relaxion in case of infeasible model
+    if m.status == GRB.INFEASIBLE:
+        print('******************************************************************')
+        print('******************* Model INFEASIBLE!!! **************************')
+        print('******************************************************************')
+        
     if m.status == GRB.INFEASIBLE and relax:
         m.feasRelaxS(1, False, False, True)
         m.optimize()

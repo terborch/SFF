@@ -93,7 +93,7 @@ def bat(unit_prod_t, unit_cons_t, unit_size):
 ##################################################################################################
 
 
-def ad(unit_prod_t, unit_cons_t, unit_size, Temperature, Irradiance):
+def ad(unit_prod_t, unit_cons_t, unit_size, Ext_T, Irradiance):
     o = 'AD_production'
     m.addConstrs((unit_prod_t[('Biogas',p)] == 
                   unit_cons_t[('Biomass',p)]*P['AD_eff'] for p in Periods), o);
@@ -121,13 +121,13 @@ def ad(unit_prod_t, unit_cons_t, unit_size, Temperature, Irradiance):
     o = 'q_AD_t'
     q_AD_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
     
-    o = 'ad_loss_biomass_t'
+    o = 'loss_biomass_t'
     V_meta[o] = ['kW', 'Heat loss from biomass input', 'calc', 'AD']
     loss_biomass_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
     m.addConstrs(( loss_biomass_t[p] == ((unit_cons_t[('Biomass',p)]/P['Manure_HHV_dry'])/
                   (1 - P['Biomass_water'])/1000)*P['Cp_water']*(P['T_AD_mean'] - P['Temp_ext_mean']) for p in Periods), o);
     
-    P_meta['Gains_solar_t'] = ['kW', 'Heat gains from irradiation', 'calc', 'AD']
+    P_meta['Gains_solar_AD_t'] = ['kW', 'Heat gains from irradiation', 'calc', 'AD']
     Gains_solar_AD_t = [P['AD_cap_abs']*P['AD_ground_area']*Irradiance[p] for p in Periods]
     
     P_meta['Gains_AD_t'] = ['kW', 'Sum of all heat gains', 'calc', 'AD']
@@ -136,7 +136,7 @@ def ad(unit_prod_t, unit_cons_t, unit_size, Temperature, Irradiance):
     
     o = 'AD_temperature'
     m.addConstrs((P['C_AD']*(T_AD_t[p+1] - T_AD_t[p])/dt == 
-                  P['U_AD']*(Temperature[p] - T_AD_t[p]) + Gains_AD_t[p] + q_AD_t[p]
+                  P['U_AD']*(Ext_T[p] - T_AD_t[p]) + Gains_AD_t[p] + q_AD_t[p]
                   for p in Periods), o);
     
     o = 'AD_final_temperature'

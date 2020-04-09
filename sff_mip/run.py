@@ -30,7 +30,7 @@ start = time.time()
 # Internal modules
 import results
 from initialize_model import m, S
-from global_param import U_c, Periods, Temperature, Irradiance
+from global_param import U_c, Periods, Ext_T, Irradiance
 import model
 import data
 
@@ -107,7 +107,7 @@ ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
 
 c = 'blue'
 ax2.set_ylabel('Temperature in °C')  # we already handled the x-label with ax1
-ax2.plot(date, temp, color=c, label='External Temperature')
+ax2.plot(date, temp, color=c, label='Exterior Temperature')
 ax2.tick_params(axis='y', labelcolor=c)
 
 fig.tight_layout()  # otherwise the right y-label is slightly clipped

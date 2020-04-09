@@ -58,14 +58,13 @@ def time_param():
         time step dt, based on the given Time informations in the settings.csv file. The 
         units are in hours.
     """
-
     dt = datetime.strptime(S['Time_step'], S['Time_format']).time()
     if dt.hour != 0 and dt.minute == 0 and dt.second == 0:
         dt = dt.hour
     elif dt.hour == 0 and dt.minute != 0 and dt.second == 0:
         dt = dt.minute / 60
     else:
-        print_error('Time_step')
+        print_error('Period_length')
     
     start = S['Period_start'] + ' ' + S['Period_start_time']
     dt_start = datetime.strptime(start, Datetime_format)
@@ -115,6 +114,8 @@ Datetime_format = S['Date_format'] + ' ' + S['Time_format']
 Periods, Time_steps, dt, Days, Time = time_param()
 # Default upper bound for most variables
 Bound = S['Var_bound']
+# Dictionnary of the min, max and average value of time dependent parameters
+P_t = {}
 # Dictionnary of the units of variables and their description
 V_meta = {}
 # Dictionnary describing each constraint and its source if applicable
