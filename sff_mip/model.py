@@ -52,14 +52,14 @@ from global_param import annual_to_instant
 
 """
 ### Variable declaration
-    #   unit_prod_t - dict of vars - What each unit produce during one time period
-    #   unit_cons_t - dict of vars - What each unit consume during one time period
+    #   unit_prod - dict of vars - What each unit produce during one time period
+    #   unit_cons - dict of vars - What each unit consume during one time period
     #   unit_size - vars - The size of each unit
     #   unit_install - vars - Whether or not each unit is installed
     #   unit_capex - vars - capex of each unit
 """
 
-from global_var import unit_prod_t, unit_cons_t, unit_install, unit_size, unit_capex, flow_t
+from global_var import unit_prod, unit_cons, unit_install, unit_size, unit_capex, flow_t
 
 
 
@@ -87,19 +87,19 @@ def cstr_unit_size(S):
 cstr_unit_size(S)
 
 u = 'BOI'
-units.boi(unit_cons_t[u], unit_size[u], flow_t)
+units.boi(unit_cons[u], unit_size[u], flow_t)
 
 u = 'PV'
-units.pv(unit_prod_t[u], unit_size[u], Irradiance)
+units.pv(unit_prod[u], unit_size[u], Irradiance)
 
 u = 'BAT'
-units.bat(unit_prod_t[u], unit_cons_t[u], unit_size[u])
+units.bat(unit_prod[u], unit_cons[u], unit_size[u])
 
 u = 'AD'
-units.ad(unit_prod_t[u], unit_cons_t[u], unit_size[u], Ext_T, Irradiance)
+units.ad(unit_prod[u], unit_cons[u], unit_size[u], Ext_T, Irradiance)
 
 u = 'SOFC'
-units.sofc(unit_prod_t[u], unit_cons_t[u], unit_size[u])
+units.sofc(unit_prod[u], unit_cons[u], unit_size[u])
 
 
 ##################################################################################################
@@ -207,16 +207,16 @@ gas_import_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
 
 # Resource balances
 o = 'Balance_Electricity'
-m.addConstrs((elec_import_t[p] + sum(unit_prod_t[up][('Elec',p)] for up in U_res['prod_Elec'])  == 
-              elec_export_t[p] + sum(unit_cons_t[uc][('Elec',p)] for uc in U_res['cons_Elec']) + 
+m.addConstrs((elec_import_t[p] + sum(unit_prod[up][('Elec',p)] for up in U_res['prod_Elec'])  == 
+              elec_export_t[p] + sum(unit_cons[uc][('Elec',p)] for uc in U_res['cons_Elec']) + 
               Build_cons_elec[p] for p in Periods), o);
 o = 'Balance_Biomass'
-m.addConstrs((Biomass_prod[p] >= unit_cons_t['AD'][('Biomass',p)] for p in Periods), o);
+m.addConstrs((Biomass_prod[p] >= unit_cons['AD'][('Biomass',p)] for p in Periods), o);
 o = 'Balance_Biogas'
-m.addConstrs((unit_prod_t['AD'][('Biogas',p)] >= unit_cons_t['SOFC'][('Biogas',p)] 
+m.addConstrs((unit_prod['AD'][('Biogas',p)] >= unit_cons['SOFC'][('Biogas',p)] 
               for p in Periods), o);
 o = 'Balance_Gas'
-m.addConstrs((unit_cons_t['BOI'][('Gas',p)] == gas_import_t[p] for p in Periods), o);
+m.addConstrs((unit_cons['BOI'][('Gas',p)] == gas_import_t[p] for p in Periods), o);
 
 # Total annual import / export
 o = 'Electricity_grid_import'

@@ -18,14 +18,14 @@ from initialize_model import m, P, Periods, P_meta, V_meta, Bound, dt
 ##################################################################################################
 
 
-def boi(unit_cons_t, unit_size, flow_t):
+def boi(unit_cons, unit_size, flow_t):
     o = 'PV_production'
-    m.addConstrs((unit_cons_t[('Gas',p)] * P['BOI_eff'] == 
+    m.addConstrs((unit_cons[('Gas',p)] * P['BOI_eff'] == 
                   flow_t['m1',p] * (P['Th_boiler'] - P['Tc_boiler']) * P['Cp_water']
                   for p in Periods), o);
     
     o = 'BOI_size'
-    m.addConstrs((unit_cons_t[('Gas',p)]*P['BOI_eff'] <= unit_size for p in Periods), o);
+    m.addConstrs((unit_cons[('Gas',p)]*P['BOI_eff'] <= unit_size for p in Periods), o);
 
 
 
@@ -34,9 +34,9 @@ def boi(unit_cons_t, unit_size, flow_t):
 ##################################################################################################
 
 
-def pv(unit_prod_t, unit_size, Irradiance):
+def pv(unit_prod, unit_size, Irradiance):
     o = 'PV_production'
-    m.addConstrs((unit_prod_t[('Elec',p)] == Irradiance[p] * P['PV_eff'] * unit_size 
+    m.addConstrs((unit_prod[('Elec',p)] == Irradiance[p] * P['PV_eff'] * unit_size 
                   for p in Periods), o);
     
     
@@ -46,7 +46,7 @@ def pv(unit_prod_t, unit_size, Irradiance):
 ##################################################################################################
 
 
-def bat(unit_prod_t, unit_cons_t, unit_size):
+def bat(unit_prod, unit_cons, unit_size):
     """ MILP model of a battery
         Charge and discharge efficiency follows Dirk Lauinge MA thesis
         Unit is force to cycle once a day
@@ -64,15 +64,15 @@ def bat(unit_prod_t, unit_cons_t, unit_size):
     # Constraints
     o = 'BAT_SOC'
     m.addConstrs((bat_SOC_t[p + 1] - bat_SOC_t[p] ==  
-                  (eff*unit_cons_t[('Elec',p)] - (1/eff)*unit_prod_t[('Elec',p)]) 
+                  (eff*unit_cons[('Elec',p)] - (1/eff)*unit_prod[('Elec',p)]) 
                   for p in Periods), o);
     
     o = 'BAT_charge_discharge'
     m.addConstrs((bat_charge_t[p] + bat_discharge_t[p] <= 1 for p in Periods), o);
     o = 'BAT_charge'
-    m.addConstrs((bat_charge_t[p]*Bound >= unit_cons_t[('Elec',p)] for p in Periods), o);
+    m.addConstrs((bat_charge_t[p]*Bound >= unit_cons[('Elec',p)] for p in Periods), o);
     o = 'BAT_discharge'
-    m.addConstrs((bat_discharge_t[p]*Bound >= unit_prod_t[('Elec',p)] for p in Periods), o);
+    m.addConstrs((bat_discharge_t[p]*Bound >= unit_prod[('Elec',p)] for p in Periods), o);
     
     o = 'BAT_daily_cycle'
     m.addConstr((bat_SOC_t[0] == bat_SOC_t[Periods[-1]]), o);
@@ -82,9 +82,9 @@ def bat(unit_prod_t, unit_cons_t, unit_size):
     o = 'BAT_size_SOC'
     m.addConstrs((bat_SOC_t[p] <= unit_size for p in Periods), o);
     o = 'BAT_size_discharge'
-    m.addConstrs((unit_prod_t[('Elec',p)] <= unit_size for p in Periods), o);
+    m.addConstrs((unit_prod[('Elec',p)] <= unit_size for p in Periods), o);
     o = 'BAT_size_charge'
-    m.addConstrs((unit_cons_t[('Elec',p)] <= unit_size for p in Periods), o);
+    m.addConstrs((unit_cons[('Elec',p)] <= unit_size for p in Periods), o);
 
 
 
@@ -93,17 +93,17 @@ def bat(unit_prod_t, unit_cons_t, unit_size):
 ##################################################################################################
 
 
-def ad(unit_prod_t, unit_cons_t, unit_size, Ext_T, Irradiance):
+def ad(unit_prod, unit_cons, unit_size, Ext_T, Irradiance):
     o = 'AD_production'
-    m.addConstrs((unit_prod_t[('Biogas',p)] == 
-                  unit_cons_t[('Biomass',p)]*P['AD_eff'] for p in Periods), o);
+    m.addConstrs((unit_prod[('Biogas',p)] == 
+                  unit_cons[('Biomass',p)]*P['AD_eff'] for p in Periods), o);
     
     o = 'AD_elec_cons'
-    m.addConstrs((unit_cons_t[('Elec',p)] == 
-                  unit_prod_t[('Biogas',p)]*P['AD_elec_cons'] for p in Periods), o);
+    m.addConstrs((unit_cons[('Elec',p)] == 
+                  unit_prod[('Biogas',p)]*P['AD_elec_cons'] for p in Periods), o);
     
     o = 'AD_size'
-    m.addConstrs((unit_prod_t[('Biogas',p)] <= unit_size for p in Periods), o);
+    m.addConstrs((unit_prod[('Biogas',p)] <= unit_size for p in Periods), o);
 
     # Thermodynamics
     name = 'U_AD'
@@ -121,17 +121,17 @@ def ad(unit_prod_t, unit_cons_t, unit_size, Ext_T, Irradiance):
     o = 'q_AD_t'
     q_AD_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
     
-    o = 'loss_biomass_t'
+    o = 'loss_biomass'
     V_meta[o] = ['kW', 'Heat loss from biomass input', 'calc', 'AD']
-    loss_biomass_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
-    m.addConstrs(( loss_biomass_t[p] == ((unit_cons_t[('Biomass',p)]/P['Manure_HHV_dry'])/
+    loss_biomass = m.addVars(Periods, lb=0, ub=Bound, name= o)
+    m.addConstrs(( loss_biomass[p] == ((unit_cons[('Biomass',p)]/P['Manure_HHV_dry'])/
                   (1 - P['Biomass_water'])/1000)*P['Cp_water']*(P['T_AD_mean'] - P['Temp_ext_mean']) for p in Periods), o);
     
     P_meta['Gains_solar_AD_t'] = ['kW', 'Heat gains from irradiation', 'calc', 'AD']
     Gains_solar_AD_t = [P['AD_cap_abs']*P['AD_ground_area']*Irradiance[p] for p in Periods]
     
     P_meta['Gains_AD_t'] = ['kW', 'Sum of all heat gains', 'calc', 'AD']
-    Gains_AD_t = [unit_cons_t[('Elec',p)] + Gains_solar_AD_t[p] - loss_biomass_t[p] 
+    Gains_AD_t = [unit_cons[('Elec',p)] + Gains_solar_AD_t[p] - loss_biomass[p] 
                   for p in Periods]
     
     o = 'AD_temperature'
@@ -153,13 +153,13 @@ def ad(unit_prod_t, unit_cons_t, unit_size, Ext_T, Irradiance):
 ##################################################################################################
 
 
-def sofc(unit_prod_t, unit_cons_t, unit_size):
+def sofc(unit_prod, unit_cons, unit_size):
     o = 'SOFC_production'
-    m.addConstrs((unit_prod_t[('Elec',p)] == unit_cons_t[('Biogas',p)]*
+    m.addConstrs((unit_prod[('Elec',p)] == unit_cons[('Biogas',p)]*
                   (P['SOFC_eff'] - P['GC_elec_frac']) for p in Periods), o);
     
     o = 'SOFC_size'
-    m.addConstrs((unit_prod_t[('Elec',p)] <= unit_size for p in Periods), o);
+    m.addConstrs((unit_prod[('Elec',p)] <= unit_size for p in Periods), o);
 
 
 ##################################################################################################
