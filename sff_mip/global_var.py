@@ -3,7 +3,7 @@
     #   unit_prod_t - dict of vars - What each unit produce of consume during one time period
     #   unit_size - vars - The size of each unit
     #   unit_install - vars - Whether or not each unit is installed
-    #   u_CAPEX - vars - capex of each unit
+    #   unit_capex - vars - capex of each unit
 """
 
 # External modules
@@ -32,7 +32,7 @@ unit_size = m.addVars(Units, lb = 0, ub = Bound, name="size")
 unit_install = m.addVars(Units, vtype=GRB.BINARY, name="install")
 
 # CAPEX of the installed unit
-u_CAPEX = m.addVars(Units, lb = 0, ub = Bound, name="CAPEX")
+unit_capex = m.addVars(Units, lb = 0, ub = Bound, name="capex")
 
 ### Temporary
 Water_flows = ['m1', 'm2', 'm3']

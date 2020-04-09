@@ -5,14 +5,14 @@
     #   Biomass production in list Biomass_prod
     #   Heated surface area (TODO: differenciate building types)
     #   Unit costs in dataframe Costs_u
-    #   Resource costs in dataframe Costs_r
+    #   Resource costs in dataframe Costs_res
 """
 
 # External modules
 import numpy as np
 import pandas as pd
 # Internal modules
-from initialize_model import P, P_meta, P_t, P_all, S, Periods, Days
+from initialize_model import P, P_meta, P_t, All_input, S, Periods, Days
 import data
 
 
@@ -147,8 +147,8 @@ AD_dimentions(P, P_meta)
 
 # Unit and resource costs
 Costs_u = costs_u('unit_costs.csv')
-Costs_r = resource_costs('resource_costs.csv')
-P_all['Economic'] = [Costs_u, Costs_r]
+Costs_res = resource_costs('resource_costs.csv')
+All_input['Economic'] = [Costs_u, Costs_res]
 
 # Biomass potential
 Biomass_prod = biomass_prod(P['Pigs'], P['Cows'])

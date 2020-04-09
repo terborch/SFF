@@ -56,10 +56,10 @@ from global_param import annual_to_instant
     #   unit_cons_t - dict of vars - What each unit consume during one time period
     #   unit_size - vars - The size of each unit
     #   unit_install - vars - Whether or not each unit is installed
-    #   u_CAPEX - vars - capex of each unit
+    #   unit_capex - vars - capex of each unit
 """
 
-from global_var import unit_prod_t, unit_cons_t, unit_install, unit_size, u_CAPEX, flow_t
+from global_var import unit_prod_t, unit_cons_t, unit_install, unit_size, unit_capex, flow_t
 
 
 
@@ -256,12 +256,12 @@ totex = m.addVar(lb=0, ub=Bound, name= o)
 o = 'is_installed'
 m.addConstrs((unit_install[u]*Bound >= unit_size[u] for u in Units), o);
 o = 'capex'
-m.addConstrs((u_CAPEX[u] == Costs_u['Cost_multiplier'][u]*
+m.addConstrs((unit_capex[u] == Costs_u['Cost_multiplier'][u]*
               (unit_size[u]*Costs_u['Cost_per_size'][u] + unit_install[u]*Costs_u['Cost_per_unit'][u]) 
               for u in Units), o);
 
 o = 'capex_sum'
-m.addConstr(capex == sum([u_CAPEX[u] for u in Units])/1000, o);
+m.addConstr(capex == sum([unit_capex[u] for u in Units])/1000, o);
 
 o = 'opex_sum'
 m.addConstr(opex == (elec_import*Costs_res['Import_cost']['Elec'] - 

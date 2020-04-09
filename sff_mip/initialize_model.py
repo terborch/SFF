@@ -106,10 +106,9 @@ def intialize_model():
 
 
 def crate_param_meta(name, param):
-    """ Gather information on a given parameter (other than int or float) and add it to P_all """
-    P_all[name] = [type(param), param[0], param[-1], len(param)]
+    """ Gather information on a given parameter (other than int or float) and add it to All_input """
+    All_input[name] = [type(param), param[0], param[-1], len(param)]
         
-
 
 # Dictionnaries of values and metadata from the file 'parameters.csv'
 P, P_meta = get_param('parameters.csv')
@@ -123,7 +122,7 @@ Bound = S['Var_bound']
 # Dictionnary of the min, max and average value of time dependent parameters
 P_t = {}
 # Dictionnary of parameter containers
-P_all = {'Setings': S, 
+All_input = {'Setings': S, 
          'Time_independent': P, 
          'Time_dependent': P_t, 
          'Time_steps': Time_steps,
