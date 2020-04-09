@@ -59,7 +59,7 @@ from global_param import annual_to_instant
     #   unit_capex - vars - capex of each unit
 """
 
-from global_var import unit_prod, unit_cons, unit_install, unit_size, unit_capex, flow_t
+from global_var import unit_prod, unit_cons, unit_install, unit_size, unit_capex, flow_t, unit_T
 
 
 
@@ -96,7 +96,7 @@ u = 'BAT'
 units.bat(unit_prod[u], unit_cons[u], unit_size[u])
 
 u = 'AD'
-units.ad(unit_prod[u], unit_cons[u], unit_size[u], Ext_T, Irradiance)
+units.ad(unit_prod[u], unit_cons[u], unit_size[u], unit_T[u], Ext_T, Irradiance)
 
 u = 'SOFC'
 units.sofc(unit_prod[u], unit_cons[u], unit_size[u])
@@ -109,7 +109,7 @@ units.sofc(unit_prod[u], unit_cons[u], unit_size[u])
 
 o = 'building_temperature'
 V_meta[o] = ['°C', 'Interior temperature of the building']
-T_build_t = m.addVars(Periods + [Periods[-1] + 1], lb=-100, ub=100, name= o)
+build_T = m.addVars(Periods + [Periods[-1] + 1], lb=-100, ub=100, name= o)
 
 o = 'heating_load_t'
 q_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
@@ -127,16 +127,16 @@ P_meta['Gains_t'] = ['kW/m^2', 'Sum of all heat gains', 'calc', 'Building']
 Gains_t = Gains_ppl_t + Gains_elec_t + Gains_solar_t
 
 o = 'Building_temperature'
-m.addConstrs((P['C_b']*(T_build_t[p+1] - T_build_t[p]) == 
-              P['U_b']*(Ext_T[p] - T_build_t[p]) + Gains_t[p] + q_t[p]/Heated_area
+m.addConstrs((P['C_b']*(build_T[p+1] - build_T[p]) == 
+              P['U_b']*(Ext_T[p] - build_T[p]) + Gains_t[p] + q_t[p]/Heated_area
               for p in Periods), o);
 
 o = 'Building_final_temperature'
-m.addConstr( T_build_t[Periods[-1] + 1] == T_build_t[0], o);
+m.addConstr( build_T[Periods[-1] + 1] == build_T[0], o);
 
 o = 'Building_temperature_constraint'
-m.addConstrs((T_build_t[p] >= P['T_min_building'] for p in Periods), o);
-m.addConstrs((T_build_t[p] <= P['T_max_building'] for p in Periods), o);
+m.addConstrs((build_T[p] >= P['T_min_building'] for p in Periods), o);
+m.addConstrs((build_T[p] <= P['T_max_building'] for p in Periods), o);
 
 o = 'penalty_t'
 penalty_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
@@ -145,7 +145,7 @@ penalty = m.addVar(lb=0, ub=Bound, name= o)
 
 o = 'comfort_delta_T'
 delta_T_1 = m.addVars(Periods, lb=-100, ub=100, name=o)
-m.addConstrs((delta_T_1[p] == P['T_amb'] - T_build_t[p] for p in Periods), o);
+m.addConstrs((delta_T_1[p] == P['T_amb'] - build_T[p] for p in Periods), o);
 
 o = 'comfort_delta_T_abs'
 delta_T_abs = m.addVars(Periods, lb=0, ub=100, name= o)

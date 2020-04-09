@@ -93,7 +93,7 @@ def bat(unit_prod, unit_cons, unit_size):
 ##################################################################################################
 
 
-def ad(unit_prod, unit_cons, unit_size, Ext_T, Irradiance):
+def ad(unit_prod, unit_cons, unit_size, unit_T, Ext_T, Irradiance):
     o = 'AD_production'
     m.addConstrs((unit_prod[('Biogas',p)] == 
                   unit_cons[('Biomass',p)]*P['AD_eff'] for p in Periods), o);
@@ -105,7 +105,7 @@ def ad(unit_prod, unit_cons, unit_size, Ext_T, Irradiance):
     o = 'AD_size'
     m.addConstrs((unit_prod[('Biogas',p)] <= unit_size for p in Periods), o);
 
-    # Thermodynamics
+    # Thermodynamics parameters
     name = 'U_AD'
     P_meta[name] = ['kW/°C', 'AD heat conductance', 'AD']
     P[name] = P['AD_cap_area']*P['U_AD_cap']*(1 + P['U_AD_wall'])
@@ -114,10 +114,7 @@ def ad(unit_prod, unit_cons, unit_size, Ext_T, Irradiance):
     P_meta[name] = ['kWh/°C', 'Heat capacity of the AD', 'AD']
     P[name] = P['Cp_water']*P['AD_sludge_volume'] + P['C_b']*P['AD_ground_area']
     
-    o = 'T_AD_t'
-    V_meta[o] = ['°C', 'Interior temperature of the AD']
-    T_AD_t = m.addVars(Periods + [Periods[-1] + 1], lb=-1000, ub=1000, name= o)
-    
+    # Thermodynamics variables
     o = 'q_AD_t'
     q_AD_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
     
@@ -135,12 +132,12 @@ def ad(unit_prod, unit_cons, unit_size, Ext_T, Irradiance):
                   for p in Periods]
     
     o = 'AD_temperature'
-    m.addConstrs((P['C_AD']*(T_AD_t[p+1] - T_AD_t[p])/dt == 
-                  P['U_AD']*(Ext_T[p] - T_AD_t[p]) + Gains_AD_t[p] + q_AD_t[p]
+    m.addConstrs((P['C_AD']*(unit_T[p+1] - unit_T[p])/dt == 
+                  P['U_AD']*(Ext_T[p] - unit_T[p]) + Gains_AD_t[p] + q_AD_t[p]
                   for p in Periods), o);
     
     o = 'AD_final_temperature'
-    m.addConstr( T_AD_t[Periods[-1] + 1] == T_AD_t[0], o);
+    m.addConstr( unit_T[Periods[-1] + 1] == unit_T[0], o);
     
     ###o = 'AD_temperature_constraint'
     ###m.addConstrs((T_AD_t[p] >= P['T_AD_min'] for p in Periods), o);

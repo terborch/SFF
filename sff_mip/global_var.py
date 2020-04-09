@@ -33,6 +33,12 @@ unit_install = m.addVars(Units, vtype=GRB.BINARY, name='install')
 # CAPEX of the installed unit
 unit_capex = m.addVars(Units, lb = 0, ub = Bound, name='capex')
 
+# Temperature of a unit
+unit_T = {}
+V_meta['unit_T[AD]'] = ['°C', 'Interior temperature of the AD']
+unit_T['AD'] = m.addVars(Periods + [Periods[-1] + 1], lb=-100, ub=100, name='unit_T[AD]')
+
+
 ### Temporary
 Water_flows = ['m1', 'm2', 'm3']
 o = 'water_flow_t'
