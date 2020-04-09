@@ -42,11 +42,11 @@ from global_set import Units, Units_prod, Units_cons, U_res
     #   Weather parameters in list Irradiance
     #   Electric consumption in list Build_cons_elec
     #   Biomass production in list Biomass_prod
-    #   Unit costs in dataframe U_c
+    #   Unit costs in dataframe Costs_u
     #   Resource costs in dataframe Resource_c
 """
 
-from global_param import Irradiance, Build_cons_elec, Biomass_prod, U_c, Resource_c, df_cons, Heated_area, Ext_T
+from global_param import Irradiance, Build_cons_elec, Biomass_prod, Costs_u, Resource_c, df_cons, Heated_area, Ext_T
 # Functions
 from global_param import annual_to_instant
 
@@ -256,8 +256,8 @@ totex = m.addVar(lb=0, ub=Bound, name= o)
 o = 'is_installed'
 m.addConstrs((unit_install[u]*Bound >= unit_size[u] for u in Units), o);
 o = 'capex'
-m.addConstrs((u_CAPEX[u] == U_c['Cost_multiplier'][u]*
-              (unit_size[u]*U_c['Cost_per_size'][u] + unit_install[u]*U_c['Cost_per_unit'][u]) 
+m.addConstrs((u_CAPEX[u] == Costs_u['Cost_multiplier'][u]*
+              (unit_size[u]*Costs_u['Cost_per_size'][u] + unit_install[u]*Costs_u['Cost_per_unit'][u]) 
               for u in Units), o);
 
 o = 'capex_sum'

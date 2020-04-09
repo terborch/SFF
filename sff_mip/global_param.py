@@ -4,7 +4,7 @@
     #   Electric consumption in list Build_cons_elec
     #   Biomass production in list Biomass_prod
     #   Heated surface area (TODO: differenciate building types)
-    #   Unit costs in dataframe U_c
+    #   Unit costs in dataframe Costs_u
     #   Resource costs in dataframe Resource_c
 """
 
@@ -55,7 +55,7 @@ def AD_dimentions(P, P_meta):
         body height and body diameter are calculated and stored.
     """
     name = 'AD_sludge_volume'
-    P_meta[name] = ['m^3', 'AD digestate volume', 'AD']
+    P_meta[name] = ['m^3', 'AD sludge volume', 'AD']
     P[name] = np.ceil( P['AD_residence_time']*P['LSU']*P['Manure_per_cattle']/
                        (1 - P['Biomass_water'])/1000 )
     
@@ -85,7 +85,7 @@ def AD_dimentions(P, P_meta):
     P[name] = np.round( P['AD_cyl_volume']/(np.pi*(P['AD_diameter']/2)**2), 2)
 
 
-def U_costs(file):
+def costs_u(file):
     """ Given a file name, return a dataframe of unit costs from the data forlder """
     df = data.default_data_to_df(file, 'economic', 0)
     
@@ -146,7 +146,7 @@ P_meta['Heated_area'] = ['m^2', 'Building heated surface area', 'Building']
 AD_dimentions(P, P_meta)
 
 # Unit and resource costs
-U_c = U_costs('unit_costs.csv')
+Costs_u = costs_u('unit_costs.csv')
 Resource_c = resource_costs('resource_costs.csv')
 
 # Biomass potential

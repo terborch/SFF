@@ -11,7 +11,7 @@ from initialize_model import V_meta
 vars_name, vars_value, vars_unit, vars_lb, vars_ub = [], [], [], [], []
 
 
-def time_indep(m, U_c):
+def time_indep(m, Costs_u):
     """ Take values and metada of time independent variables (without _t indicator) and return a 
         dataframe of results
     """
@@ -28,7 +28,7 @@ def time_indep(m, U_c):
             if v.varName in V_meta:
                 vars_unit.append(V_meta[v.varName])
             elif "_size" in v.varName:
-                vars_unit.append(U_c['Size_units'][v.varName.split('_')[0]])
+                vars_unit.append(Costs_u['Size_units'][v.varName.split('_')[0]])
             elif "_install" in v.varName:
                 vars_unit.append('Binary')
             elif "_CAPEX" in v.varName:

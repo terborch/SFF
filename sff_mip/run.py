@@ -13,9 +13,6 @@
 """
 
 
-
-
-
 # External modules
 import os.path
 from datetime import datetime
@@ -30,7 +27,7 @@ start = time.time()
 # Internal modules
 import results
 from initialize_model import m, S
-from global_param import U_c, Periods, Ext_T, Irradiance
+from global_param import Costs_u, Periods, Ext_T, Irradiance
 import model
 import data
 
@@ -48,7 +45,7 @@ now = now.strftime("%Y-%m-%d")
 
 vars_name, vars_value, vars_unit, vars_lb, vars_ub = [], [], [], [], []
     
-df_results = results.time_indep(m, U_c)
+df_results = results.time_indep(m, Costs_u)
 
 vars_name_t = results.time_dep_var_names(m)
 
