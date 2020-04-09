@@ -111,8 +111,9 @@ o = 'building_temperature'
 V_meta[o] = ['°C', 'Interior temperature of the building']
 build_T = m.addVars(Periods + [Periods[-1] + 1], lb=-100, ub=100, name= o)
 
-o = 'heating_load_t'
-q_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
+build_cons={}
+o = 'build_cons[Heat]'
+build_cons['Heat'] = m.addVars(Periods, lb=0, ub=Bound, name= o)
 
 P_meta['Gains_ppl_t'] = ['kW/m^2', 'Heat gains from people', 'calc', 'Building']
 Gains_ppl_t = annual_to_instant(P['Gains_ppl'], df_cons['Gains'].values) * int(len(Periods)/24)
@@ -128,7 +129,7 @@ Gains_t = Gains_ppl_t + Gains_elec_t + Gains_solar_t
 
 o = 'Building_temperature'
 m.addConstrs((P['C_b']*(build_T[p+1] - build_T[p]) == 
-              P['U_b']*(Ext_T[p] - build_T[p]) + Gains_t[p] + q_t[p]/Heated_area
+              P['U_b']*(Ext_T[p] - build_T[p]) + Gains_t[p] + build_cons['Heat'][p]/Heated_area
               for p in Periods), o);
 
 o = 'Building_final_temperature'
@@ -173,7 +174,7 @@ m.addConstrs((P['Th_boiler']*flow_t['m1', p] + P['Tc_building']*flow_t['m2', p] 
               P['Th_building']*(flow_t['m1', p] + flow_t['m2', p])  for p in Periods), o);
 
 o = 'heat_balance'
-m.addConstrs((q_t[p] == flow_t['m3', p]*(P['Th_building'] - P['Tc_building'])*P['Cp_water'] 
+m.addConstrs((build_cons['Heat'][p] == flow_t['m3', p]*(P['Th_building'] - P['Tc_building'])*P['Cp_water'] 
               for p in Periods), o);
 
 ##################################################################################################

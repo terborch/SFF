@@ -11,13 +11,14 @@
 Units_full_name = ['Gas Boiler', 'Photovoltaic Panels', 'Battery', 'Solid Oxide Fuel cell', 
                    'Anaerobic Digester']
 Units = ['BOI', 'PV', 'BAT', 'SOFC', 'AD']
-Resources = ['Elec', 'Gas', 'Biogas', 'Biomass']
+Resources = ['Elec', 'Gas', 'Biogas', 'Biomass', 'Heat']
 
 # The resources each unit produce
 Units_prod = {
+    'BOI':  ['Heat'],
     'PV':   ['Elec'],
     'BAT':  ['Elec'], 
-    'SOFC': ['Elec'], 
+    'SOFC': ['Elec', 'Heat'], 
     'AD':   ['Biogas']
     }
 
@@ -26,11 +27,13 @@ Units_cons = {
     'BOI':  ['Gas'],
     'BAT':  ['Elec'], 
     'SOFC': ['Biogas'], 
-    'AD':   ['Biomass', 'Elec']
+    'AD':   ['Biomass', 'Elec', 'Heat']
     }
 
 # The units producing and consuming a given resource
 U_res = {
     'prod_Elec':['PV', 'BAT', 'SOFC'],
-    'cons_Elec':['BAT', 'AD']
+    'cons_Elec':['BAT', 'AD'],
+    'prod_Heat':['BOI', 'SOFC'],
+    'cons_Heat':['AD']
     }

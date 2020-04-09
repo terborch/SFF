@@ -114,26 +114,23 @@ def ad(unit_prod, unit_cons, unit_size, unit_T, Ext_T, Irradiance):
     P_meta[name] = ['kWh/°C', 'Heat capacity of the AD', 'AD']
     P[name] = P['Cp_water']*P['AD_sludge_volume'] + P['C_b']*P['AD_ground_area']
     
-    # Thermodynamics variables
-    o = 'q_AD_t'
-    q_AD_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
-    
-    o = 'loss_biomass'
+    # Thermodynamics variables   
+    o = 'loss_AD_biomass'
     V_meta[o] = ['kW', 'Heat loss from biomass input', 'calc', 'AD']
-    loss_biomass = m.addVars(Periods, lb=0, ub=Bound, name= o)
-    m.addConstrs(( loss_biomass[p] == ((unit_cons[('Biomass',p)]/P['Manure_HHV_dry'])/
+    loss_AD_biomass = m.addVars(Periods, lb=0, ub=Bound, name= o)
+    m.addConstrs(( loss_AD_biomass[p] == ((unit_cons[('Biomass',p)]/P['Manure_HHV_dry'])/
                   (1 - P['Biomass_water'])/1000)*P['Cp_water']*(P['T_AD_mean'] - P['Temp_ext_mean']) for p in Periods), o);
     
-    P_meta['Gains_solar_AD_t'] = ['kW', 'Heat gains from irradiation', 'calc', 'AD']
-    Gains_solar_AD_t = [P['AD_cap_abs']*P['AD_ground_area']*Irradiance[p] for p in Periods]
+    P_meta['Gains_solar_AD'] = ['kW', 'Heat gains from irradiation', 'calc', 'AD']
+    Gains_solar_AD = [P['AD_cap_abs']*P['AD_ground_area']*Irradiance[p] for p in Periods]
     
-    P_meta['Gains_AD_t'] = ['kW', 'Sum of all heat gains', 'calc', 'AD']
-    Gains_AD_t = [unit_cons[('Elec',p)] + Gains_solar_AD_t[p] - loss_biomass[p] 
+    P_meta['Gains_AD'] = ['kW', 'Sum of all heat gains', 'calc', 'AD']
+    Gains_AD = [unit_cons[('Elec',p)] + Gains_solar_AD[p] - loss_AD_biomass[p] 
                   for p in Periods]
     
     o = 'AD_temperature'
     m.addConstrs((P['C_AD']*(unit_T[p+1] - unit_T[p])/dt == 
-                  P['U_AD']*(Ext_T[p] - unit_T[p]) + Gains_AD_t[p] + q_AD_t[p]
+                  P['U_AD']*(Ext_T[p] - unit_T[p]) + Gains_AD[p] + unit_cons[('Heat',p)]
                   for p in Periods), o);
     
     o = 'AD_final_temperature'
