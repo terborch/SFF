@@ -116,20 +116,20 @@ o = 'build_cons[Heat]'
 build_cons['Heat'] = m.addVars(Periods, lb=0, ub=Bound, name= o)
 
 P_meta['Gains_ppl_t'] = ['kW/m^2', 'Heat gains from people', 'calc', 'Building']
-Gains_ppl_t = annual_to_instant(P['Gains_ppl'], df_cons['Gains'].values) * int(len(Periods)/24)
+Gains_ppl = annual_to_instant(P['Gains_ppl'], df_cons['Gains'].values) * int(len(Periods)/24)
 
 P_meta['Gains_elec_t'] = ['kW/m^2', 'Heat gains from appliances', 'calc', 'Building']
-Gains_elec_t = [P['Elec_heat_frac'] * Build_cons_elec[p] / Heated_area for p in Periods]
+Gains_elec = [P['Elec_heat_frac'] * Build_cons_elec[p] / Heated_area for p in Periods]
 
 P_meta['Gains_solar_t'] = ['kW/m^2', 'Heat gains from irradiation', 'calc', 'Building']
-Gains_solar_t = [P['Building_absorptance'] * Irradiance[p] for p in Periods ]
+Gains_solar = [P['Building_absorptance'] * Irradiance[p] for p in Periods ]
 
 P_meta['Gains_t'] = ['kW/m^2', 'Sum of all heat gains', 'calc', 'Building']
-Gains_t = Gains_ppl_t + Gains_elec_t + Gains_solar_t
+Gains = Gains_ppl + Gains_elec + Gains_solar
 
 o = 'Building_temperature'
 m.addConstrs((P['C_b']*(build_T[p+1] - build_T[p]) == 
-              P['U_b']*(Ext_T[p] - build_T[p]) + Gains_t[p] + build_cons['Heat'][p]/Heated_area
+              P['U_b']*(Ext_T[p] - build_T[p]) + Gains[p] + build_cons['Heat'][p]/Heated_area
               for p in Periods), o);
 
 o = 'Building_final_temperature'
