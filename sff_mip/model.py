@@ -160,42 +160,19 @@ m.addConstr(penalty == penalty_t.sum('*'), o);
 ### Heat cascade
 ##################################################################################################
 
-P['Th_build'], P['Tc_build'], P['Th_AD'], P['Tc_AD']
-# exceptional abbreviations
-b = 'build'
-DT_b = P['Th_build'] - P['Tc_build']
-DT_AD = P['Th_build'] - P['Tc_AD']
-# Constraints on water flow mass balances
-o = 'Volume_flow_balance_node_1'
-m.addConstrs((v['AD'][('supp', p)] == v[b][('supp', p)] - v['build'][('ret', p)]
-              for p in Periods), o);
-i = 1
-for u in Heat_cons:
-    o = 'Volume_flow_balance_node_{}'.format(1 + i)
-    m.addConstrs((v[u][('reheat[BOI]', p)] + v[u][('reheat[SOFC]', p)] == 
-                  v[u][('ret', p)] - v[u][('recirc', p)] for p in Periods), o);
-    i += 1
-o = 'Volume_flow_balance_mixer'
-m.addConstrs((v[b][('supp', p)] == v['BOI'][p] + v['SOFC'][p] + v[b][('recirc', p)] + 
-              v['AD'][('recirc', p)] for p in Periods), o);
-# Constraints on water temperature balance
-o = 'Temperature_balance_mixer'
-m.addConstrs((v[b][('supp', p)]*P['Th_build'] == (v['BOI'][p] + v['SOFC'][p])*P['Th_build'] + 
-              v[b][('recirc', p)]*P['Tc_build'] + v['AD'][('recirc', p)]*P['Tc_AD'] 
-              for p in Periods), o);
-# Constraints on heat loads
-for u in Heat_prod:
-    o = 'Heat_load_balance_{}'.format(u)
-    r = 'reheat[{}]'.format(u)
-    m.addConstrs((unit_prod[u][('Heat', p)] == 
-                  P['Cp_water']*(v[b][(r, p)]*DT_b + v['AD'][(r, p)]*DT_AD)
-                  for p in Periods), o);
-o = 'Heat_load_balance_building'
-m.addConstrs((build_cons[('Heat',p)] == P['Cp_water']*v[b][('supp', p)]*(P['Th_build'] - P['Tc_build'])
-              for p in Periods), o);
 o = 'Heat_load_balance_AD'
-m.addConstrs((unit_cons['AD'][('Heat',p)] == P['Cp_water']*v['AD'][('supp', p)]*(P['Th_AD'] - P['Tc_AD'])
-              for p in Periods), o);
+m.addConstrs((unit_cons['AD'][('Heat',p)] == P['Cp_water']*(P['Th_AD'] - P['Tc_AD'])*
+              (v['BOI'][('AD', p)] + v['SOFC'][('AD', p)]) for p in Periods), o);
+
+o = 'Heat_load_balance_build'
+m.addConstrs((build_cons[('Heat',p)] == P['Cp_water']*(P['Th_build'] - P['Tc_build'])*
+              (v['BOI'][('build', p)] + v['SOFC'][('build', p)]) for p in Periods), o);
+
+o = 'Heat_load_balance_heat_prod'
+m.addConstrs((unit_prod[u][('Heat',p)] == 
+              P['Cp_water']*(v[u][('build', p)]*(P['Th_build'] - P['Tc_build']) + 
+                             v[u][('AD', p)]*(P['Th_AD'] - P['Tc_AD'])) 
+              for u in Heat_prod for p in Periods), o);
 
 ##################################################################################################
 ### Mass and energy balance
@@ -223,8 +200,15 @@ o = 'grid_gas_import'
 V_meta[o] = ['MWh', 'Gas bought by the farm']
 gas_import = m.addVar(lb=0, ub=Bound, name= o)
 
+o = 'grid_gas_export'
+V_meta[o] = ['MWh', 'Gas bought by the farm']
+gas_export = m.addVar(lb=0, ub=Bound, name= o)
+
 o = 'grid_gas_import_t'
 gas_import_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
+
+o = 'grid_gas_export_t'
+gas_export_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
 
 # Resource balances
 o = 'Balance_Electricity'
@@ -234,7 +218,7 @@ m.addConstrs((elec_import_t[p] + sum(unit_prod[up][('Elec',p)] for up in U_res['
 o = 'Balance_Biomass'
 m.addConstrs((Biomass_prod[p] >= unit_cons['AD'][('Biomass',p)] for p in Periods), o);
 o = 'Balance_Biogas'
-m.addConstrs((unit_prod['AD'][('Biogas',p)] >= unit_cons['SOFC'][('Biogas',p)] 
+m.addConstrs((unit_prod['AD'][('Biogas',p)] >= unit_cons['SOFC'][('Biogas',p)] + 2*gas_export_t[p] 
               for p in Periods), o);
 o = 'Balance_Gas'
 m.addConstrs((unit_cons['BOI'][('Gas',p)] == gas_import_t[p] for p in Periods), o);
@@ -246,7 +230,8 @@ o = 'Electricity_grid_export'
 m.addConstr(elec_export == sum(elec_export_t[p]/1000 for p in Periods), o);
 o = 'Gas_grid_import'
 m.addConstr(gas_import == sum(gas_import_t[p]/1000 for p in Periods), o);
-
+o = 'Gas_grid_export'
+m.addConstr(gas_export == sum(gas_export_t[p]/1000 for p in Periods), o);
 
 ##################################################################################################
 ### Economic performance indicators
@@ -287,7 +272,8 @@ m.addConstr(capex == sum([unit_capex[u] for u in Units])/1000, o);
 o = 'opex_sum'
 m.addConstr(opex == (elec_import*Costs_res['Import_cost']['Elec'] - 
                      elec_export*Costs_res['Export_cost']['Elec'] +
-                     gas_import*Costs_res['Import_cost']['Gas']), o);
+                     gas_import*Costs_res['Import_cost']['Gas'] -
+                     gas_export*Costs_res['Export_cost']['Gas']), o);
 
 o = 'totex_sum'
 m.addConstr(totex == opex + P['tau']*capex, o);
@@ -300,7 +286,6 @@ m.addConstr(totex == opex + P['tau']*capex, o);
 
 
 def run(relax):
-
     m.setObjective(totex + penalty, GRB.MINIMIZE)
     
     m.optimize()

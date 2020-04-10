@@ -18,8 +18,8 @@ AD,AD_cap_V_ratio,0.4,-,Ratio of the cap volume over the digestate volume,doi: 1
 AD,AD_cap_h_ratio,2.2,-,Ratio of the cap raius over the cap height,doi: 10.1016/j.cherd.2017.01.007
 AD,AD_cyl_fill,0.9,-,Ratio of the cylinder volume over the digestate volume,doi: 10.1016/j.cherd.2017.01.007
 AD,AD_cap_abs,0.9,-,Solar Irradiance absorption coefficient for a black painted cap,Gad Helmy 2015
-AD,T_AD_min,-100,°C,Minimum allowed temperature for the digester,guess
-AD,T_AD_max,100,°C,Maximum allowed temperature for the digester,guess
+AD,T_AD_min,30,°C,Minimum allowed temperature for the digester,guess
+AD,T_AD_max,40,°C,Maximum allowed temperature for the digester,guess
 AD,T_AD_mean,35,°C,Mean AD Temperature,guess
 SOFC,SOFC_eff,0.6,-,SOFC electric efficiency,guess
 SOFC,GC_elec_frac,0.03,-,gas cleaning electric consumption fraction,Projet Semestre nils
@@ -42,7 +42,7 @@ Thermo,Tc_build,50,°C,Return heating temperature of the Building,Marechal proje
 Thermo,Th_build,65,°C,Supply heating temperature of the Building,Marechal project
 Thermo,Tc_AD,40,°C,Return heating temperature of the AD,guess
 Thermo,Th_AD,50,°C,Supply heating temperature of the AD,guess
-Thermo,T_min_building,-10,°C,Minimum indoor temperature,guess
+Thermo,T_min_building,16,°C,Minimum indoor temperature,guess
 Thermo,T_max_building,50,°C,Maximum indoor temperature,guess
 Thermo,T_amb,20,°C,Comfort indoor temperature,guess
 Weather,Temp_ext_mean,10,°C,Annual average external temperature,calc

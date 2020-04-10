@@ -46,8 +46,6 @@ build_cons = m.addVars(['Heat'], Periods, lb=0, ub=Bound, name= o)
 # Volum flows of water transporting heat in m^3
 v = {}
 for u in Heat_prod:
-    v[u] = m.addVars(Periods, lb = 0, ub = Bound, name='v[{}]'.format(u))
-              
-for b in Heat_cons:
-    v[b] = m.addVars(Heat_flow, Periods, lb = 0, ub = Bound, name='v[{}]'.format(b))
+    v[u] = m.addVars(Heat_cons, Periods, lb = 0, ub = Bound, name='v[{}]'.format(u))
+
                 

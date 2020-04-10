@@ -11,6 +11,7 @@
 from gurobipy import GRB
 # Internal modules
 from initialize_model import m, P, Periods, P_meta, V_meta, Bound, dt
+import global_param
 
 
 ##################################################################################################
@@ -93,6 +94,9 @@ def bat(unit_prod, unit_cons, unit_size):
 
 
 def ad(unit_prod, unit_cons, unit_size, unit_T, Ext_T, Irradiance):
+    # Parameters
+    global_param.AD_dimentions(P, P_meta)
+    
     o = 'AD_production'
     m.addConstrs((unit_prod[('Biogas',p)] == 
                   unit_cons[('Biomass',p)]*P['AD_eff'] for p in Periods), o);
@@ -124,8 +128,7 @@ def ad(unit_prod, unit_cons, unit_size, unit_T, Ext_T, Irradiance):
     Gains_solar_AD = [P['AD_cap_abs']*P['AD_ground_area']*Irradiance[p] for p in Periods]
     
     P_meta['Gains_AD'] = ['kW', 'Sum of all heat gains', 'calc', 'AD']
-    Gains_AD = [unit_cons[('Elec',p)] + Gains_solar_AD[p]/5 - loss_biomass[p] 
-                  for p in Periods]
+    Gains_AD = [unit_cons[('Elec',p)] + Gains_solar_AD[p]/1000 - loss_biomass[p] for p in Periods]
     
     o = 'AD_temperature'
     m.addConstrs((P['C_AD']*(unit_T[p+1] - unit_T[p])/dt == 
@@ -134,8 +137,8 @@ def ad(unit_prod, unit_cons, unit_size, unit_T, Ext_T, Irradiance):
     
     o = 'AD_final_temperature'
     m.addConstr( unit_T[Periods[-1] + 1] == unit_T[0], o);
-    o = 'AD_initial_temperature'
-    m.addConstr( unit_T[0] == Ext_T[0], o);
+    ###o = 'AD_initial_temperature'
+    ###m.addConstr( unit_T[0] == Ext_T[0], o);
     
     o = 'AD_temperature_constraint'
     m.addConstrs((unit_T[p] >= P['T_AD_min'] for p in Periods), o);

@@ -142,9 +142,6 @@ for i in df_buildings.index:
 P['Heated_area'] = Heated_area
 P_meta['Heated_area'] = ['m^2', 'Building heated surface area', 'Building']
 
-# Dimentions of the AD
-AD_dimentions(P, P_meta)
-
 # Unit and resource costs
 Costs_u = costs_u('unit_costs.csv')
 Costs_res = resource_costs('resource_costs.csv')

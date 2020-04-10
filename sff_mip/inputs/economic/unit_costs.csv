@@ -1,4 +1,4 @@
-﻿Technology,Cost_per_size,Cost_per_unit,Cost_multiplier,Life,Size_units,Full_name,Source
+Technology,Cost_per_size,Cost_per_unit,Cost_multiplier,Life,Size_units,Full_name,Source
 BAT,970,620,1.33,10,kWh,Battery,Paul regression
 BOI,105,3800,1.8,20,kW,Nat Gas boiler,Paul
 AHP,1240,5680,1.8,20,kW,Air HP,Paul

@@ -11,9 +11,9 @@ Units,PV_max,100,kW,Maximum PV installed capacity
 Units,PV_min,0,kW,Minimum PV installed capacity
 Units,BAT_max,0,kWh,Maximum BAT installed capacity
 Units,BAT_min,0,kWh,Minimum BAT installed capacity
-Units,AD_max,100,kW,Maximum AD installed capacity
-Units,AD_min,100,kW,Minimum AD installed capacity
-Units,SOFC_max,100,kW,Maximum SOFC installed capacity
+Units,AD_max,60,kW,Maximum AD installed capacity
+Units,AD_min,60,kW,Minimum AD installed capacity
+Units,SOFC_max,1000,kW,Maximum SOFC installed capacity
 Units,SOFC_min,0,kW,Minimum SOFC installed capacity
-Units,BOI_max,0,kW,Maximum BOI installed capacity
+Units,BOI_max,1000,kW,Maximum BOI installed capacity
 Units,BOI_min,0,kW,Minimum BOI installed capacity
