@@ -132,6 +132,7 @@ crate_param_meta('Days', Days)
 crate_param_meta('Time', Time)
 # Dictionnary of the units of variables and their description
 V_meta = {}
+V_meta['Header'] = ['Name', 'Value', 'Lower Bound', 'Upper Bound', 'Units', 'Description']
 # Dictionnary describing each constraint and its source if applicable
 C_meta = {}
 

@@ -26,7 +26,7 @@ Units_prod = {
 Units_cons = {
     'BOI':  ['Gas'],
     'BAT':  ['Elec'], 
-    'SOFC': ['Biogas'], 
+    'SOFC': ['Gas', 'Biogas'], 
     'AD':   ['Biomass', 'Elec', 'Heat']
     }
 

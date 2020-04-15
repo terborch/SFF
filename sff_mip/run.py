@@ -26,7 +26,7 @@ start = time.time()
 
 # Internal modules
 import results
-from initialize_model import m, S
+from initialize_model import m, S, V_meta
 from global_param import Costs_u, Periods, Ext_T, Irradiance
 import model
 import data
@@ -43,19 +43,20 @@ print('solve time model: ', end - start, 's')
 now = datetime.now()
 now = now.strftime("%Y-%m-%d")
 
-vars_name, vars_value, vars_unit, vars_lb, vars_ub = [], [], [], [], []
-    
-df_results = results.time_indep(m, Costs_u)
-
-time_indep_var, time_dep_var = results.var_names(m)
+var_result_time_indep, var_result_time_dep = results.all_dic(m, Periods)
+var_name_time_indep, var_name_time_dep = var_result_time_indep.keys(), var_result_time_dep.keys()
 
 
-time_indep_dic, time_dep_dic = results.get_all_var(m, time_dep_var, Periods)
+
 time_dep_summary_dic = {}
-for v in time_dep_dic:
-    value = time_dep_dic[v]
+for v in var_result_time_dep:
+    value = var_result_time_dep[v]
     time_dep_summary_dic[v] = [min(value), np.mean(value), max(value), len(value)]
 
+df_results = results.var_time_indep_summary(m, var_result_time_indep, V_meta)
+
+pd.options.display.max_rows = 50
+pd.options.display.max_columns = 10
 pd.set_option('precision', 2)
 c = ['Minimum', 'Average', 'Maximum', 'Length']
 df = pd.DataFrame(time_dep_summary_dic).T
@@ -124,8 +125,8 @@ fig.tight_layout()  # otherwise the right y-label is slightly clipped
 plt.title('Weather data for Liebensberg from ' + S['Period_start']  + ' to ' + S['Period_end'] + 
           'and building temperatures')
     
-ax2.plot(date[:-1], time_dep_dic['build_T'], color='black', label='Building Temperature')
-ax2.plot(date[:-1], time_dep_dic['unit_T[AD]'], color='green', label='AD Temperature')
+ax2.plot(date[:-1], var_result_time_dep['build_T'], color='black', label='Building Temperature')
+ax2.plot(date[:-1], var_result_time_dep['unit_T[AD]'], color='green', label='AD Temperature')
 plt.legend()
 
 plt.show()
@@ -136,16 +137,59 @@ end = time.time()
 
 print('solve time all: ', end - start, 's')
 
+def sorted_index(unsorted_list):
+    """ Given a list of lists returns an index (lost of pairs) where the first element is 0, 1, 2... n 
+        the new index sorted by the largest element in each list in decreasing order. The second element
+        is the index of the same list in the original list of list.
+    """
+    new_index = []
+    j = 0
+    for i in range(0,len(unsorted_list)):
+        new_index.append([max(unsorted_list[i]), j])
+        j += 1
+        
+    new_index.sort(reverse = True)
+    
+    for i in range(0, len(new_index)):
+        new_index[i][0] = i
+        
+    return new_index 
 
-plt.title('water volume flows')
-plt.xlabel('Date')
-plt.ylabel('Volume flow')
-volume_flows = []
-for n in time_dep_dic:
-    if 'v[' in n:
-        volume_flows.append(time_dep_dic[n]+ [0])
-plt.plot(date, np.array(volume_flows).T)
-plt.legend()
+
+def sort_from_index(unsorted_list, new_index):
+    sorted_list = [ [] for i in range(len(new_index)) ]
+    for i in new_index:
+        sorted_list[i[0]] = unsorted_list[i[1]]
+        
+    return sorted_list
+
+
+def plot_flows(indicator, name, units, sort = False):
+    plt.title(name)
+    plt.xlabel('Date')
+    plt.ylabel(name + units)
+    # Get relevant flows according to indicator
+    flows, flows_name = [], []
+    for n in var_result_time_dep:
+        if indicator in n:
+            flows.append(var_result_time_dep[n]+ [0])
+            flows_name.append(n)
+    # Sort in decreasing order each flow by maximum value
+    if sort:
+        flows_sort = sort_from_index(flows, sorted_index(flows))
+        flows_name_sort = sort_from_index(flows_name, sorted_index(flows))
+    else: flows_sort, flows_name_sort = flows,  flows_name
+    
+    # Transpose the list of flows
+    flows_T_sort = list(map(list, zip(*flows_sort)))
+    plt.plot(date, flows_T_sort)
+    plt.legend(flows_name_sort)
+    
+    
+###plot_flows('v[', 'water flows', 'm^3/h')
+###plot_flows('Heat', 'heat flows', 'kW') 
+plot_flows('[BAT][', 'Battery', 'kW') 
+plot_flows('[PV][', 'AD production', 'kW')
 plt.show()
 ##################################################################################################
 ### END

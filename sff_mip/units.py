@@ -93,7 +93,7 @@ def bat(unit_prod, unit_cons, unit_size):
 ##################################################################################################
 
 
-def ad(unit_prod, unit_cons, unit_size, unit_T, Ext_T, Irradiance):
+def ad(unit_prod, unit_cons, unit_size, unit_T, unit_install, Ext_T, Irradiance):
     # Parameters
     global_param.AD_dimentions(P, P_meta)
     
@@ -121,30 +121,37 @@ def ad(unit_prod, unit_cons, unit_size, unit_T, Ext_T, Irradiance):
     o = 'loss_biomass'
     V_meta[o] = ['kW', 'Heat loss from biomass input', 'calc', 'AD']
     loss_biomass = m.addVars(Periods, lb=0, ub=Bound, name= o)
+    
     m.addConstrs(( loss_biomass[p] == ((unit_cons[('Biomass',p)]/P['Manure_HHV_dry'])/
-                  (1 - P['Biomass_water'])/1000)*P['Cp_water']*(P['T_AD_mean'] - P['Temp_ext_mean']) for p in Periods), o);
+                  (1 - P['Biomass_water'])/1000)*P['Cp_water']*(P['T_AD_mean'] - P['Temp_ext_mean']) 
+                  for p in Periods), o);
     
     P_meta['Gains_solar_AD'] = ['kW', 'Heat gains from irradiation', 'calc', 'AD']
     Gains_solar_AD = [P['AD_cap_abs']*P['AD_ground_area']*Irradiance[p] for p in Periods]
     
     P_meta['Gains_AD'] = ['kW', 'Sum of all heat gains', 'calc', 'AD']
-    Gains_AD = [unit_cons[('Elec',p)] + Gains_solar_AD[p]/1000 - loss_biomass[p] for p in Periods]
+    Gains_AD = [unit_cons[('Elec',p)] + Gains_solar_AD[p] for p in Periods]
     
     o = 'AD_temperature'
-    m.addConstrs((P['C_AD']*(unit_T[p+1] - unit_T[p])/dt == 
-                  P['U_AD']*(Ext_T[p] - unit_T[p]) + Gains_AD[p] + unit_cons[('Heat',p)]
-                  for p in Periods), o);
+    m.addConstrs((P['C_AD']*(unit_T[p+1] - unit_T[p])/dt == P['U_AD']*(Ext_T[p] - unit_T[p]) +
+                  Gains_AD[p] - loss_biomass[p] + unit_cons[('Heat',p)] for p in Periods), o);
     
     o = 'AD_final_temperature'
     m.addConstr( unit_T[Periods[-1] + 1] == unit_T[0], o);
-    ###o = 'AD_initial_temperature'
-    ###m.addConstr( unit_T[0] == Ext_T[0], o);
     
-    o = 'AD_temperature_constraint'
-    m.addConstrs((unit_T[p] >= P['T_AD_min'] for p in Periods), o);
-    m.addConstrs((unit_T[p] <= P['T_AD_max'] for p in Periods), o);
     
 
+    
+    # Add temperature constraints only if the the unit is installed
+    min_T_AD = m.addVar(lb = -Bound, ub = Bound, name = 'min_T_AD')
+    max_T_AD = m.addVar(lb = -Bound, ub = Bound, name = 'max_T_AD')
+    
+    o = 'AD_temperature_constraint'
+    m.addGenConstrIndicator(unit_install, True, min_T_AD == P['T_AD_min'])
+    m.addGenConstrIndicator(unit_install, True, max_T_AD == P['T_AD_max'])
+
+    m.addConstrs((unit_T[p] >= min_T_AD for p in Periods), o);
+    m.addConstrs((unit_T[p] <= max_T_AD for p in Periods), o);
 
 ##################################################################################################
 ### Solid Oxide Fuel Cell  
@@ -153,7 +160,7 @@ def ad(unit_prod, unit_cons, unit_size, unit_T, Ext_T, Irradiance):
 
 def sofc(unit_prod, unit_cons, unit_size):
     o = 'SOFC_Elec_production'
-    m.addConstrs((unit_prod[('Elec',p)] == unit_cons[('Biogas',p)]*
+    m.addConstrs((unit_prod[('Elec',p)] == (unit_cons[('Biogas',p)] + unit_cons[('Gas',p)])*
                   (P['SOFC_eff'] - P['GC_elec_frac']) for p in Periods), o);
     
     o = 'SOFC_Heat_production'

@@ -96,7 +96,7 @@ u = 'BAT'
 units.bat(unit_prod[u], unit_cons[u], unit_size[u])
 
 u = 'AD'
-units.ad(unit_prod[u], unit_cons[u], unit_size[u], unit_T[u], Ext_T, Irradiance)
+units.ad(unit_prod[u], unit_cons[u], unit_size[u], unit_T[u], unit_install[u], Ext_T, Irradiance)
 
 u = 'SOFC'
 units.sofc(unit_prod[u], unit_cons[u], unit_size[u])
@@ -109,7 +109,7 @@ units.sofc(unit_prod[u], unit_cons[u], unit_size[u])
 
 o = 'build_T'
 V_meta[o] = ['°C', 'Interior temperature of the building']
-build_T = m.addVars(Periods + [Periods[-1] + 1], lb=-100, ub=100, name= o)
+build_T = m.addVars(Periods + [Periods[-1] + 1], lb=-Bound, ub=Bound, name= o)
 
 P_meta['Gains_ppl_t'] = ['kW/m^2', 'Heat gains from people', 'calc', 'Building']
 Gains_ppl = annual_to_instant(P['Gains_ppl'], df_cons['Gains'].values) * int(len(Periods)/24)
@@ -141,11 +141,11 @@ o = 'penalty'
 penalty = m.addVar(lb=0, ub=Bound, name= o)
 
 o = 'comfort_delta_T'
-delta_T_1 = m.addVars(Periods, lb=-100, ub=100, name=o)
+delta_T_1 = m.addVars(Periods, lb=-Bound, ub=Bound, name=o)
 m.addConstrs((delta_T_1[p] == P['T_amb'] - build_T[p] for p in Periods), o);
 
 o = 'comfort_delta_T_abs'
-delta_T_abs = m.addVars(Periods, lb=0, ub=100, name= o)
+delta_T_abs = m.addVars(Periods, lb=0, ub=Bound, name= o)
 m.addConstrs((delta_T_abs[p] == gp.abs_(delta_T_1[p]) for p in Periods), o);
 
 o = 'comfort_T_penalty'
@@ -160,6 +160,7 @@ m.addConstr(penalty == penalty_t.sum('*'), o);
 ### Heat cascade
 ##################################################################################################
 
+
 o = 'Heat_load_balance_AD'
 m.addConstrs((unit_cons['AD'][('Heat',p)] == P['Cp_water']*(P['Th_AD'] - P['Tc_AD'])*
               (v['BOI'][('AD', p)] + v['SOFC'][('AD', p)]) for p in Periods), o);
@@ -173,6 +174,12 @@ m.addConstrs((unit_prod[u][('Heat',p)] ==
               P['Cp_water']*(v[u][('build', p)]*(P['Th_build'] - P['Tc_build']) + 
                              v[u][('AD', p)]*(P['Th_AD'] - P['Tc_AD'])) 
               for u in Heat_prod for p in Periods), o);
+
+o = 'is_installed_heat'
+m.addConstrs((unit_install[u]*Bound >= unit_cons[u][('Heat', p)] 
+              for u in Heat_cons[1:] for p in Periods), o)
+    
+    
 
 ##################################################################################################
 ### Mass and energy balance
@@ -218,7 +225,7 @@ m.addConstrs((elec_import_t[p] + sum(unit_prod[up][('Elec',p)] for up in U_res['
 o = 'Balance_Biomass'
 m.addConstrs((Biomass_prod[p] >= unit_cons['AD'][('Biomass',p)] for p in Periods), o);
 o = 'Balance_Biogas'
-m.addConstrs((unit_prod['AD'][('Biogas',p)] >= unit_cons['SOFC'][('Biogas',p)] + 2*gas_export_t[p] 
+m.addConstrs((unit_prod['AD'][('Biogas',p)] >= unit_cons['SOFC'][('Biogas',p)] + 1.2*gas_export_t[p] 
               for p in Periods), o);
 o = 'Balance_Gas'
 m.addConstrs((unit_cons['BOI'][('Gas',p)] == gas_import_t[p] for p in Periods), o);

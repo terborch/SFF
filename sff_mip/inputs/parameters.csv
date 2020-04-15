@@ -17,7 +17,7 @@ AD,AD_cap_loss,0.9,-,Fraction of heat losses through the top cap,doi: 10.12911/2
 AD,AD_cap_V_ratio,0.4,-,Ratio of the cap volume over the digestate volume,doi: 10.1016/j.cherd.2017.01.007
 AD,AD_cap_h_ratio,2.2,-,Ratio of the cap raius over the cap height,doi: 10.1016/j.cherd.2017.01.007
 AD,AD_cyl_fill,0.9,-,Ratio of the cylinder volume over the digestate volume,doi: 10.1016/j.cherd.2017.01.007
-AD,AD_cap_abs,0.9,-,Solar Irradiance absorption coefficient for a black painted cap,Gad Helmy 2015
+AD,AD_cap_abs,0.16,-,Solar Irradiance absorption coefficient for a black painted cap,guess
 AD,T_AD_min,30,°C,Minimum allowed temperature for the digester,guess
 AD,T_AD_max,40,°C,Maximum allowed temperature for the digester,guess
 AD,T_AD_mean,35,°C,Mean AD Temperature,guess
