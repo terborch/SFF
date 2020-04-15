@@ -118,11 +118,11 @@ def ad(unit_prod, unit_cons, unit_size, unit_T, unit_install, Ext_T, Irradiance)
     P[name] = P['Cp_water']*P['AD_sludge_volume'] + P['C_b']*P['AD_ground_area']
     
     # Thermodynamics variables   
-    o = 'loss_biomass'
+    o = 'heat_loss_biomass'
     V_meta[o] = ['kW', 'Heat loss from biomass input', 'calc', 'AD']
-    loss_biomass = m.addVars(Periods, lb=0, ub=Bound, name= o)
+    heat_loss_biomass = m.addVars(Periods, lb=0, ub=Bound, name= o)
     
-    m.addConstrs(( loss_biomass[p] == ((unit_cons[('Biomass',p)]/P['Manure_HHV_dry'])/
+    m.addConstrs(( heat_loss_biomass[p] == ((unit_cons[('Biomass',p)]/P['Manure_HHV_dry'])/
                   (1 - P['Biomass_water'])/1000)*P['Cp_water']*(P['T_AD_mean'] - P['Temp_ext_mean']) 
                   for p in Periods), o);
     
@@ -134,7 +134,7 @@ def ad(unit_prod, unit_cons, unit_size, unit_T, unit_install, Ext_T, Irradiance)
     
     o = 'AD_temperature'
     m.addConstrs((P['C_AD']*(unit_T[p+1] - unit_T[p])/dt == P['U_AD']*(Ext_T[p] - unit_T[p]) +
-                  Gains_AD[p] - loss_biomass[p] + unit_cons[('Heat',p)] for p in Periods), o);
+                  Gains_AD[p] - heat_loss_biomass[p] + unit_cons[('Heat',p)] for p in Periods), o);
     
     o = 'AD_final_temperature'
     m.addConstr( unit_T[Periods[-1] + 1] == unit_T[0], o);
