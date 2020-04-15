@@ -32,9 +32,10 @@ from initialize_model import m, P, P_meta, S, V_meta, Bound, Periods
     #   Set of all resources in the list Resources
     #   Set of resource each unit produce and consume in dict Units_prod and Units_cons
     #   Set of units involved with each resource in dict U_res
+    #   Set of resources that may be imported/exported on the Grid in dict G_res
 """
 
-from global_set import Units, Units_prod, Units_cons, U_res
+from global_set import Units, Units_prod, Units_cons, U_res, G_res
 
 
 """
@@ -175,7 +176,7 @@ m.addConstrs((unit_prod[u][('Heat',p)] ==
                              v[u][('AD', p)]*(P['Th_AD'] - P['Tc_AD'])) 
               for u in Heat_prod for p in Periods), o);
 
-o = 'is_installed_heat'
+o = 'AD_is_installed_heat'
 m.addConstrs((unit_install[u]*Bound >= unit_cons[u][('Heat', p)] 
               for u in Heat_cons[1:] for p in Periods), o)
     
@@ -190,55 +191,45 @@ m.addConstrs((unit_install[u]*Bound >= unit_cons[u][('Heat', p)]
 
 
 # Variables
-o = 'grid_elec_export'
-V_meta[o] = ['MWh', 'Electricity sold by the farm']
-elec_export = m.addVar(lb=0, ub=Bound, name= o)
+o = 'grid_export_a'
+V_meta[o] = ['MWh', 'Annual total resources sold by the farm']
+grid_export_a = m.addVars(G_res, lb=0, ub=Bound, name= o)
 
-o = 'grid_elec_import'
-V_meta[o] = ['MWh', 'Electricity purchased by the farm']
-elec_import = m.addVar(lb=0, ub=Bound, name= o)
+o = 'grid_import_a'
+V_meta[o] = ['MWh', 'Annual total resources purchased by the farm']
+grid_import_a = m.addVars(G_res, lb=0, ub=Bound, name= o)
 
-o = 'grid_elec_export_t'
-elec_export_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
-o = 'grid_elec_import_t'
-elec_import_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
+o = 'grid_export'
+V_meta[o] = ['kW', 'Resources purchased by the farm']
+grid_export = m.addVars(G_res, Periods, lb=0, ub=Bound, name= o)
+o = 'grid_import'
+V_meta[o] = ['kW', 'Resources purchased by the farm']
+grid_import = m.addVars(G_res, Periods, lb=0, ub=Bound, name= o)
 
-o = 'grid_gas_import'
-V_meta[o] = ['MWh', 'Gas bought by the farm']
-gas_import = m.addVar(lb=0, ub=Bound, name= o)
-
-o = 'grid_gas_export'
-V_meta[o] = ['MWh', 'Gas bought by the farm']
-gas_export = m.addVar(lb=0, ub=Bound, name= o)
-
-o = 'grid_gas_import_t'
-gas_import_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
-
-o = 'grid_gas_export_t'
-gas_export_t = m.addVars(Periods, lb=0, ub=Bound, name= o)
 
 # Resource balances
 o = 'Balance_Electricity'
-m.addConstrs((elec_import_t[p] + sum(unit_prod[up][('Elec',p)] for up in U_res['prod_Elec'])  == 
-              elec_export_t[p] + sum(unit_cons[uc][('Elec',p)] for uc in U_res['cons_Elec']) + 
+r = 'Elec'
+m.addConstrs((grid_import[(r,p)] + sum(unit_prod[up][(r,p)] for up in U_res['prod_' + r])  == 
+              grid_export[(r,p)] + sum(unit_cons[uc][(r,p)] for uc in U_res['cons_' + r]) + 
               Build_cons_elec[p] for p in Periods), o);
 o = 'Balance_Biomass'
 m.addConstrs((Biomass_prod[p] >= unit_cons['AD'][('Biomass',p)] for p in Periods), o);
 o = 'Balance_Biogas'
-m.addConstrs((unit_prod['AD'][('Biogas',p)] >= unit_cons['SOFC'][('Biogas',p)] + 1.2*gas_export_t[p] 
-              for p in Periods), o);
+m.addConstrs((unit_prod['AD'][('Biogas',p)] >= unit_cons['SOFC'][('Biogas',p)] + 
+              1.2*grid_export[('Gas',p)] for p in Periods), o);
 o = 'Balance_Gas'
-m.addConstrs((unit_cons['BOI'][('Gas',p)] == gas_import_t[p] for p in Periods), o);
+m.addConstrs((unit_cons['BOI'][('Gas',p)] == grid_import[('Gas',p)] for p in Periods), o);
 
 # Total annual import / export
 o = 'Electricity_grid_import'
-m.addConstr(elec_import == sum(elec_import_t[p]/1000 for p in Periods), o);
+m.addConstr(grid_import_a['Elec'] == sum(grid_import[('Elec',p)]/1000 for p in Periods), o);
 o = 'Electricity_grid_export'
-m.addConstr(elec_export == sum(elec_export_t[p]/1000 for p in Periods), o);
+m.addConstr(grid_export_a['Elec'] == sum(grid_export[('Elec',p)]/1000 for p in Periods), o);
 o = 'Gas_grid_import'
-m.addConstr(gas_import == sum(gas_import_t[p]/1000 for p in Periods), o);
+m.addConstr(grid_import_a['Gas'] == sum(grid_import[('Gas',p)]/1000 for p in Periods), o);
 o = 'Gas_grid_export'
-m.addConstr(gas_export == sum(gas_export_t[p]/1000 for p in Periods), o);
+m.addConstr(grid_export_a['Gas'] == sum(grid_export[('Gas',p)]/1000 for p in Periods), o);
 
 ##################################################################################################
 ### Economic performance indicators
@@ -277,10 +268,8 @@ o = 'capex_sum'
 m.addConstr(capex == sum([unit_capex[u] for u in Units])/1000, o);
 
 o = 'opex_sum'
-m.addConstr(opex == (elec_import*Costs_res['Import_cost']['Elec'] - 
-                     elec_export*Costs_res['Export_cost']['Elec'] +
-                     gas_import*Costs_res['Import_cost']['Gas'] -
-                     gas_export*Costs_res['Export_cost']['Gas']), o);
+m.addConstr(opex == sum(grid_import_a[r]*Costs_res['Import_cost'][r] - 
+                        grid_export_a[r]*Costs_res['Export_cost'][r] for r in G_res), o);
 
 o = 'totex_sum'
 m.addConstr(totex == opex + P['tau']*capex, o);

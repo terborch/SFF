@@ -131,7 +131,7 @@ plt.legend()
 
 plt.show()
 
-print('gas import in kwh: ', m.getVarByName('grid_gas_import').x)
+print('gas import in kwh: ', m.getVarByName('grid_import_a[Gas]').x)
 
 end = time.time()
 

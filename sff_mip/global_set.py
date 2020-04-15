@@ -7,7 +7,7 @@
     #   Set of time periods (index o to P) in list Periods
 """
 
-# Units and resources
+# Units and resources  
 Units_full_name = ['Gas Boiler', 'Photovoltaic Panels', 'Battery', 'Solid Oxide Fuel cell', 
                    'Anaerobic Digester']
 Units = ['BOI', 'PV', 'BAT', 'SOFC', 'AD']
@@ -49,3 +49,6 @@ for u in Units and Units_prod:
 Heat_flow = ['supp', 'ret', 'recirc']
 for u in Heat_prod:
         Heat_flow.append('reheat[{}]'.format(u))
+
+# Resources that can be exchanged with the grids
+G_res = ['Elec', 'Gas']
