@@ -133,21 +133,21 @@ def SOFC_results(var_result):
     ax2.set_ylabel('Heat produced by the SOFC in kW')
     
     name = 'prod[SOFC][Elec]'
-    ax1.plot(Date, var_result[name], label = name, color=col(name))
+    ax1.plot(Date, var_result[name], label = name)
     name = 'cons[SOFC][Gas]'
-    ax1.plot(Date, var_result[name], label = name, color=col(name), linestyle='--')
+    ax1.plot(Date, var_result[name], label = name, linestyle='--')
     name = 'cons[SOFC][Biogas]'
-    ax1.plot(Date, var_result[name], label = name, color=col(name), linestyle='--')
+    ax1.plot(Date, var_result[name], label = name, linestyle='--')
     
     name = 'prod[SOFC][Heat]'
-    ax2.plot(Date, var_result[name], label=name, color=col(name), linestyle='-.')
+    ax2.plot(Date, var_result[name], label=name, linestyle='-.')
 
     ax1.legend(loc='upper left') 
     ax2.legend(loc='upper right')
 
 
 def normalize(l):
-    return [l[i]/max(l) for i in range(len(l))]
+    return l#[l[i]/max(l) for i in range(len(l))]
 
 def all_results(var_result, var_name, cd):
     fig, ax1 = plt.subplots()
