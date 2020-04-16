@@ -38,6 +38,9 @@ U_res = {
     'cons_Heat':['AD']
     }
 
+# Units that store energy
+Units_storage = ['BAT']
+
 # The buildings and units consuming heat
 Heat_cons = ['build', 'AD']
 Heat_prod = []

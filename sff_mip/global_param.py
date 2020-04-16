@@ -6,6 +6,7 @@
     #   Heated surface area (TODO: differenciate building types)
     #   Unit costs in dataframe Costs_u
     #   Resource costs in dataframe Costs_res
+    #   Date a list of datetime objects corresponding to the all dates and times modeled
 """
 
 # External modules
@@ -16,7 +17,7 @@ from initialize_model import P, P_meta, P_t, All_input, S, Periods, Days
 import data
 
 
-def param_t(name, param, meta):
+def Param_t(name, param, meta):
     """ Given a time dependent parameter adds its maximum, minimum and average value to the P_t{}
         dictionnary. Takes the given meta data and adds it to the P_meta dictionnary
     """
@@ -123,15 +124,16 @@ file = 'meteo_Liebensberg_10min.csv'
 df_weather = data.weather_data_to_df(file, S['Period_start'], S['Period_end'], S['Time_step'])
 df_weather.drop(df_weather.tail(1).index,inplace=True)
 Irradiance = list(df_weather['Irradiance'].values)
-param_t('Irradiance', Irradiance, ['kW/m^2', 'Global irradiance', 'weather'])
+Param_t('Irradiance', Irradiance, ['kW/m^2', 'Global irradiance', 'weather'])
 Ext_T = list(df_weather['Temperature'].values)
-param_t('Ext_T', Ext_T, ['°C', 'Exterior temperature', 'weather'])
+Param_t('Ext_T', Ext_T, ['°C', 'Exterior temperature', 'weather'])
+Date = df_weather.index
 
 # Electricity consumption profile
 file = 'consumption_profile_dummy.csv'
 df_cons = data.default_data_to_df(file, 'internal', df_weather.index)
 Build_cons_elec = len(Days)*annual_to_instant(P['Annual_Elec_cons'], df_cons['Electricity'].values)
-param_t('Build_cons_elec', Build_cons_elec, ['kW', 'Building electricity consumption', 'Building'])
+Param_t('Build_cons_elec', Build_cons_elec, ['kW', 'Building electricity consumption', 'Building'])
 
 # Building heated surface area
 file = 'buildings.csv'
@@ -149,6 +151,6 @@ All_input['Economic'] = [Costs_u, Costs_res]
 
 # Biomass potential
 Biomass_prod = biomass_prod(P['Pigs'], P['Cows'])
-param_t('Biomass_prod', Biomass_prod, ['kW', 'Biomass production', 'Biomass'])
+Param_t('Biomass_prod', Biomass_prod, ['kW', 'Biomass production', 'Biomass'])
 
 
