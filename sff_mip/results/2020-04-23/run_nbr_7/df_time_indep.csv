@@ -1,5 +1,5 @@
 ,Value,Lower Bound,Upper Bound,Units,Decription,Type
-unit_size[BOI],510.7887489369697,0.0,10000.0,kW,Installed capacity of BOI,unique
+unit_size[BOI],513.8354509921907,0.0,10000.0,kW,Installed capacity of BOI,unique
 unit_size[PV],60.0,0.0,10000.0,kW,Installed capacity of PV,unique
 unit_size[BAT],20.0,0.0,10000.0,kWh,Installed capacity of BAT,unique
 unit_size[SOFC],20.0,0.0,10000.0,kW,Installed capacity of SOFC,unique
@@ -9,18 +9,18 @@ unit_install[PV],1.0,0.0,1.0,-,PV decision variable,bool
 unit_install[BAT],1.0,0.0,1.0,-,BAT decision variable,bool
 unit_install[SOFC],1.0,0.0,1.0,-,SOFC decision variable,bool
 unit_install[AD],1.0,0.0,1.0,-,AD decision variable,bool
-unit_capex[BOI],103.37907354908728,0.0,10000.0,kCHF,Investment cost of BOI,unique
+unit_capex[BOI],103.95490023752404,0.0,10000.0,kCHF,Investment cost of BOI,unique
 unit_capex[PV],215.26715000000004,0.0,10000.0,kCHF,Investment cost of PV,unique
 unit_capex[BAT],26.6266,0.0,10000.0,kCHF,Investment cost of BAT,unique
 unit_capex[SOFC],103.57560000000001,0.0,10000.0,kCHF,Investment cost of SOFC,unique
 unit_capex[AD],324.8999999999978,0.0,10000.0,kCHF,Investment cost of AD,unique
 min_T_AD,30.0,-10000.0,10000.0,,,
 max_T_AD,40.0,-10000.0,10000.0,,,
-penalty,0.00017149415225576275,0.0,10000.0,,,
-grid_export_a[Elec],0.10027437629207057,0.0,10000.0,,,
+penalty,0.00015562484978206363,0.0,10000.0,,,
+grid_export_a[Elec],0.02557259407301764,0.0,10000.0,,,
 grid_export_a[Gas],0.0,0.0,10000.0,,,
-grid_import_a[Elec],3.493036385114797,0.0,10000.0,,,
-grid_import_a[Gas],27.24206660997172,0.0,10000.0,,,
-capex,0.7737484235490851,0.0,10000.0,MCHF,total CAPEX,
-opex,0.003009672111121923,0.0,10000.0,MCHF/year,total annual opex,
-totex,0.0526434118446219,0.0,10000.0,MCHF/year,total annualized expenses,
+grid_import_a[Elec],3.489044907337499,0.0,10000.0,,,
+grid_import_a[Gas],27.155090025169066,0.0,10000.0,,,
+capex,0.7743242502375219,0.0,10000.0,MCHF,total CAPEX,
+opex,0.003007732172248684,0.0,10000.0,MCHF/year,total annual opex,
+totex,0.05267840953446057,0.0,10000.0,MCHF/year,total annualized expenses,

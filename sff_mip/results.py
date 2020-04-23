@@ -8,7 +8,6 @@
 # External modules
 import pandas as pd
 import numpy as np
-# Internal modules
 
 def all_dic(m, Periods, V_bounds):
     """ Given the model and periods, returns two dicts.
@@ -80,6 +79,31 @@ def var_time_dep_summary(m, var_result_time_dep, V_meta, V_bounds):
     df.columns = columns
     
     return df
+
+
+def parameters(P, P_meta):
+    """ Converts the parameter holder P into a dataframe containing parameter value and metadata
+    """
+    dic = {}
+    Categories = list(P.keys())
+    for c in Categories:
+        if c == 'Timedep':
+            a = 1
+        if c == 'Eco':
+            a = 1
+        else:
+            for p in P[c].keys():
+                dic[p] = [c]
+                dic[p] += [P[c][p]]
+                dic[p] += P_meta[c][p]
+        columns = ['Category', 'Value', 'Units', 'Description', 'Source']
+        df = pd.DataFrame.from_dict(dic, orient='index')
+        df.transpose()
+        df.sort_values(by=0)
+        df.columns = columns
+    
+    return df
+
 
 
 ##################################################################################################

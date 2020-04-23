@@ -26,7 +26,7 @@ start = time.time()
 
 # Internal modules
 import results
-from initialize_model import m, S, V_meta, V_bounds
+from initialize_model import m, S, V_meta, V_bounds, P, P_meta
 from global_param import Costs_u, Periods, Ext_T, Irradiance
 import model
 import data
@@ -49,7 +49,7 @@ def run(relax=False, save_df=True, save_fig=True, big_vars=False):
     
     df_time_indep = results.var_time_indep_summary(m, var_result_time_indep, V_meta)
     df_time_dep = results.var_time_dep_summary(m, var_result_time_dep, V_meta, V_bounds)
-   
+    df_parameters = results.parameters(P, P_meta)
     # display result summary
     pd.options.display.max_rows = 50
     pd.options.display.max_columns = 10
@@ -83,6 +83,7 @@ def run(relax=False, save_df=True, save_fig=True, big_vars=False):
     if save_df:
         df_time_indep.to_csv(os.path.join(cd, 'df_time_indep.csv'))
         df_time_dep.to_csv(os.path.join(cd, 'df_time_dep.csv'))
+        df_parameters.to_csv(os.path.join(cd, 'parameters.csv'))
         
     if big_vars:
         with open('vars_above_10k.txt', 'w') as f:
@@ -128,7 +129,7 @@ end = time.time()
 print('soglobal runtime: ', end - start, 's')
 
 # Dicts of all variables and their results
-var_result_time_indep, var_result_time_dep = results.all_dic(m, Periods)
+var_result_time_indep, var_result_time_dep = results.all_dic(m, Periods, V_bounds)
 var_name_time_indep = list(var_result_time_indep.keys())
 var_name_time_dep = list(var_result_time_dep.keys())
 

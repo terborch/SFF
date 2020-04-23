@@ -45,7 +45,7 @@ U_prod = {
 
 # The resources each unit consumes
 U_cons = {
-    'BOI':  ['Gas'],
+    'BOI':  ['Gas', 'Biogas'],
     'BAT':  ['Elec'], 
     'SOFC': ['Gas', 'Biogas'], 
     'AD':   ['Biomass', 'Elec', 'Heat']

@@ -186,8 +186,9 @@ m.addConstrs((grid_import[(r,p)] + sum(unit_prod[up][(r,p)] for up in U_res['pro
               Build_cons_Elec[p] for p in Periods), n);
 n = 'Balance_Biomass'
 m.addConstrs((unit_cons['AD'][('Biomass',p)] <= Biomass_prod[p] for p in Periods), n);
+r = 'Biogas'
 n = 'Balance_Biogas'
-m.addConstrs((unit_prod['AD'][('Biogas',p)] >= unit_cons['SOFC'][('Biogas',p)] + 
+m.addConstrs((unit_prod['AD'][(r,p)] >= unit_cons['SOFC'][(r,p)] + unit_cons['BOI'][(r,p)] +
               1.2*grid_export[('Gas',p)] for p in Periods), n);
 n = 'Balance_Gas'
 m.addConstrs((unit_cons['BOI'][('Gas',p)] == grid_import[('Gas',p)] for p in Periods), n);

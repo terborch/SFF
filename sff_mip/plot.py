@@ -119,6 +119,7 @@ def resource(resource, var_result, var_name):
 
 def temperature_results(var_result):
     fig, ax1 = plt.subplots()
+    fig.set_size_inches(fig_width, fig_height)
     plt.title('Building and unit temperatures')
     ax1.set_xlabel('Dates')
     ax1.set_ylabel('Temperature in °C')
@@ -141,6 +142,7 @@ def temperature_results(var_result):
 
 def PV_results(var_result, Irradiance):
     fig, ax1 = plt.subplots()
+    fig.set_size_inches(fig_width, fig_height)
     plt.title('PV')
     ax1.set_xlabel('Dates')
     ax1.set_ylabel('Global Irradiance in kW/m^2')
@@ -158,6 +160,7 @@ def PV_results(var_result, Irradiance):
 
 def SOFC_results(var_result):
     fig, ax1 = plt.subplots()
+    fig.set_size_inches(fig_width, fig_height)
     plt.title('SOFC')
     ax1.set_xlabel('Dates')
     ax1.set_ylabel('Resources consumed and produced by the SOFC in kW')
@@ -235,6 +238,8 @@ def transpose_list(l):
 
 
 def flows(indicator, name, units, var_result_time_dep, sort = False):
+    fig, ax = plt.subplots()
+    fig.set_size_inches(fig_width, fig_height)
     plt.title(name)
     plt.xlabel('Dates')
     plt.ylabel(name + units)
@@ -252,7 +257,7 @@ def flows(indicator, name, units, var_result_time_dep, sort = False):
     
     
     for f, n in zip(flows_sort, flows_name_sort):
-        plt.plot(Dates, f, c=col(n), ls=ls(n))
+        plt.plot(Dates, f, ls=ls(n))
     plt.legend(flows_name_sort)
 
 

@@ -22,11 +22,11 @@ import global_param
 def boi(unit_prod, unit_cons, unit_size):
     c = 'BOI'
     n = 'PV_production'
-    m.addConstrs((unit_cons[('Gas',p)] * P[c]['Eff'] == unit_prod[('Heat',p)]
-                  for p in Periods), n);
+    m.addConstrs(((unit_cons[('Biogas',p)] + unit_cons[('Gas',p)])*P[c]['Eff'] == 
+                  unit_prod[('Heat',p)] for p in Periods), n);
     
     n = 'BOI_size'
-    m.addConstrs((unit_cons[('Gas',p)]*P[c]['Eff'] <= unit_size for p in Periods), n);
+    m.addConstrs((unit_prod[('Heat',p)] <= unit_size for p in Periods), n);
 
 
 
