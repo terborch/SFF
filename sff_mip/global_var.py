@@ -8,6 +8,7 @@
     #   unit_T - dict of vars - temperature of each unit (only the AD)
     #   build_cons_Heat - vars - heat consumed by the building
     #   v - dict of vars - mass flow rate of heating water
+    #   TODO: add SOC vars and other storage vars
 """
 
 # External modules
@@ -39,7 +40,7 @@ n = 'unit_size'
 for u in Units:
     var_units = ('kW' if u not in Units_storage else 'kWh')
     V_meta[n + f'[{u}]'] = [var_units, f'Installed capacity of {u}', 'unique']
-unit_size = m.addVars(Units, lb = 0, ub = Bound, name=n)
+unit_size = m.addVars(Units, lb = 0, ub = Bound*10, name=n)
 
 # Whether or not the unit is installed
 n = 'unit_install'

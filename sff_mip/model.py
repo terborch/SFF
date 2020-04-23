@@ -188,10 +188,12 @@ n = 'Balance_Biomass'
 m.addConstrs((unit_cons['AD'][('Biomass',p)] <= Biomass_prod[p] for p in Periods), n);
 r = 'Biogas'
 n = 'Balance_Biogas'
-m.addConstrs((unit_prod['AD'][(r,p)] >= unit_cons['SOFC'][(r,p)] + unit_cons['BOI'][(r,p)] +
-              1.2*grid_export[('Gas',p)] for p in Periods), n);
+m.addConstrs((unit_prod['AD'][(r,p)] >= unit_cons['SOFC'][(r,p)] + unit_cons['BOI'][(r,p)] 
+              for p in Periods), n);
+r = 'Gas'
 n = 'Balance_Gas'
-m.addConstrs((unit_cons['BOI'][('Gas',p)] == grid_import[('Gas',p)] for p in Periods), n);
+m.addConstrs((grid_import[(r,p)] == unit_cons['SOFC'][(r,p)] + unit_cons['BOI'][(r,p)] 
+              for p in Periods), n);
 
 # Total annual import / export
 n = 'Electricity_grid_import'
@@ -202,6 +204,19 @@ n = 'Gas_grid_import'
 m.addConstr(grid_import_a['Gas'] == sum(grid_import[('Gas',p)]/1000 for p in Periods), n);
 n = 'Gas_grid_export'
 m.addConstr(grid_export_a['Gas'] == sum(grid_export[('Gas',p)]/1000 for p in Periods), n);
+
+# CO2 emissions
+n = 'emissions'
+V_meta[n] = ['t-CO2', 'Annual total CO2 emissions']
+emissions = m.addVar(lb=-Bound, ub=Bound, name= n)
+
+c = 'CO2'
+n = 'Emissions'
+m.addConstr(emissions == (grid_import_a['Elec'])*P[c]['Elec'] +
+                            (grid_import_a['Gas'])*P[c]['Gas'], n);
+
+###m.addConstr(emissions == (grid_import_a['Elec'] - grid_export_a['Elec'])*P[c]['Elec'] +
+###                            (grid_import_a['Gas'] - grid_export_a['Gas'])*P[c]['Gas'], n);
 
 ##################################################################################################
 ### Economic performance indicators
@@ -254,8 +269,9 @@ m.addConstr(totex == opex + P[c]['tau']*capex, n);
 
 
 def run(relax):
-    m.setObjective(totex + penalty, GRB.MINIMIZE)
-    
+    m.setObjective(emissions + penalty + totex, GRB.MINIMIZE)
+    ###emissions*P['CO2']['Tax']
+    ###totex
     m.optimize()
     
     # Relaxion in case of infeasible model

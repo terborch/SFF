@@ -41,6 +41,9 @@ def pv(unit_prod, unit_size, Irradiance):
     m.addConstrs((unit_prod[('Elec',p)] == Irradiance[p] * P[c]['Eff'] * unit_size 
                   for p in Periods), n);
     
+    n = 'PV_roof_size'
+    m.addConstr(unit_size <= P['build']['Heated_area']/(2), n);    
+    
     
     
 ##################################################################################################

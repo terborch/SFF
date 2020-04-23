@@ -47,3 +47,7 @@ build,T_min,16,°C,Minimum indoor temperature,guess
 build,T_max,50,°C,Maximum indoor temperature,guess
 build,T_amb,20,°C,Comfort indoor temperature,guess
 General,Temp_ext_mean,10,°C,Annual average external temperature,calc
+CO2,Gas,0.18108317060496,t-CO2/MWh,Emissions from burning natural gas,EIA
+CO2,Elec,0.13,t-CO2/MWh,Emissions from importing Electricity in Switzerland,Ecovient
+CO2,Biogas,0,t-CO2/MWh,Emissions from burning biogas,guess
+CO2,Tax,9.6E-05,MCHF/t-CO2,Taxe CO2 en suisse,admin.ch

@@ -72,10 +72,14 @@ def run(relax=False, save_df=True, save_fig=True, big_vars=False):
         files=[]
         files = [f for f in sorted(os.listdir(cd))]
         # increment file name by numbers of run in a day
-        if not files:
+        runs = []
+        for f in files:
+            if 'run_nbr' in f:
+                runs.append(f)
+        if not runs:
             run_nbr = 1
         else:
-            run_nbr = max([int(i.split('_')[-1]) for i in files]) + 1
+            run_nbr = max([int(i.split('_')[-1]) for i in runs]) + 1
         
         cd = os.path.join(cd, 'run_nbr_{}'.format(run_nbr), '')
         os.makedirs(os.path.dirname(cd), exist_ok=True)
@@ -126,7 +130,7 @@ def run(relax=False, save_df=True, save_fig=True, big_vars=False):
 run(save_fig=True)
 end = time.time()
 
-print('soglobal runtime: ', end - start, 's')
+print('global runtime: ', end - start, 's')
 
 # Dicts of all variables and their results
 var_result_time_indep, var_result_time_dep = results.all_dic(m, Periods, V_bounds)

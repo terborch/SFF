@@ -1,0 +1,33 @@
+,Minimum,Average,Maximum,Length,Lower Bound,Upper Bound,Units,Decription,Type
+unit_prod[BOI][Heat],0.0,269.80236309573763,679.9646045578792,8760,0.0,10000.0,kW,Heat produced by BOI,time
+unit_cons[BOI][Gas],0.0,278.65204327094267,755.5162272865324,8760,0.0,10000.0,kW,Gas consumed by BOI,time
+unit_cons[BOI][Biogas],0.0,21.128360168765855,31.183420135137496,8760,0.0,10000.0,kW,Biogas consumed by BOI,time
+unit_prod[PV][Elec],0.0,0.0,0.0,8760,0.0,10000.0,kW,Elec produced by PV,time
+unit_prod[BAT][Elec],0.0,0.0,0.0,8760,0.0,10000.0,kW,Elec produced by BAT,time
+unit_cons[BAT][Elec],0.0,0.0,0.0,8760,0.0,10000.0,kW,Elec consumed by BAT,time
+unit_prod[SOFC][Elec],0.0,475.380997391478,1000.0,8760,0.0,10000.0,kW,Elec produced by SOFC,time
+unit_prod[SOFC][Heat],0.0,0.4299960470860763,10.96097217750083,8760,0.0,10000.0,kW,Heat produced by SOFC,time
+unit_cons[SOFC][Gas],0.0,832.7784324637045,1754.3859649122808,8760,0.0,10000.0,kW,Gas consumed by SOFC,time
+unit_cons[SOFC][Biogas],0.0,1.2233173459063338,31.183420135137496,8760,0.0,10000.0,kW,Biogas consumed by SOFC,time
+unit_prod[AD][Biogas],0.0,28.99061342243834,31.183420135137496,8760,0.0,10000.0,kW,Biogas produced by AD,time
+unit_cons[AD][Biomass],0.0,96.63537807479445,103.94473378379166,8760,0.0,10000.0,kW,Biomass consumed by AD,time
+unit_cons[AD][Elec],0.0,0.23192490737950658,0.24946736108109996,8760,0.0,10000.0,kW,Elec consumed by AD,time
+unit_cons[AD][Heat],0.0,6.419505593093474,679.9646045578792,8760,0.0,10000.0,kW,Heat consumed by AD,time
+unit_T[AD],30.0,32.36245128032403,40.00000000000001,8760,-10000.0,10000.0,°C,Temperature in the AD,time
+build_cons_Heat,0.0,263.8128535497302,690.92557673538,8760,0.0,10000.0,kW,Heat consumed by the building,time
+v[BOI][build],0.0,15.108218619134204,39.00370580637937,8760,0.0,10000.0,m^3/h,Volume flow of heating water,time
+v[BOI][AD],0.0,0.552024536515163,58.505558709569065,8760,0.0,10000.0,m^3/h,Volume flow of heating water,time
+v[SOFC][build],0.0,0.02444984452147472,0.6287364537763394,8760,0.0,10000.0,m^3/h,Volume flow of heating water,time
+v[SOFC][AD],0.0,0.0003229810550220921,0.943104680664509,8760,0.0,10000.0,m^3/h,Volume flow of heating water,time
+bat_SOC,0.0,0.0,0.0,8760,0.0,10000.0,,,
+bat_charge,0.0,0.00022831050228310502,1.0,8760,0.0,1.0,,,
+bat_discharge,-0.0,0.9997716894977169,1.0,8760,0.0,1.0,,,
+heat_loss_biomass,0.0,7.600045524691342,8.174901620370354,8760,0.0,10000.0,kW,Heat loss from biomass input,time
+build_T,18.98830376310229,20.418981342674677,28.002887381298294,8760,-10000.0,10000.0,°C,Interior temperature of the building,
+penalty_t,0.0,1.7524804786216862e-05,0.00026420196445238345,8760,0.0,10000.0,,,
+comfort_delta_T,-8.002887381298294,-0.4189813426746759,1.0116962368977092,8760,-10000.0,10000.0,,,
+comfort_delta_T_abs,0.0,0.5308402584137774,8.002887381298294,8760,0.0,10000.0,,,
+grid_export[Elec],0.0,439.4015471945408,10000.0,8760,0.0,10000.0,,,
+grid_export[Gas],0.0,2.0379575373705725,25.986183445947916,8760,0.0,10000.0,,,
+grid_import[Elec],0.0,54.092657358844086,10000.0,8760,0.0,10000.0,,,
+grid_import[Gas],0.0,278.65204327094267,755.5162272865324,8760,0.0,10000.0,,,

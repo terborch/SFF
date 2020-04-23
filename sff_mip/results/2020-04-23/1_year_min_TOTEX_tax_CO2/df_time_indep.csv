@@ -1,0 +1,27 @@
+,Value,Lower Bound,Upper Bound,Units,Decription,Type
+unit_size[BOI],679.1552502974317,0.0,10000.0,kW,Installed capacity of BOI,unique
+unit_size[PV],0.0,0.0,10000.0,kW,Installed capacity of PV,unique
+unit_size[BAT],0.0,0.0,10000.0,kWh,Installed capacity of BAT,unique
+unit_size[SOFC],0.0,0.0,10000.0,kW,Installed capacity of SOFC,unique
+unit_size[AD],-2.982151781808308e-07,0.0,10000.0,kW,Installed capacity of AD,unique
+unit_install[BOI],1.0,0.0,1.0,-,BOI decision variable,bool
+unit_install[PV],0.0,0.0,1.0,-,PV decision variable,bool
+unit_install[BAT],0.0,0.0,1.0,-,BAT decision variable,bool
+unit_install[SOFC],0.0,0.0,1.0,-,SOFC decision variable,bool
+unit_install[AD],-0.0,0.0,1.0,-,AD decision variable,bool
+unit_capex[BOI],135.2003423062146,0.0,10000.0,kCHF,Investment cost of BOI,unique
+unit_capex[PV],0.0,0.0,10000.0,kCHF,Investment cost of PV,unique
+unit_capex[BAT],0.0,0.0,10000.0,kCHF,Investment cost of BAT,unique
+unit_capex[SOFC],0.0,0.0,10000.0,kCHF,Investment cost of SOFC,unique
+unit_capex[AD],-8.051809810882432e-07,0.0,10000.0,kCHF,Investment cost of AD,unique
+min_T_AD,-26.6398759977601,-10000.0,10000.0,,,
+max_T_AD,5271.747986595513,-10000.0,10000.0,,,
+penalty,0.15489737205829604,0.0,10000.0,,,
+grid_export_a[Elec],249.5120259553494,0.0,10000.0,,,
+grid_export_a[Gas],7248.931952391374,0.0,10000.0,,,
+grid_import_a[Elec],1036.5120259414036,0.0,10000.0,,,
+grid_import_a[Gas],2576.6749124246685,0.0,10000.0,,,
+emissions,-743.7571186803292,-10000.0,10000.0,t-CO2,Annual total CO2 emissions,
+capex,0.13520034150103363,0.0,10000.0,MCHF,total CAPEX,
+opex,-6.938893903907228e-18,0.0,10000.0,MCHF/year,total annual opex,
+totex,0.008672713711211732,0.0,10000.0,MCHF/year,total annualized expenses,

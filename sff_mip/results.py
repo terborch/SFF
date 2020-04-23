@@ -3,6 +3,7 @@
     #   var_time_indep_summary returns a dataframe summarising time indep results
     #   TODO: add V_meta to time dep df
     #   TODO: add lower and upper bound the time dep df
+    #   TDOD: add exception for SOC to normalize the result from 0 to 1
 """
 
 # External modules

@@ -16,7 +16,7 @@ from global_set import (Units, Units_storage, Resources, Color_code, Linestyle_c
                         Abbrev)
 
 # Plot settings
-fig_width, fig_height = 11.7, 5.8
+fig_width, fig_height = 11.7*2, 5.8
 
 
 def get_resource_name(var_name):
