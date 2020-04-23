@@ -1,51 +1,76 @@
 """
 ### Variable declaration
-    #   unit_prod - dict of vars - What each unit produce of consume during one time period
+    #   unit_prod - dict of vars - What each unit produce during one time period
+    #   unit_cons - dict of vars - What each unit produce during one time period
     #   unit_size - vars - The size of each unit
     #   unit_install - vars - Whether or not each unit is installed
     #   unit_capex - vars - capex of each unit
-    #   TODO: Add V_meta metadata ###V_meta['unit_prod[{}]'.format(u)]
+    #   unit_T - dict of vars - temperature of each unit (only the AD)
+    #   build_cons_Heat - vars - heat consumed by the building
+    #   v - dict of vars - mass flow rate of heating water
 """
 
 # External modules
 from gurobipy import GRB
 # Internal modules
 from initialize_model import m, Bound, Periods, V_meta
-from global_set import Units, Units_prod, Units_cons, Heat_cons, Heat_prod, Heat_flow
-
-
+from global_set import Units, U_prod, U_cons, Units_storage, Heat_cons, Heat_prod
+    
+    
 # Unit production and consumption of each resource during one period
 # Variable format : unit_prod['PV'][('Elec',0)]
 # Result format : prod[PV][Elec,0]
 unit_prod, unit_cons = {}, {}
 for u in Units:
-    if u in Units_prod:
-        unit_prod[u] = m.addVars(Units_prod[u], Periods, lb = 0, ub = Bound, name='prod[{}]'.format(u))
-    if u in Units_cons:
-        unit_cons[u] = m.addVars(Units_cons[u], Periods, lb = 0, ub = Bound, name='cons[{}]'.format(u))
+    if u in U_prod:
+        n = f'unit_prod[{u}]'
+        for r in U_prod[u]:
+            V_meta[n + f'[{r}]'] = ['kW', f'{r} produced by {u}', 'time']
+        unit_prod[u] = m.addVars(U_prod[u], Periods, lb=0, ub=Bound, name=n)
+    if u in U_cons:
+        n = f'unit_cons[{u}]'
+        for r in U_cons[u]:
+            V_meta[n + f'[{r}]'] = ['kW', f'{r} consumed by {u}', 'time']
+        unit_cons[u] = m.addVars(U_cons[u], Periods, lb=0, ub=Bound, name=n)
+    
 
 # Size of the installed unit
-unit_size = m.addVars(Units, lb = 0, ub = Bound, name='size')
+n = 'unit_size'
+for u in Units:
+    var_units = ('kW' if u not in Units_storage else 'kWh')
+    V_meta[n + f'[{u}]'] = [var_units, f'Installed capacity of {u}', 'unique']
+unit_size = m.addVars(Units, lb = 0, ub = Bound, name=n)
 
 # Whether or not the unit is installed
-unit_install = m.addVars(Units, vtype=GRB.BINARY, name='install')
+n = 'unit_install'
+for u in Units:
+    V_meta[n + f'[{u}]'] = ['-', f'{u} decision variable', 'bool']
+unit_install = m.addVars(Units, vtype=GRB.BINARY, name=n)
 
 # CAPEX of the installed unit
-unit_capex = m.addVars(Units, lb = 0, ub = Bound, name='capex')
+n = 'unit_capex'
+for u in Units:
+    V_meta[n + f'[{u}]'] = ['kCHF', f'Investment cost of {u}', 'unique']
+unit_capex = m.addVars(Units, lb = 0, ub = Bound, name=n)
 
 # Temperature of a unit
 unit_T = {}
-V_meta['unit_T[AD]'] = ['°C', 'Interior temperature of the AD']
-unit_T['AD'] = m.addVars(Periods + [Periods[-1] + 1], lb=-Bound, ub=Bound, name='unit_T[AD]')
+u = 'AD'
+n = f'unit_T[{u}]'
+V_meta[n] = ['°C', f'Temperature in the {u}', 'time']
+unit_T[u] = m.addVars(Periods + [Periods[-1] + 1], lb=-Bound, ub=Bound, name=n)
 
 # Heat consuming units and building
-build_cons={}
-o = 'build_cons'
-build_cons = m.addVars(['Heat'], Periods, lb=0, ub=Bound, name= o)
+n='build_cons_Heat'
+V_meta[n] = ['kW', 'Heat consumed by the building', 'time']
+build_cons_Heat = m.addVars(Periods, lb=0, ub=Bound, name=n)
 
 # Volum flows of water transporting heat in m^3
 v = {}
 for u in Heat_prod:
-    v[u] = m.addVars(Heat_cons, Periods, lb = 0, ub = Bound, name='v[{}]'.format(u))
+    n = f'v[{u}]'
+    for b in Heat_cons:
+        V_meta[n + f'[{b}]'] = ['m^3/h', 'Volume flow of heating water', 'time']
+    v[u] = m.addVars(Heat_cons, Periods, lb=0, ub=Bound, name=n)
 
                 

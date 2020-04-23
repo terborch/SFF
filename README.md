@@ -39,6 +39,17 @@ The module model.py build the MIP optimization model. Here is a summary of how i
 * The CAPEX OPEX and TOTEX is calculated
 * the function run will set the objective (TODO: objective selection) and solve the model m
 
+## 2.1Termonology and code structure.
+
+Problems in modelling often arrise when the user looses track of what the model inputs are and unexpected outputs appear. In an effort to track model inputs, those inputs are split into 4 categories.
+1. Parameters - They have a fixed value and are based on a cited source. In the model, their value will be stored in the dictionnary 'P'. Some may have a dedicated python variable. The name of this python variable will always start with a capital letter.
+2. Settings - They have a fixed value and are based on user preferences or a given scenario. They are stored in the dictionnary 'S', if they have a dedicated python variable that variable name will starte with a capital letter.
+3. variables - Their value depend on the state of the model. Each has an attributed python variable. variable names start with a minuscule lettle.
+4. Constrain - They correspond to a model equation. Each equation is referensed by a number in the thesis. Constraint names start with a minuscule lettre.
+
+The dictionnaries P_meta, S_meta, V_meta and C_meta contains metdata on each model input. This usually includes physical units, a description and a source for parameters or reference for constraints.
+
+
 ### 3. outputs
 
 The module results.py can be called to display and or save the time independent results in dataframes and the time dependent results as graphs. All results are stored in the pickle format. (TODO: save graphs, option for HDF5, .csv format, unique folder for each run)

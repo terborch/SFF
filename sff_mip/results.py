@@ -8,9 +8,9 @@
 # External modules
 import pandas as pd
 import numpy as np
+# Internal modules
 
-
-def all_dic(m, Periods):
+def all_dic(m, Periods, V_bounds):
     """ Given the model and periods, returns two dicts.
         1. time independent variable name value pairs
         2. time depenendent variable name value pairs
@@ -24,11 +24,13 @@ def all_dic(m, Periods):
         results = []
         if ',0' in v.varName:
             name = v.varName.split(',0')[0]
+            V_bounds[name + ']'] = [m.getVarByName(name + ',0]').lb, m.getVarByName(name + ',0]').ub]
             for p in Periods:
                 results.append(m.getVarByName(name + ',{}]'.format(p)).x)
             var_result_time_dep[name + ']'] = results
         elif '[0' in v.varName:
             name = v.varName.split('[0')[0]
+            V_bounds[name] = [m.getVarByName(name + '[0]').lb, m.getVarByName(name + '[0]').ub]
             for p in Periods:
                 results.append(m.getVarByName(name + '[{}]'.format(p)).x)
             var_result_time_dep[name] = results
@@ -48,7 +50,7 @@ def var_time_indep_summary(m, var_result_time_indep, V_meta):
     for v in var_result_time_indep:
         dic[v] = [m.getVarByName(v).x]
         dic[v] += [m.getVarByName(v).lb, m.getVarByName(v).ub]
-        if v in V_meta:
+        if v in V_meta.keys():
             dic[v] += V_meta[v]
             
     var_result_time_indep['objective'] = m.objVal
@@ -60,7 +62,7 @@ def var_time_indep_summary(m, var_result_time_indep, V_meta):
     return df
 
 
-def var_time_dep_summary(m, var_result_time_dep, V_meta):
+def var_time_dep_summary(m, var_result_time_dep, V_meta, V_bounds):
     """ Given a dict of time dependent variable results, returns a summary
         dataframe containing its name, minimum value, maximum value, average
         and length.
@@ -69,8 +71,12 @@ def var_time_dep_summary(m, var_result_time_dep, V_meta):
     for v in var_result_time_dep:
         value = var_result_time_dep[v]
         dic[v] = [min(value), np.mean(value), max(value), len(value)]
-    columns = ['Minimum', 'Average', 'Maximum', 'Length']
-    df = pd.DataFrame(dic).T
+        dic[v] += V_bounds[v]
+        if v in V_meta.keys():
+            dic[v] += V_meta[v]
+    columns = ['Minimum', 'Average', 'Maximum', 'Length'] + V_meta['Header'][2:]
+    df = pd.DataFrame.from_dict(dic, orient='index')
+    df.transpose()
     df.columns = columns
     
     return df

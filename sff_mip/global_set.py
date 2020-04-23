@@ -1,20 +1,41 @@
 """
-### Declare global sets of units, resources and time periods
-    #   Set of all units in the list Units
-    #   Set of all resources in the list Resources
-    #   Set of resource each unit produce and consume in dict Units_prod and Units_cons
-    #   Set of units involved with each resource in dict U_res
-    #   Set of time periods (index o to P) in list Periods
+### Declare global sets of units and resources
+    #   Abbrev      dict of abbreviations
+    #   Units       list of all units in the list units
+    #   Resources   list of resources
+    #   U_prod      dict of resource each unit produce
+    #   U_cons      dict of resource each unit consume 
+    #   U_res       dict of units producing and consuming each resource
+    #   U_storage   list of storage units
+    #   Heat_cons   list of units and buildings consuming heat
+    #   Heat_prod   list of units producing heat
+    #   G_res       list of resources exchanged by the grid
+    #   Color_code      dict of colors, one for each resource
+    #   Linestyle_code  dict of linestyle names, on for each unit building and grid
+    #   Linestyles      dict relating linestyle names to linestyles
 """
 
-# Units and resources  
-Units_full_name = ['Gas Boiler', 'Photovoltaic Panels', 'Battery', 'Solid Oxide Fuel cell', 
-                   'Anaerobic Digester']
+# Abbreviations
+Abbrev = {'BOI':    'Gas Boiler', 
+          'PV':     'Photovoltaic Panels', 
+          'BAT':    'Battery', 
+          'SOFC':   'Solid Oxide Fuel cell', 
+          'AD':     'Anaerobic Digester',
+          'build':  'building',
+          'Elec':   'Electricity',
+          'Gas':    '(Synthetic) Natural Gas',
+          'Biogas': '60% CH4, 40% CO2',
+          'Heat':   'Heat'
+          }
+
+# Eneregy conversion units
 Units = ['BOI', 'PV', 'BAT', 'SOFC', 'AD']
+
+# Resources and energy carriers
 Resources = ['Elec', 'Gas', 'Biogas', 'Biomass', 'Heat']
 
 # The resources each unit produce
-Units_prod = {
+U_prod = {
     'BOI':  ['Heat'],
     'PV':   ['Elec'],
     'BAT':  ['Elec'], 
@@ -23,7 +44,7 @@ Units_prod = {
     }
 
 # The resources each unit consumes
-Units_cons = {
+U_cons = {
     'BOI':  ['Gas'],
     'BAT':  ['Elec'], 
     'SOFC': ['Gas', 'Biogas'], 
@@ -31,27 +52,51 @@ Units_cons = {
     }
 
 # The units producing and consuming a given resource
-U_res = {
-    'prod_Elec':['PV', 'BAT', 'SOFC'],
-    'cons_Elec':['BAT', 'AD'],
-    'prod_Heat':['BOI', 'SOFC'],
-    'cons_Heat':['AD']
-    }
+# Dictionnary format: U_res['prod']['Elec'] = ['PV', 'BAT', 'SOFC']
+U_res = {'prod': {}, 'cons': {}}
+for r in Resources:
+    for u in U_prod:
+        U_res['prod'][r] = [u for u in U_prod if r in U_prod[u]]
+    for u in U_cons:
+        U_res['cons'][r] = [u for u in U_cons if r in U_cons[u]]
 
 # Units that store energy
 Units_storage = ['BAT']
 
-# The buildings and units consuming heat
-Heat_cons = ['build', 'AD']
-Heat_prod = []
-for u in Units and Units_prod:
-    if 'Heat' in Units_prod[u]:
-        Heat_prod.append(u)
-
-# Volumetric flows of water transporting heat, standing for supply, return and recirculation
-Heat_flow = ['supp', 'ret', 'recirc']
-for u in Heat_prod:
-        Heat_flow.append('reheat[{}]'.format(u))
+# The buildings and units consuming and producing heat
+Heat_cons = ['build'] + U_res['cons']['Heat']
+Heat_prod = U_res['prod']['Heat']
 
 # Resources that can be exchanged with the grids
 G_res = ['Elec', 'Gas']
+
+# Linestyles for differentiating units
+Linestyles = {'loosely dotted': (0, (1, 10)),
+              'loosely dashed': (0, (5, 10)),
+              'dashdotted': (0, (3, 5, 1, 5)),
+              'densely dashdotted': (0, (3, 1, 1, 1)),
+              'densely dashdotdotted': (0, (3, 1, 1, 1, 1, 1))
+              }
+
+Linestyle_code = {'PV':     'dotted', 
+                  'BAT':    'dashdot', 
+                  'grid':   'solid', 
+                  'SOFC':   'dashed', 
+                  'AD':     'dashdotted', 
+                  'build':  'densely dashdotted', 
+                  'BOI':    'loosely dashed',
+                  'default':'solid'
+                  }
+
+# Colors for differentiating resources
+Color_code = {'Elec':       'royalblue', 
+              'Biogas':     'limegreen', 
+              'Biomass':    'khaki', 
+              'Gas':        'gray', 
+              'Heat':       'firebrick', 
+              'Ext_T':      'navy', 
+              'Irradiance': 'red', 
+              'Diesel':     'black',
+              'default':    'purple'
+              }
+

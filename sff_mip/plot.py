@@ -11,19 +11,49 @@ import numpy as np
 import os.path
 # Internal modules
 from initialize_model import Periods
-from global_param import Date, Ext_T, Irradiance, Build_cons_elec
-from global_set import Units, Units_storage
+from global_param import Dates, Ext_T, Irradiance, Build_cons_Elec
+from global_set import (Units, Units_storage, Resources, Color_code, Linestyle_code, Linestyles,
+                        Abbrev)
 
-Color_code = {'BOI': 'firebrick', 'PV': 'aqua', 'BAT': 'navy', 'build_T': 'black', 'Ext_T': 'blue',
-              'SOFC': 'orange', 'AD': 'darkgreen', 'Irradiance': 'red', 'bat_SOC': 'purple'}
-
-def col(name):
-    if '[' in name:
-        name = get_unit_name(name)
-    return Color_code[name]
+# Plot settings
+fig_width, fig_height = 11.7, 5.8
 
 
-def unit_results(var_result_time_indep):
+def get_resource_name(var_name):
+    """ Get the abbreviated name of a resoucre from a variable name string """
+    name = []
+    for r in Color_code.keys():
+        if r in var_name:
+            name.append(r)
+    if not name:
+        name.append('default')
+    return(name[0])
+        
+def get_unit_name(var_name):
+    """ Get the abbreviated name of a unit from a variable name string """
+    name = []
+    for u in Linestyle_code.keys():
+        if u in var_name:
+            name.append(u)
+    if not name:
+        name.append('default')
+    return(name[0])
+
+def col(var_name):
+    """ Return the color code of a corresponding resource """
+    r = get_resource_name(var_name)
+    return Color_code[r]
+
+def ls(var_name):
+    """ Return the linestyle code of a corresponding unit """
+    u = get_unit_name(var_name)
+    if Linestyle_code[u] in Linestyles.keys():
+        return Linestyles[Linestyle_code[u]]
+    else:
+        return Linestyle_code[u]
+
+
+def unit_results(var_result_time_indep, var_name_time_indep):
     """ Given a dictionnary of time independent results plot a bar chart of the size of units
         in kW of production capacity for non-storage units and in kWh for storage units.
     """
@@ -36,16 +66,16 @@ def unit_results(var_result_time_indep):
     
     names = {}
     i, j = 0, len(Units) - len(Units_storage)
-    for var in var_result_time_indep:
-        if 'size' in var:
-            name = get_unit_name(var)
-            value = var_result_time_indep[var]
+    for var_name in var_name_time_indep:
+        if 'size' in var_name:
+            name = get_unit_name(var_name)
+            value = var_result_time_indep[var_name]
             if name not in Units_storage:
-                ax1.bar(i, value)
+                ax1.bar(i, value, color='grey')
                 names[i] = name
                 i += 1
             else:
-                ax2.bar(j, value, color = Color_code[name])
+                ax2.bar(j, value, color='grey')
                 names[j] = name
                 j += 1
                 
@@ -53,72 +83,74 @@ def unit_results(var_result_time_indep):
 
 
 def resource(resource, var_result, var_name):
-    fig, ax1 = plt.subplots()
-    ax1.set_xlabel('Date')
-    ax1.set_ylabel('Electricity exchanged with units in kW')
-    ax2 = ax1.twinx()
-    ax2.set_ylabel('Electricity exchanged with the grids and buildings in kW')
 
-    for name in var_name:
-        if resource in name:
-            if 'grid' not in name:
-                if 'prod' in name:
-                    ax1.plot(Date, var_result[name], label = name)
-                else:
-                    ax1.plot(Date, [var_result[name][p]*(-1) for p in Periods], label = name)
-            else:
-                if 'import' in name:
-                    ax2.plot(Date, var_result[name], label = name, linestyle='--')
-                else:
-                    ax2.plot(Date, [var_result[name][p]*(-1) for p in Periods], label = name, linestyle='--')
+    name = []
+    for n in var_name:
+        if resource in n:
+            name.append(n)
     
     if resource == 'Elec':
-        ax2.plot(Date, Build_cons_elec, label = 'Building consumption', linestyle='--')
+        nbr_fig = len(name) + 1
+    else:
+        nbr_fig = len(name)
+    
+    fig, axs = plt.subplots(nbr_fig, 1, sharex=True)
+    fig.set_size_inches(fig_width, fig_height*nbr_fig)
+    plt.xlabel('Date')
+    fig.subplots_adjust(hspace=0)
+    i = 0
+    for n in name:
+        axs[i].plot(Dates, var_result[n], label=n, c=col(n), ls=ls(n))
+        axs[i].legend()
+        axs[i].set_ylabel(get_resource_name(n) + ' in kW')
+        i += 1        
+    
+    if resource == 'Elec':
+        axs[i].plot(Dates, Build_cons_Elec, label = 'Building consumption', c=col('Elec'), 
+                    ls=ls('build'))
+        axs[i].legend()
+        axs[i].set_ylabel(get_resource_name(n) + ' in kW')
         
-
-    ax1.legend(loc='center left') 
-    ax2.legend(loc='center right')
-
+        
+###cd = 'results\\2020-04-22\\run_nbr_46\\'
+###r='Elec'
+###resource(r, var_result_time_dep, var_name_time_dep)
+###print_fig(False, os.path.join(cd, 'resource{}.png'.format(r)))
 
 def temperature_results(var_result):
     fig, ax1 = plt.subplots()
-    plt.title('Weather and building temperatures')
-    ax1.set_xlabel('Date')
+    plt.title('Building and unit temperatures')
+    ax1.set_xlabel('Dates')
     ax1.set_ylabel('Temperature in °C')
     ax2 = ax1.twinx()
     ax2.set_ylabel('Global Irradiance in kW/m^2')
     
-    name = 'build_T'
-    ax1.plot(Date, var_result[name], label = name, color=col(name))
-    name = 'unit_T[AD]'
-    ax1.plot(Date, var_result[name], label = name, color=col(name))
-    name = 'Ext_T'
-    ax1.plot(Date, Ext_T, label = name, color=col(name))
+    n = 'build_T'
+    ax1.plot(Dates, var_result[n], label='Building Temperature', color=col(n), ls=ls(n))
+    n = 'unit_T[AD]'
+    ax1.plot(Dates, var_result[n], label='AD Temperature', color=col(n), ls=ls(n))
+    n = 'Ext_T'
+    ax1.plot(Dates, Ext_T, label='External Temperature', color=col(n), ls=ls(n))
     
-    name = 'Irradiance'
-    ax2.plot(Date, Irradiance, label=name, color=col(name))
+    n = 'Irradiance'
+    ax2.plot(Dates, Irradiance, label=n, color=col(n))
 
     ax1.legend(loc='center left') 
     ax2.legend(loc='center right')
-
-
-def get_unit_name(var):
-    """ Return the units name from a variable string string """
-    return var.split('[')[1].split(']')[0]
 
 
 def PV_results(var_result, Irradiance):
     fig, ax1 = plt.subplots()
     plt.title('PV')
-    ax1.set_xlabel('Date')
-    ax1.set_ylabel('Electricity produced in kW')
+    ax1.set_xlabel('Dates')
+    ax1.set_ylabel('Global Irradiance in kW/m^2')
     ax2 = ax1.twinx()
-    ax2.set_ylabel('Global Irradiance in kW/m^2')
+    ax2.set_ylabel('Electricity produced in kW')
     
-    name = 'prod[PV][Elec]'
-    ax1.plot(Date, var_result[name], label = name, color=col(name))
     name = 'Irradiance'
-    ax2.plot(Date, Irradiance, label=name, color=col(name), linestyle='--')
+    ax1.plot(Dates, Irradiance, label=name, color=col(name))
+    name = 'unit_prod[PV][Elec]'
+    ax2.plot(Dates, var_result[name], label=name, color=col(name), ls=ls(name))
 
     ax1.legend(loc='center left') 
     ax2.legend(loc='center right')
@@ -127,42 +159,47 @@ def PV_results(var_result, Irradiance):
 def SOFC_results(var_result):
     fig, ax1 = plt.subplots()
     plt.title('SOFC')
-    ax1.set_xlabel('Date')
+    ax1.set_xlabel('Dates')
     ax1.set_ylabel('Resources consumed and produced by the SOFC in kW')
     ax2 = ax1.twinx()
     ax2.set_ylabel('Heat produced by the SOFC in kW')
     
-    name = 'prod[SOFC][Elec]'
-    ax1.plot(Date, var_result[name], label = name)
-    name = 'cons[SOFC][Gas]'
-    ax1.plot(Date, var_result[name], label = name, linestyle='--')
-    name = 'cons[SOFC][Biogas]'
-    ax1.plot(Date, var_result[name], label = name, linestyle='--')
+    n = 'unit_prod[SOFC][Elec]'
+    ax1.plot(Dates, var_result[n], color=col(n), ls=ls(n))
+    n = 'unit_cons[SOFC][Gas]'
+    ax1.plot(Dates, var_result[n], color=col(n), ls=ls(n))
+    n = 'unit_cons[SOFC][Biogas]'
+    ax1.plot(Dates, var_result[n], color=col(n), ls=ls(n))
     
-    name = 'prod[SOFC][Heat]'
-    ax2.plot(Date, var_result[name], label=name, linestyle='-.')
+    n = 'unit_prod[SOFC][Heat]'
+    ax2.plot(Dates, var_result[n], color=col(n), ls=ls(n))
 
     ax1.legend(loc='upper left') 
     ax2.legend(loc='upper right')
 
 
 def normalize(l):
-    return l#[l[i]/max(l) for i in range(len(l))]
+    return [l[i]/max(l) for i in range(len(l))]
 
-def all_results(var_result, var_name, cd):
-    fig, ax1 = plt.subplots()
+
+def all_results(var_result, var_name):
+    """ Plot all time dependent results that vary more than 1%"""
+    
+    var_name_vary = []
+    for n in var_name:
+        if max(var_result[n]) > 1.01*min(var_result[n]):
+            var_name_vary.append(n)
+            
+    fig, axs = plt.subplots(len(var_name_vary), 1, sharex=True)
+    fig.set_size_inches(20, 50)
     plt.xlabel('Date')
-    plt.ylabel('Variation')
-    
-    for v in var_name:
-        if max(var_result[v]) > min(var_result[v])*1.1:
-            variation = normalize(var_result[v])
-            plt.title(v)
-            plt.plot(Date, variation, label = v)
-            plt.savefig(os.path.join(cd, 'all_results_{}.png'.format(v)))
-            plt.clf()
-    
-
+    fig.subplots_adjust(hspace=0)
+    i = 0
+    for n in var_name_vary:
+        axs[i].plot(Dates, var_result[n], label=n, c=col(n))
+        axs[i].legend()
+        axs[i].set_ylabel(get_resource_name(n))
+        i += 1
 
 
 def sorted_index(unsorted_list):
@@ -192,9 +229,14 @@ def sort_from_index(unsorted_list, new_index):
     return sorted_list
 
 
+def transpose_list(l):
+    """ Returns the transpose of a given list. """
+    return list(map(list, zip(*l)))
+
+
 def flows(indicator, name, units, var_result_time_dep, sort = False):
     plt.title(name)
-    plt.xlabel('Date')
+    plt.xlabel('Dates')
     plt.ylabel(name + units)
     # Get relevant flows according to indicator
     flows, flows_name = [], []
@@ -208,11 +250,54 @@ def flows(indicator, name, units, var_result_time_dep, sort = False):
         flows_name_sort = sort_from_index(flows_name, sorted_index(flows))
     else: flows_sort, flows_name_sort = flows,  flows_name
     
-    # Transpose the list of flows
-    flows_T_sort = list(map(list, zip(*flows_sort)))
-    plt.plot(Date, flows_T_sort)
+    
+    for f, n in zip(flows_sort, flows_name_sort):
+        plt.plot(Dates, f, c=col(n), ls=ls(n))
     plt.legend(flows_name_sort)
+
+
+def print_fig(save_fig, cd):
+    """ Either display or save the figure to the specified path, then close the figure. """
+    if save_fig:
+        plt.savefig(cd)
+    else:
+        plt.show()
+    plt.clf()
+
 
 ##################################################################################################
 ### END
 ##################################################################################################
+
+
+
+"""
+def resource(resource, var_result, var_name):
+    fig, ax1 = plt.subplots()
+    ax1.set_xlabel('Dates')
+    ax1.set_ylabel(Abbrev[resource] + ' exchanged with units in kW')
+    ax2 = ax1.twinx()
+    ax2.set_ylabel(Abbrev[resource] + ' exchanged with grids and buildings in kW')
+    ax1.set_xlim(Dates[0], Dates[-1])
+    
+    for n in var_name:
+        if resource in n:
+            if 'grid' not in n:
+                if 'prod' in n:
+                    ax1.plot(Dates, var_result[n], label=n, c=col(n), ls=ls(n))
+                else:
+                    ax1.plot(Dates, [var_result[n][p]*(-1) for p in Periods], 
+                             label=n, c=col(n), ls=ls(n))
+            else:
+                if 'import' in n:
+                    ax2.plot(Dates, var_result[n], label=n, c=col(n), ls=ls(n))
+                else:
+                    ax2.plot(Dates, [var_result[n][p]*(-1) for p in Periods], 
+                             label=n, c=col(n), ls=ls(n))
+    
+    if resource == 'Elec':
+        ax2.plot(Dates, Build_cons_Elec, label = 'Building consumption', c=col('Elec'), ls=ls(n))
+
+    ax1.legend(loc='center left') 
+    ax2.legend(loc='center right')
+"""   

@@ -17,6 +17,7 @@ import os.path
 from datetime import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib
 import time
 import numpy as np
 
@@ -25,11 +26,12 @@ start = time.time()
 
 # Internal modules
 import results
-from initialize_model import m, S, V_meta
+from initialize_model import m, S, V_meta, V_bounds
 from global_param import Costs_u, Periods, Ext_T, Irradiance
 import model
 import data
 import plot
+from plot import fig_width, fig_height
 
 def run(relax=False, save_df=True, save_fig=True, big_vars=False):
     
@@ -41,12 +43,12 @@ def run(relax=False, save_df=True, save_fig=True, big_vars=False):
     print('solve time model: ', end - start, 's')
     
     # Dicts of all variables and their results
-    var_result_time_indep, var_result_time_dep = results.all_dic(m, Periods)
+    var_result_time_indep, var_result_time_dep = results.all_dic(m, Periods, V_bounds)
     var_name_time_indep = list(var_result_time_indep.keys())
     var_name_time_dep = list(var_result_time_dep.keys())
     
     df_time_indep = results.var_time_indep_summary(m, var_result_time_indep, V_meta)
-    df_time_dep = results.var_time_dep_summary(m, var_result_time_dep, V_meta)
+    df_time_dep = results.var_time_dep_summary(m, var_result_time_dep, V_meta, V_bounds)
    
     # display result summary
     pd.options.display.max_rows = 50
@@ -56,7 +58,8 @@ def run(relax=False, save_df=True, save_fig=True, big_vars=False):
     print(df_time_indep)
     print(df_time_dep)
     
-    plot.unit_results(var_result_time_indep)
+    matplotlib.rcParams['figure.figsize'] = (fig_width, fig_height)
+    plot.unit_results(var_result_time_indep, var_name_time_indep)
     plt.show()
     
     if save_df or save_fig:
@@ -92,75 +95,43 @@ def run(relax=False, save_df=True, save_fig=True, big_vars=False):
                     print(v.varName + ': {:.2f}\n'.format(v.x), file=f)
     
     if save_fig:
-        plot.unit_results(var_result_time_indep)
+        plot.unit_results(var_result_time_indep, var_name_time_indep)
         plt.savefig(os.path.join(cd, 'installed_capacity.png'))
         
     plot.temperature_results(var_result_time_dep)
-    if save_fig:
-        plt.savefig(os.path.join(cd, 'temperature_results.png'))
-    else:
-        plt.show()
-    
-    r = 'Elec'
-    plot.resource(r, var_result_time_dep, var_name_time_dep)
-    if save_fig:
-        plt.savefig(os.path.join(cd, 'resource{}.png'.format(r)))
-    else:
-        plt.show()
-        
-    r = 'Gas'
-    plot.resource(r, var_result_time_dep, var_name_time_dep)
-    if save_fig:
-        plt.savefig(os.path.join(cd, 'resource{}.png'.format(r)))
-    else:
-        plt.show()
-    
-    r = 'Biogas'
-    plot.resource(r, var_result_time_dep, var_name_time_dep)
-    if save_fig:
-        plt.savefig(os.path.join(cd, 'resource{}.png'.format(r)))
-    else:
-        plt.show()
+    plot.print_fig(save_fig, os.path.join(cd, 'temperature_results.png'))
+
+    for r in ['Elec', 'Gas', 'Biogas']:
+        plot.resource(r, var_result_time_dep, var_name_time_dep)
+        plot.print_fig(save_fig, os.path.join(cd, 'resource{}.png'.format(r)))
     
     plot.flows('v[', 'water flows', 'm^3/h', var_result_time_dep, True)
-    if save_fig:
-        plt.savefig(os.path.join(cd, 'Hot_water_flows.png'))
-    else:
-        plt.show()
-        
+    plot.print_fig(save_fig, os.path.join(cd, 'Hot_water_flows.png'))
+    
     plot.flows('Heat', 'heat flows', 'kW', var_result_time_dep, True)
-    if save_fig:
-        plt.savefig(os.path.join(cd, 'Heat_flows.png'))
-    else:
-        plt.show()
+    plot.print_fig(save_fig, os.path.join(cd, 'Heat_flows.png'))
     
     plot.PV_results(var_result_time_dep, Irradiance)
-    if save_fig:
-        plt.savefig(os.path.join(cd, 'PV.png'))
-    else:
-        plt.show()   
+    plot.print_fig(save_fig, os.path.join(cd, 'PV.png'))  
         
     plot.SOFC_results(var_result_time_dep)
-    if save_fig:
-        plt.savefig(os.path.join(cd, 'SOFC.png'))
-    else:
-        plt.show() 
+    plot.print_fig(save_fig, os.path.join(cd, 'SOFC.png'))
 
-    plot.all_results(var_result_time_dep, var_name_time_dep, cd)   
-    
-run()
+    plot.all_results(var_result_time_dep, var_name_time_dep)
+    plot.print_fig(save_fig, os.path.join(cd, 'all_results.png'))
+
+
+# Execute code
+run(save_fig=True)
 end = time.time()
 
-print('solve time all: ', end - start, 's')
+print('soglobal runtime: ', end - start, 's')
 
+# Dicts of all variables and their results
+var_result_time_indep, var_result_time_dep = results.all_dic(m, Periods)
+var_name_time_indep = list(var_result_time_indep.keys())
+var_name_time_dep = list(var_result_time_dep.keys())
 
-    
-    
-###plot_flows('v[', 'water flows', 'm^3/h')
-###plot_flows('Heat', 'heat flows', 'kW') 
-###plot_flows('[BAT][', 'Battery', 'kW', var_result_time_dep, True) 
-###plot_flows('[PV][', 'AD production', 'kW', var_result_time_dep, True)
-###plt.show()
 ##################################################################################################
 ### END
 ##################################################################################################

@@ -1,0 +1,26 @@
+,Value,Lower Bound,Upper Bound,Units,Description
+size[BOI],510.29416427992516,0.0,10000.0,,
+size[PV],60.0,0.0,10000.0,,
+size[BAT],20.0,0.0,10000.0,,
+size[SOFC],20.0,0.0,10000.0,,
+size[AD],116.99999999999919,0.0,10000.0,,
+install[BOI],1.0,0.0,1.0,,
+install[PV],1.0,0.0,1.0,,
+install[BAT],1.0,0.0,1.0,,
+install[SOFC],1.0,0.0,1.0,,
+install[AD],1.0,0.0,1.0,,
+capex[BOI],103.28559704890586,0.0,10000.0,,
+capex[PV],215.26715000000004,0.0,10000.0,,
+capex[BAT],26.6266,0.0,10000.0,,
+capex[SOFC],103.57560000000001,0.0,10000.0,,
+capex[AD],324.8999999999978,0.0,10000.0,,
+min_T_AD,30.0,-10000.0,10000.0,,
+max_T_AD,40.0,-10000.0,10000.0,,
+penalty,0.00013749392241885168,0.0,10000.0,,
+grid_export_a[Elec],0.10027437629207056,0.0,10000.0,,
+grid_export_a[Gas],0.0,0.0,10000.0,,
+grid_import_a[Elec],3.493036385114797,0.0,10000.0,,
+grid_import_a[Gas],27.215688761596002,0.0,10000.0,,
+capex,0.7736549470489037,0.0,10000.0,MCHF,total CAPEX
+opex,0.0030075618832518655,0.0,10000.0,MCHF/year,total annual opex
+totex,0.052635305367661055,0.0,10000.0,MCHF/year,total annualized expenses

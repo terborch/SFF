@@ -1,28 +1,25 @@
 """
 ### Parameter declaration
-    #   Weather parameters in lists Irradiance and Ext_T (Exterior Temperature)
-    #   Electric consumption in list Build_cons_elec
-    #   Biomass production in list Biomass_prod
-    #   Heated surface area (TODO: differenciate building types)
-    #   Unit costs in dataframe Costs_u
-    #   Resource costs in dataframe Costs_res
-    #   Date a list of datetime objects corresponding to the all dates and times modeled
+    #   Ext_T           list of external temperature values averaged for each period
+    #   Irradiance      list of global Irradiance values summed over each period
+    #   Dates           list of datetime objects corresponding to all dates and times modeled
+    #   Build_cons_Elec list of daily electric consumptionr epeaded over each day
+    #   Heated_area     the total heated floor area
+    #   Biomass_prod    the amount of biomass produced for each period
+    #   Costs_u         dataframe of Unit investment cost parameters and lifetime
+    #   Costs_res       dataframe of Resource import and export prices
 """
 
 # External modules
+import datetime
 import numpy as np
 import pandas as pd
 # Internal modules
-from initialize_model import P, P_meta, P_t, All_input, S, Periods, Days
+from initialize_model import P, P_meta, S, Periods, Days
+from initialize_model import make_param as make_param
+from global_set import Units
 import data
 
-
-def Param_t(name, param, meta):
-    """ Given a time dependent parameter adds its maximum, minimum and average value to the P_t{}
-        dictionnary. Takes the given meta data and adds it to the P_meta dictionnary
-    """
-    P_t[name] = [min(param), max(param), np.mean(param)]
-    P_meta[name] = meta
     
 def annual_to_instant(Annual, Profile_norm):
     """ Take an annual total and a corresponding daily profile normalized from 1 to 0. Calculate 
@@ -30,7 +27,7 @@ def annual_to_instant(Annual, Profile_norm):
         peak value. It returns the product of the peak and normalized profile, i.e. the
         actual profile or instanteneous load.
     """
-    Average = Annual / P['Hours_per_year']
+    Average = Annual / P['Time']['Hours_per_year']
     Average_profile_norm = np.mean(Profile_norm)
     Peak = Average / Average_profile_norm
 
@@ -39,14 +36,15 @@ def annual_to_instant(Annual, Profile_norm):
 
 def biomass_prod(Pigs, Cows):
     """ Given an number of cows and pigs, calculate the biomass potential in kW"""
-    category = 'Biomass'
-    P_meta['LSU'] = ['LSU', 'Number of LSU', category]
-    P['LSU'] = P['Pigs']*P['LSU_pigs'] + P['Cows']
     
-    P_meta['Biomass_prod'] = ['kW', 'Biomass Production', 'calc', category]
-    P['Biomass_prod'] = P['LSU']*P['Manure_per_cattle']*P['Manure_HHV_dry']/24
+    c = 'AD'
+    LSU = Pigs*P[c]['LSU_pigs'] + Cows
+    make_param(c, 'LSU', LSU, ['LSU', 'Number of LSU', 'calc'])
     
-    return [P['Biomass_prod'] for p in Periods]
+    P_meta[c]['Manure_prod'] = ['kW', 'Manure Production', 'calc']
+    P[c]['Manure_prod'] = LSU*P[c]['Manure_per_cattle']*P[c]['Manure_HHV_dry']/24
+    
+    return [P[c]['Manure_prod'] for p in Periods]
 
 
 def AD_dimentions(P, P_meta):
@@ -55,102 +53,132 @@ def AD_dimentions(P, P_meta):
         Then given dimention ratios, the cap surface area is calculated. Similarly the cap height,
         body height and body diameter are calculated and stored.
     """
-    name = 'AD_sludge_volume'
-    P_meta[name] = ['m^3', 'AD sludge volume', 'AD']
-    P[name] = np.ceil( P['AD_residence_time']*P['LSU']*P['Manure_per_cattle']/
-                       (1 - P['Biomass_water'])/1000 )
+    c = 'AD'
+    name = 'Sludge_volume'
+    P_meta[c][name] = ['m^3', 'Sludge volume capacity', 'calc']
+    P[c][name] = np.ceil( P[c]['Residence_time']*P[c]['LSU']*P[c]['Manure_per_cattle']/
+                       (1 - P[c]['Biomass_water'])/1000 )
     
-    name = 'AD_cyl_volume'
-    P_meta[name] = ['m^3', 'AD cylinder volume', 'AD']
-    P[name] = np.ceil( P['AD_sludge_volume']/P['AD_cyl_fill'] )
+    name = 'Cyl_volume'
+    P_meta[c][name] = ['m^3', 'Cylinder volume', 'calc']
+    P[c][name] = np.ceil( P[c]['Sludge_volume']/P[c]['Cyl_fill'] )
 
-    name = 'AD_cap_height'
-    P_meta[name] = ['m', 'Height of the AD top cap', 'AD']
-    P[name] = np.round( (P['AD_sludge_volume']*P['AD_cap_V_ratio']*(6/np.pi)/
-                         (3*P['AD_cap_h_ratio']**2 + 1))**(1/3), 2)
+    name = 'Cap_height'
+    P_meta[c][name] = ['m', 'Height of the AD top cap', 'calc']
+    P[c][name] = np.round( (P[c]['Sludge_volume']*P[c]['Cap_V_ratio']*(6/np.pi)/
+                         (3*P[c]['Cap_h_ratio']**2 + 1))**(1/3), 2)
     
-    name = 'AD_diameter'
-    P_meta[name] = ['m', 'Diameter of the AD cylindrical body', 'AD']
-    P[name] = np.round( P['AD_cap_h_ratio']*P['AD_cap_height']*2, 2)
+    name = 'Diameter'
+    P_meta[c][name] = ['m', 'Diameter of the AD cylindrical body', 'calc']
+    P[c][name] = np.round( P[c]['Cap_h_ratio']*P[c]['Cap_height']*2, 2)
     
-    name = 'AD_ground_area'
-    P_meta[name] = ['m^2', 'AD ground floor area', 'AD']
-    P[name] = np.round( np.pi*P['AD_diameter']**2, 2)
+    name = 'Ground_area'
+    P_meta[c][name] = ['m^2', 'Ground floor area', 'calc']
+    P[c][name] = np.round( np.pi*P[c]['Diameter']**2, 2)
     
-    name = 'AD_cap_area'
-    P_meta[name] = ['m^2', 'Surface area of the AD top cap', 'AD']
-    P[name] = np.round( np.pi*(P['AD_cap_height']**2 + (P['AD_diameter']/2)**2), 2)
+    name = 'Cap_area'
+    P_meta[c][name] = ['m^2', 'Surface area of the AD top cap', 'calc']
+    P[c][name] = np.round( np.pi*(P[c]['Cap_height']**2 + (P[c]['Diameter']/2)**2), 2)
     
-    name = 'AD_cyl_height'
-    P_meta[name] = ['m', 'Height of the AD cylindrical body', 'AD']
-    P[name] = np.round( P['AD_cyl_volume']/(np.pi*(P['AD_diameter']/2)**2), 2)
+    name = 'Cyl_height'
+    P_meta[c][name] = ['m', 'Height of the AD cylindrical body', 'calc']
+    P[c][name] = np.round( P[c]['Cyl_volume']/(np.pi*(P[c]['Diameter']/2)**2), 2)
 
 
-def costs_u(file):
+def unit_economics(file):
     """ Given a file name, return a dataframe of unit costs from the data forlder """
     df = data.default_data_to_df(file, 'economic', 0)
     
-    # convert strings of valuesto numpy.int64
-    pd.to_numeric(df['Cost_per_size'])
-    pd.to_numeric(df['Cost_per_unit'])
-    pd.to_numeric(df['Cost_multiplier'])
-    pd.to_numeric(df['Life'])
+    # Convert strings of valuesto numpy.int64
+    Parameters = ['Cost_per_size', 'Cost_per_unit', 'Cost_multiplier', 'Life']
+    Descriptions = {'Cost_per_size': 'Cost retalive to installed capacity',
+                    'Cost_per_unit': 'Cost per unit installed',
+                    'Cost_multiplier': 'Cost multiplier for Switzerland', 
+                    'Life': 'Lifetime'}
+    for p in Parameters:
+        pd.to_numeric(df[p])
     
-    # unit conversion from CHF to kCHF
+    # Unit conversion from CHF to kCHF
     df['Cost_per_size'] /= 1000
     df['Cost_per_unit'] /= 1000
-
+    
+    # Save a copy in P and the corresponding metdata in P_meta
+    for p in Parameters:
+        if p != 'Life':
+            for u in Units:
+                physical_units = ('Years' if p == 'Life' else 'kCHF/{}'.format(df['Size_units']))
+                meta = [physical_units, Descriptions[p], df['Source'][u]]
+                make_param('Eco', p, df[p][u], meta, u)
+    
     return df
 
 
-def resource_costs(file):
+def resource_economics(file):
     """ Given a file name, return a dataframe of resource costs from the data forlder """
     df = data.default_data_to_df(file, 'economic', 0)
     
     # convert strings of valuesto numpy.int64
-    pd.to_numeric(df['Import_cost'])
-    pd.to_numeric(df['Export_cost'])
+    Parameters = ['Import_cost', 'Export_cost']
+    Descriptions = {'Import_cost': 'Cost to import a resource',
+                    'Export_cost': 'Price at which a resource is sold'}
+    
+    for p in Parameters:
+        pd.to_numeric(df[p])
     
     # unit conversion from CHF to kCHF
     df['Import_cost'] /= 1000
     df['Export_cost'] /= 1000
     df['Units'] = 'kCHF/kWh'
     
+    # Save a copy in P and the corresponding metdata in P_meta
+    for p in Parameters:
+        for r in ['Elec', 'Gas']:
+            physical_units = 'kCHF/kWh'
+            meta = [physical_units, Descriptions[p], df['Source'][r]]
+            make_param('Eco', p, df[p][r], meta, r)
+    
     return df
-
 
 # Weather parameters for a summer day at Liebensberg
 file = 'meteo_Liebensberg_10min.csv'
 df_weather = data.weather_data_to_df(file, S['Period_start'], S['Period_end'], S['Time_step'])
 df_weather.drop(df_weather.tail(1).index,inplace=True)
-Irradiance = list(df_weather['Irradiance'].values)
-Param_t('Irradiance', Irradiance, ['kW/m^2', 'Global irradiance', 'weather'])
+
+# External temperature
 Ext_T = list(df_weather['Temperature'].values)
-Param_t('Ext_T', Ext_T, ['°C', 'Exterior temperature', 'weather'])
-Date = df_weather.index
+make_param('Timedep', 'Ext_T', Ext_T, ['°C', 'Exterior temperature', 'agrometeo.ch'])
+
+# Global irradiance
+Irradiance = list(df_weather['Irradiance'].values)
+make_param('Timedep', 'Irradiance', Irradiance, ['kW/m^2', 'Global irradiance', 'agrometeo.ch'])
+
+# List of dates modelled
+Dates, Dates_pd = [], df_weather.index
+for d in Dates_pd: 
+    Dates.append(datetime.datetime(d.year, d.month, d.day, d.hour, d.minute))
 
 # Electricity consumption profile
+meta = ['kW', 'Building electricity consumption', 'calc']
 file = 'consumption_profile_dummy.csv'
 df_cons = data.default_data_to_df(file, 'internal', df_weather.index)
-Build_cons_elec = len(Days)*annual_to_instant(P['Annual_Elec_cons'], df_cons['Electricity'].values)
-Param_t('Build_cons_elec', Build_cons_elec, ['kW', 'Building electricity consumption', 'Building'])
+Build_cons_Elec = len(Days)*annual_to_instant(P['build']['cons_Elec_annual'], 
+                                              df_cons['Electricity'].values)
+make_param('Timedep', 'Build_cons_Elec', Build_cons_Elec, meta)
+
+# Biomass potential
+Biomass_prod = biomass_prod(P['AD']['Pigs'], P['AD']['Cows'])
+make_param('Timedep', 'Biomass_prod', Biomass_prod, ['kW', 'Biomass production', 'calc'])
 
 # Building heated surface area
+meta = ['m^2', 'Building heated surface area', 'Building']
 file = 'buildings.csv'
 df_buildings = data.default_data_to_df(file, 'inputs', 0)
 Heated_area = 0
 for i in df_buildings.index:
     Heated_area += (df_buildings['Ground_surface'][i] * df_buildings['Floors'][i])
-P['Heated_area'] = Heated_area
-P_meta['Heated_area'] = ['m^2', 'Building heated surface area', 'Building']
+make_param('build', 'Heated_area', Heated_area, meta)
 
 # Unit and resource costs
-Costs_u = costs_u('unit_costs.csv')
-Costs_res = resource_costs('resource_costs.csv')
-All_input['Economic'] = [Costs_u, Costs_res]
-
-# Biomass potential
-Biomass_prod = biomass_prod(P['Pigs'], P['Cows'])
-Param_t('Biomass_prod', Biomass_prod, ['kW', 'Biomass production', 'Biomass'])
-
+Costs_u = unit_economics('unit_costs.csv')
+Costs_res = resource_economics('resource_costs.csv')
 
