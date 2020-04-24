@@ -172,10 +172,10 @@ grid_import_a = m.addVars(G_res, lb=0, ub=Bound, name= n)
 
 n = 'grid_export'
 V_meta[n] = ['kW', 'Resources purchased by the farm']
-grid_export = m.addVars(G_res, Periods, lb=0, ub=Bound, name= n)
+grid_export = m.addVars(G_res, Periods, lb=0, ub=Bound/10, name= n)
 n = 'grid_import'
 V_meta[n] = ['kW', 'Resources purchased by the farm']
-grid_import = m.addVars(G_res, Periods, lb=0, ub=Bound, name= n)
+grid_import = m.addVars(G_res, Periods, lb=0, ub=Bound/10, name= n)
 
 
 # Resource balances
@@ -192,7 +192,7 @@ m.addConstrs((unit_prod['AD'][(r,p)] >= unit_cons['SOFC'][(r,p)] + unit_cons['BO
               for p in Periods), n);
 r = 'Gas'
 n = 'Balance_Gas'
-m.addConstrs((grid_import[(r,p)] == unit_cons['SOFC'][(r,p)] + unit_cons['BOI'][(r,p)] 
+m.addConstrs((grid_import[(r,p)] - grid_export[(r,p)] == unit_cons['SOFC'][(r,p)] + unit_cons['BOI'][(r,p)] 
               for p in Periods), n);
 
 # Total annual import / export
@@ -227,13 +227,13 @@ m.addConstr(emissions == (grid_import_a['Elec'])*P[c]['Elec'] +
 
 c = 'Eco'
 # Annualization factor Tau
-P_meta[c]['tau'] = ['-', 'Annualization factor', 'calc']
-P[c]['tau'] = (P[c]['i']*(1 + P[c]['i'])**P[c]['n']) / ((1 + P[c]['i'])**P[c]['n'] - 1)
+P_meta[c]['Tau'] = ['-', 'Annualization factor', 'calc']
+P[c]['Tau'] = (P[c]['i']*(1 + P[c]['i'])**P[c]['n']) / ((1 + P[c]['i'])**P[c]['n'] - 1)
 
 # Variable
 n = 'capex'
 V_meta[n] = ['MCHF', 'total CAPEX']
-capex = m.addVar(lb=0, ub=Bound, name=n)
+capex = m.addVar(lb=-Bound, ub=Bound, name=n)
 
 n = 'opex'
 V_meta[n] = ['MCHF/year', 'total annual opex']
@@ -259,7 +259,7 @@ m.addConstr(opex == sum(grid_import_a[r]*Costs_res['Import_cost'][r] -
                         grid_export_a[r]*Costs_res['Export_cost'][r] for r in G_res), n);
 
 n = 'totex_sum'
-m.addConstr(totex == opex + P[c]['tau']*capex, n);
+m.addConstr(totex == opex + P[c]['Tau']*capex, n);
 
 
 
