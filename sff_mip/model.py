@@ -271,7 +271,15 @@ m.addConstr(opex == sum(grid_import_a[r]*Costs_res['Import_cost'][r] -
 n = 'totex_sum'
 m.addConstr(totex == opex + P[c]['Tau']*capex, n);
 
-
+"""
+### capping emissions
+n = 'Emissions_cap'
+#Cap = 27.7
+#Cap = 26.5
+#Cap = 26.22
+Cap = 26.217
+m.addConstr(emissions <= Cap, n);
+"""
 ##################################################################################################
 ### Scenarios
 ##################################################################################################
@@ -291,6 +299,7 @@ def pareto_constrained_totex(Limit_totex):
     m.addConstr(totex <= Limit_totex, 'Limit_totex')
     m.setObjective(emissions, GRB.MINIMIZE)
 def pareto_constrained_emissions(Limit_emissions):
+    print('-----------------{}--------------------'.format(Limit_emissions))
     m.addConstr(emissions <= Limit_emissions, 'Limit_emissions');
     m.setObjective(totex, GRB.MINIMIZE)
     
