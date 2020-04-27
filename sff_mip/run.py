@@ -23,7 +23,6 @@ import numpy as np
 
 start = time.time()
 
-
 # Internal modules
 import results
 from initialize_model import m, S, V_meta, V_bounds, P, P_meta
@@ -33,11 +32,32 @@ import data
 import plot
 from plot import fig_width, fig_height
 
-def run(relax=False, save_df=True, save_fig=True, big_vars=False):
+
+def run_pareto(objective, Limit=None):
+    
+    # Multiobjective relaxation
+    Relaxation = 1.001
     
     # Build and run the MIP optimization model
-    model.run(relax)
+    if Limit:
+        model.run(objective, Limit=Limit*Relaxation)
+    else:
+        model.run(objective)
     
+    var_result_time_indep, var_result_time_dep = results.all_dic(m, Periods, V_bounds)
+    var_name_time_indep = list(var_result_time_indep.keys())
+    Results[objective] = var_result_time_indep
+    
+    plot.unit_results(var_result_time_indep, var_name_time_indep, 
+                      title=Objective_description[objective])
+    plt.show()
+
+
+
+def run_single(objective, relax=False, save_df=True, save_fig=True, big_vars=False):
+    
+    # Build and run the MIP optimization model
+    model.run(objective, relax)
     
     end = time.time()
     print('solve time model: ', end - start, 's')
@@ -50,6 +70,7 @@ def run(relax=False, save_df=True, save_fig=True, big_vars=False):
     df_time_indep = results.var_time_indep_summary(m, var_result_time_indep, V_meta)
     df_time_dep = results.var_time_dep_summary(m, var_result_time_dep, V_meta, V_bounds)
     df_parameters = results.parameters(P, P_meta)
+    
     # display result summary
     pd.options.display.max_rows = 50
     pd.options.display.max_columns = 10
@@ -127,7 +148,10 @@ def run(relax=False, save_df=True, save_fig=True, big_vars=False):
 
 
 # Execute code
-run(save_fig=True)
+###run_single('emissions', save_fig=True)
+
+###run_single('totex', save_fig=True)
+
 end = time.time()
 
 print('global runtime: ', end - start, 's')
@@ -137,6 +161,31 @@ var_result_time_indep, var_result_time_dep = results.all_dic(m, Periods, V_bound
 var_name_time_indep = list(var_result_time_indep.keys())
 var_name_time_dep = list(var_result_time_dep.keys())
 
+
+Results = {}
+
+Objective_description = {
+    'totex': 'TOTEX minimization', 
+    'emissions': 'Emissions minimization',
+    'pareto_totex':'Emissions minimization with constrained TOTEX at the minimum',
+    'pareto_emissions': 'TOTEX minimization with constrained emissions at the minimum',
+    }
+
+objective = 'totex'
+run_pareto(objective)
+Totex_min = Results[objective][objective]
+
+objective = 'emissions'
+run_pareto(objective)
+Emissions_min = Results[objective][objective]
+
+objective = 'pareto_totex'
+run_pareto(objective, Totex_min)
+Emissions_max = Results[objective]['emissions']
+
+objective = 'pareto_emissions'
+run_pareto(objective, Emissions_min)
+Totex_max = Results[objective]['totex']
 ##################################################################################################
 ### END
 ##################################################################################################

@@ -166,7 +166,7 @@ def time_param():
     return Periods, Time_steps, dt, Days, Time
 
     
-def intialize_model():
+def initialize_model():
     """ Return a blank Gurobi model and set solver timelimit """
     # Create a new model
     m = gp.Model("MIP_SFF_v0.31")
@@ -198,4 +198,4 @@ V_bounds = {}
 # Dictionnary describing each constraint and its source if applicable
 C_meta = {}
 
-m = intialize_model()
+m = initialize_model()

@@ -53,13 +53,16 @@ def ls(var_name):
         return Linestyle_code[u]
 
 
-def unit_results(var_result_time_indep, var_name_time_indep):
+def unit_results(var_result_time_indep, var_name_time_indep, title=None):
     """ Given a dictionnary of time independent results plot a bar chart of the size of units
         in kW of production capacity for non-storage units and in kWh for storage units.
     """
 
     fig, ax1 = plt.subplots()
-    plt.title('Installed capacity for each unit')
+    if title:
+        plt.title(title)
+    else:
+        plt.title('Installed capacity for each unit')
     ax2 = ax1.twinx()
     ax1.set_ylabel('Installed production capacity in kW')
     ax2.set_ylabel('Installed storage capacity in kWh')

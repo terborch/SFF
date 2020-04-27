@@ -172,28 +172,37 @@ grid_import_a = m.addVars(G_res, lb=0, ub=Bound, name= n)
 
 n = 'grid_export'
 V_meta[n] = ['kW', 'Resources purchased by the farm']
-grid_export = m.addVars(G_res, Periods, lb=0, ub=Bound/10, name= n)
+grid_export = m.addVars(G_res, Periods, lb=0, ub=Bound, name= n)
 n = 'grid_import'
 V_meta[n] = ['kW', 'Resources purchased by the farm']
-grid_import = m.addVars(G_res, Periods, lb=0, ub=Bound/10, name= n)
+grid_import = m.addVars(G_res, Periods, lb=0, ub=Bound, name= n)
 
+Unused_res = ['Biomass', 'Biogas', 'Gas']
+n = 'unused'
+V_meta[n] = ['kW', 'Resources unused or flared by the farm']
+unused = m.addVars(Unused_res, Periods, lb=0, ub=Bound, name= n)
+n = 'unused_a'
+V_meta[n] = ['MWh', 'Annual total resources unused or flared by the farm']
+unused_a = m.addVars(Unused_res, lb=0, ub=Bound, name= n)
 
 # Resource balances
-n = 'Balance_Electricity'
 r = 'Elec'
+n = 'Balance_' + r
 m.addConstrs((grid_import[(r,p)] + sum(unit_prod[up][(r,p)] for up in U_res['prod'][r])  == 
               grid_export[(r,p)] + sum(unit_cons[uc][(r,p)] for uc in U_res['cons'][r]) + 
               Build_cons_Elec[p] for p in Periods), n);
-n = 'Balance_Biomass'
-m.addConstrs((unit_cons['AD'][('Biomass',p)] <= Biomass_prod[p] for p in Periods), n);
+r = 'Biomass'
+n = 'Balance_' + r
+m.addConstrs((Biomass_prod[p] - unused[(r,p)] == 
+              unit_cons['AD'][('Biomass',p)] for p in Periods), n);
 r = 'Biogas'
-n = 'Balance_Biogas'
-m.addConstrs((unit_prod['AD'][(r,p)] >= unit_cons['SOFC'][(r,p)] + unit_cons['BOI'][(r,p)] 
-              for p in Periods), n);
+n = 'Balance_' + r
+m.addConstrs((unit_prod['AD'][(r,p)] - unused[(r,p)] == 
+              unit_cons['SOFC'][(r,p)] + unit_cons['BOI'][(r,p)] for p in Periods), n);
 r = 'Gas'
-n = 'Balance_Gas'
-m.addConstrs((grid_import[(r,p)] - grid_export[(r,p)] == unit_cons['SOFC'][(r,p)] + unit_cons['BOI'][(r,p)] 
-              for p in Periods), n);
+n = 'Balance_' + r
+m.addConstrs((grid_import[(r,p)] - grid_export[(r,p)] - unused[(r,p)] == 
+              unit_cons['SOFC'][(r,p)] + unit_cons['BOI'][(r,p)] for p in Periods), n);
 
 # Total annual import / export
 n = 'Electricity_grid_import'
@@ -204,6 +213,8 @@ n = 'Gas_grid_import'
 m.addConstr(grid_import_a['Gas'] == sum(grid_import[('Gas',p)]/1000 for p in Periods), n);
 n = 'Gas_grid_export'
 m.addConstr(grid_export_a['Gas'] == sum(grid_export[('Gas',p)]/1000 for p in Periods), n);
+n = 'Unused_resources'
+m.addConstrs((unused_a[r] == sum(unused[(r,p)]/1000 for p in Periods) for r in Unused_res), n);
 
 # CO2 emissions
 n = 'emissions'
@@ -212,8 +223,7 @@ emissions = m.addVar(lb=-Bound, ub=Bound, name= n)
 
 c = 'CO2'
 n = 'Emissions'
-m.addConstr(emissions == (grid_import_a['Elec'])*P[c]['Elec'] +
-                            (grid_import_a['Gas'])*P[c]['Gas'], n);
+m.addConstr(emissions == grid_import_a['Elec']*P[c]['Elec'] + grid_import_a['Gas']*P[c]['Gas'], n);
 
 ###m.addConstr(emissions == (grid_import_a['Elec'] - grid_export_a['Elec'])*P[c]['Elec'] +
 ###                            (grid_import_a['Gas'] - grid_export_a['Gas'])*P[c]['Gas'], n);
@@ -262,33 +272,67 @@ n = 'totex_sum'
 m.addConstr(totex == opex + P[c]['Tau']*capex, n);
 
 
+##################################################################################################
+### Scenarios
+##################################################################################################
+
+
+def minimize_totex():
+    m.setObjective(totex, GRB.MINIMIZE)
+def minimize_opex():
+    m.setObjective(opex + penalty, GRB.MINIMIZE)
+def minimize_capex():
+    m.setObjective(capex + penalty, GRB.MINIMIZE)
+def minimize_emissions():
+    m.setObjective(emissions, GRB.MINIMIZE)
+def minimize_totex_tax_co2():
+    m.setObjective(totex + penalty + emissions*P['CO2']['Tax'], GRB.MINIMIZE)
+def pareto_constrained_totex(Limit_totex):
+    m.addConstr(totex <= Limit_totex, 'Limit_totex')
+    m.setObjective(emissions, GRB.MINIMIZE)
+def pareto_constrained_emissions(Limit_emissions):
+    m.addConstr(emissions <= Limit_emissions, 'Limit_emissions');
+    m.setObjective(totex, GRB.MINIMIZE)
+    
+switcher = {'totex': minimize_totex,
+            'opex': minimize_opex,
+            'capex': minimize_capex,
+            'emissions': minimize_emissions,
+            'totex_tax_co2': minimize_totex_tax_co2,
+            'pareto_totex': pareto_constrained_totex,
+            'pareto_emissions': pareto_constrained_emissions
+            }
+
+
 
 ##################################################################################################
-### Objective and resolution
+### Set objective and resolve
 ##################################################################################################
 
 
-def run(relax):
-    m.setObjective(emissions + penalty + totex, GRB.MINIMIZE)
-    ###emissions*P['CO2']['Tax']
-    ###totex
+def run(objective, Limit=None, relax=False):
+    print_highlight('Objective: ' + objective)
+    set_objective = switcher.get(objective)
+    if 'pareto' in objective:
+        set_objective(Limit)
+    else:
+        set_objective()
     m.optimize()
     
     # Relaxion in case of infeasible model
     if m.status == GRB.INFEASIBLE:
-        print('******************************************************************')
-        print('******************* Model INFEASIBLE!!! **************************')
-        print('******************************************************************')
+        print_highlight('Model INFEASIBLE!!!')
         
     if m.status == GRB.INFEASIBLE and relax:
         m.feasRelaxS(1, False, False, True)
         m.optimize()
-        
-        print('******************************************************************')
-        print('******************* Model INFEASIBLE!!! **************************')
-        print('******************************************************************')
+        print_highlight('Model INFEASIBLE!!!')
 
 
+def print_highlight(string):
+    print('******************************************************************')
+    print('******************* {} **************************'.format(string))
+    print('******************************************************************')
 ##################################################################################################
 ### END
 ##################################################################################################

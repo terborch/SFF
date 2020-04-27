@@ -43,7 +43,7 @@ build,Tc,50,°C,Return heating temperature of the Building,Marechal project
 build,Th,65,°C,Supply heating temperature of the Building,Marechal project
 AD,Tc,40,°C,Return heating temperature of the AD,guess
 AD,Th,50,°C,Supply heating temperature of the AD,guess
-build,T_min,16,°C,Minimum indoor temperature,guess
+build,T_min,18,°C,Minimum indoor temperature,guess
 build,T_max,50,°C,Maximum indoor temperature,guess
 build,T_amb,20,°C,Comfort indoor temperature,guess
 General,Temp_ext_mean,10,°C,Annual average external temperature,calc

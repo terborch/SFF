@@ -21,7 +21,7 @@ import global_param
 
 def boi(unit_prod, unit_cons, unit_size):
     c = 'BOI'
-    n = 'PV_production'
+    n = 'BOI_production'
     m.addConstrs(((unit_cons[('Biogas',p)] + unit_cons[('Gas',p)])*P[c]['Eff'] == 
                   unit_prod[('Heat',p)] for p in Periods), n);
     
@@ -146,9 +146,6 @@ def ad(unit_prod, unit_cons, unit_size, unit_T, unit_install, Ext_T, Irradiance)
     n = 'AD_final_temperature'
     m.addConstr( unit_T[Periods[-1] + 1] == unit_T[0], n);
     
-    
-
-    
     # Add temperature constraints only if the the unit is installed
     min_T_AD = m.addVar(lb = -Bound, ub = Bound, name = 'min_T_AD')
     max_T_AD = m.addVar(lb = -Bound, ub = Bound, name = 'max_T_AD')
@@ -172,8 +169,9 @@ def sofc(unit_prod, unit_cons, unit_size):
                   (P[c]['Eff_elec'] - P[c]['GC_elec_frac']) for p in Periods), n);
     
     n = 'SOFC_Heat_production'
-    m.addConstrs((unit_prod[('Heat',p)] == unit_cons[('Biogas',p)]*P[c]['Eff_thermal']*
-                  ((1 - P[c]['Eff_elec']) - P[c]['GC_elec_frac']) for p in Periods), n);    
+    m.addConstrs((unit_prod[('Heat',p)] == (unit_cons[('Biogas',p)] + unit_cons[('Gas',p)])*
+                  ((1 - P[c]['Eff_elec']) - P[c]['GC_elec_frac'])*P[c]['Eff_thermal'] 
+                  for p in Periods), n);    
     
     n = 'SOFC_size'
     m.addConstrs((unit_prod[('Elec',p)] <= unit_size for p in Periods), n);
