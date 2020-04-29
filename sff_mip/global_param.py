@@ -169,14 +169,17 @@ make_param('Timedep', 'Build_cons_Elec', Build_cons_Elec, meta)
 Biomass_prod = biomass_prod(P['AD']['Pigs'], P['AD']['Cows'])
 make_param('Timedep', 'Biomass_prod', Biomass_prod, ['kW', 'Biomass production', 'calc'])
 
-# Building heated surface area
-meta = ['m^2', 'Building heated surface area', 'Building']
+# Building heated surface area and ground floor area
 file = 'buildings.csv'
 df_buildings = data.default_data_to_df(file, 'inputs', 0)
-Heated_area = 0
+Heated_area, Ground_area = 0, 0
 for i in df_buildings.index:
     Heated_area += (df_buildings['Ground_surface'][i] * df_buildings['Floors'][i])
+    Ground_area += df_buildings['Ground_surface'][i]
+meta = ['m^2', 'Building heated surface area', 'Building']
 make_param('build', 'Heated_area', Heated_area, meta)
+meta = ['m^2', 'Building ground surface area', 'Building']
+make_param('build', 'Ground_area', Ground_area, meta)
 
 # Unit and resource costs
 Costs_u = unit_economics('unit_costs.csv')

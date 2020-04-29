@@ -17,3 +17,5 @@ Units,SOFC_max,1000,kW,Maximum SOFC installed capacity
 Units,SOFC_min,0,kW,Minimum SOFC installed capacity
 Units,BOI_max,1000,kW,Maximum BOI installed capacity
 Units,BOI_min,0,kW,Minimum BOI installed capacity
+Units,CGT_max,1000,kW,Minimum CGT installed capacity
+Units,CGT_min,0,kW,Minimum CGT installed capacity

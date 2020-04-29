@@ -8,6 +8,7 @@ AD,Manure_HHV_dry,3.694444444,kWh/kg-dry,Fresh cattle manure energy content HHV 
 AD,Biomass_water,0.9,-,Water fraction of the digestate,guess
 AD,Biomass_prod,117.2309028,kWh/h,Biomass Production,calc
 PV,Eff,0.14,-,PV efficiency,Paul
+PV,max_utilisation,0.5,-,Maximum utilisation of available rood area,guess
 BAT,Eff,0.9,-,BAT roundtrip efficiency,guess
 AD,Eff,0.3,-,AD efficiency,guess
 AD,Elec_cons,0.008,-,AD faction of electricity consumed,doi: 10.3390/en10081165
@@ -24,6 +25,7 @@ AD,T_mean,35,°C,Mean AD Temperature,guess
 SOFC,Eff_elec,0.6,-,SOFC electric efficiency,guess
 SOFC,GC_elec_frac,0.03,-,gas cleaning electric consumption fraction,Projet Semestre nils
 SOFC,Eff_thermal,0.95,-,SOFC thermal efficiency,guess
+CGT,Elec_comp,0.02,-,Fraction of energy requiered to compress natural gas to 2500 psig,Sinor 1991
 AD,Residence_time,30,day,AD Hydraulic Residence Time,guess
 Eco,i,0.025,-,Annual interest rate,guess
 Eco,n,20,years,years of exploitation,guess
@@ -47,6 +49,7 @@ build,T_min,18,°C,Minimum indoor temperature,guess
 build,T_max,50,°C,Maximum indoor temperature,guess
 build,T_amb,20,°C,Comfort indoor temperature,guess
 General,Temp_ext_mean,10,°C,Annual average external temperature,calc
+General,Biogas_CH4,0.6,-,Fraction of CO2 contained in Biogas,guess
 CO2,Gas,0.18108317060496,t-CO2/MWh,Emissions from burning natural gas,EIA
 CO2,Elec,0.13,t-CO2/MWh,Emissions from importing Electricity in Switzerland,Ecovient
 CO2,Biogas,0,t-CO2/MWh,Emissions from burning biogas,guess

@@ -55,7 +55,6 @@ def get_settings(file):
     """ Get values and metadata from csv settings files in this directory and store them 
         into separate dictionaries 
     """
-
     df = get_values_df(file)
     
     df.index = df['Name']
@@ -180,7 +179,8 @@ def initialize_model():
         
 
 # Parameter categories
-Categories = ['AD', 'PV', 'BAT', 'SOFC', 'BOI', 'Eco', 'CO2', 'build', 'General', 'Time', 'Timedep']
+Categories = ['AD', 'PV', 'BAT', 'SOFC', 'BOI', 'CGT', 'Eco', 'CO2', 'build', 'General', 'Time', 
+              'Timedep']
 # Dictionnaries of values and metadata from the file 'parameters.csv'
 # example: P['AD']['eff'] = 0.3 and P_meta['AD']['eff'] = ['-', 'AD efficiency', 'energyscope']
 P, P_meta, Categories = get_param('parameters.csv', Categories)

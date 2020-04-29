@@ -74,14 +74,14 @@ def unit_results(var_result_time_indep, var_name_time_indep, title=None):
             name = get_unit_name(var_name)
             value = var_result_time_indep[var_name]
             if name not in Units_storage:
-                ax1.bar(i, value, color='grey')
+                ax1.bar(i, value, color='darkgrey')
                 names[i] = name
                 i += 1
             else:
                 ax2.bar(j, value, color='grey')
                 names[j] = name
                 j += 1
-                
+
     plt.xticks(range(len(Units)), [names[i] for i in range(len(Units))])
 
 

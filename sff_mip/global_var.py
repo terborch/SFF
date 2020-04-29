@@ -1,14 +1,16 @@
 """
 ### Variable declaration
-    #   unit_prod - dict of vars - What each unit produce during one time period
-    #   unit_cons - dict of vars - What each unit produce during one time period
-    #   unit_size - vars - The size of each unit
-    #   unit_install - vars - Whether or not each unit is installed
-    #   unit_capex - vars - capex of each unit
-    #   unit_T - dict of vars - temperature of each unit (only the AD)
-    #   build_cons_Heat - vars - heat consumed by the building
-    #   v - dict of vars - mass flow rate of heating water
-    #   TODO: add SOC vars and other storage vars
+    #   unit_prod           dict of vars    What each unit produce during one time period
+    #   unit_cons           dict of vars    What each unit produce during one time period
+    #   unit_size           vars            The size of each unit
+    #   unit_install        vars            Whether or not each unit is installed
+    #   unit_capex          vars            capex of each unit
+    #   unit_SOC            dict of vars    State of Charge of storgae units
+    #   unit_charge         dict of vars    Whether or not a storgae units is charging
+    #   unit_discharge      dict of vars    Whether or not a storgae units is discharging
+    #   unit_T              dict of vars    temperature of each unit (only the AD)
+    #   build_cons_Heat     vars            heat consumed by the building
+    #   v                   dict of vars    mass flow rate of heating water
 """
 
 # External modules
@@ -33,7 +35,6 @@ for u in Units:
         for r in U_cons[u]:
             V_meta[n + f'[{r}]'] = ['kW', f'{r} consumed by {u}', 'time']
         unit_cons[u] = m.addVars(U_cons[u], Periods, lb=0, ub=Bound, name=n)
-    
 
 # Size of the installed unit
 n = 'unit_size'
@@ -53,6 +54,17 @@ n = 'unit_capex'
 for u in Units:
     V_meta[n + f'[{u}]'] = ['kCHF', f'Investment cost of {u}', 'unique']
 unit_capex = m.addVars(Units, lb = 0, ub = Bound, name=n)
+
+# Storga unit dict of variables
+unit_SOC, unit_charge, unit_discharge = {}, {}, {}
+for u in Units_storage:
+    n = f'unit_SOC[{u}]'
+    V_meta[n] = ['kWh', f'State of charge of {u}', 'time']
+    unit_SOC[u] = m.addVars(Periods + [Periods[-1] + 1], lb=0, ub=Bound, name=n)
+    V_meta[f'unit_SOC[{u}]'] = ['kWh', f'State of charge of {u}', 'bool']
+    unit_charge[u] = m.addVars(Periods, vtype=GRB.BINARY, name=n)
+    V_meta[f'unit_SOC[{u}]'] = ['kWh', f'State of charge of {u}', 'bool']
+    unit_discharge[u] = m.addVars(Periods, vtype=GRB.BINARY, name=n)
 
 # Temperature of a unit
 unit_T = {}

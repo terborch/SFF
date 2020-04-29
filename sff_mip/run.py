@@ -8,7 +8,7 @@
     #   TODO: option to view and save the model
     #   Get and display outputs
     #   Option to save outputs
-    #   TODO: Save format, save graphs
+    #   TODO: Fix the broken Pareto
  
 """
 
@@ -25,33 +25,12 @@ start = time.time()
 
 # Internal modules
 import results
-from initialize_model import m, S, V_meta, V_bounds, P, P_meta
+from initialize_model import m, S, V_meta, V_bounds, P, P_meta, C_meta
 from global_param import Costs_u, Periods, Ext_T, Irradiance
 import model
 import data
 import plot
 from plot import fig_width, fig_height
-
-
-def run_pareto(objective, Limit=None):
-    
-    # Multiobjective relaxation
-    Relaxation = 1+1e-4
-    
-    # Build and run the MIP optimization model
-    if Limit:
-        model.run(objective, Limit=Limit*Relaxation)
-        print('-----------------{}--------------------'.format(Limit*Relaxation))
-    else:
-        model.run(objective)
-    
-    var_result_time_indep, var_result_time_dep = results.all_dic(m, Periods, V_bounds)
-    var_name_time_indep = list(var_result_time_indep.keys())
-    Results[objective] = var_result_time_indep
-    
-    plot.unit_results(var_result_time_indep, var_name_time_indep, 
-                      title=Objective_description[objective])
-    plt.show()
 
 
 
@@ -151,9 +130,7 @@ def run_single(objective, relax=False, save_df=True, save_fig=True, big_vars=Fal
 # Execute single run
 ###run_single('emissions', save_fig=True)
 
-Emissions_min = 26.216868515551806
-
-###run_single('totex', save_fig=True)
+run_single('emissions', save_fig=True)
 
 
 end = time.time()
@@ -165,54 +142,56 @@ var_result_time_indep, var_result_time_dep = results.all_dic(m, Periods, V_bound
 var_name_time_indep = list(var_result_time_indep.keys())
 var_name_time_dep = list(var_result_time_dep.keys())
 
+
+
+"""
 # Execute Pareto optimization
+def run_pareto(objective, Limit=None):
+    
+    # Multiobjective relaxation
+    Relaxation = 1+1e-4
+    
+    # Build and run the MIP optimization model
+    if Limit:
+        model.run(objective, Limit=Limit*Relaxation)
+        print('-----------------{}--------------------'.format(Limit*Relaxation))
+    else:
+        model.run(objective)
+    
+    var_result_time_indep, var_result_time_dep = results.all_dic(m, Periods, V_bounds)
+    var_name_time_indep = list(var_result_time_indep.keys())
+    Results[objective] = var_result_time_indep
+    
+    plot.unit_results(var_result_time_indep, var_name_time_indep, 
+                      title=Objective_description[objective])
+    plt.show()
+
 Results = {}
 
 Objective_description = {
     'totex': 'TOTEX minimization', 
     'emissions': 'Emissions minimization',
     'pareto_totex':'Emissions minimization with constrained TOTEX at the minimum',
-    'pareto_emissions': 'TOTEX minimization with constrai"""ned emissions" at the minim"um',
+    'pareto_emissions': 'TOTEX minimization with constrained emissions at the minimum',
     }
-
-
-import os
-import sys
-import psutil
-import logging
-
-def restart_program():
-    """Restarts the current program, with file objects and descriptors
-       cleanup
-    """
-
-    try:
-        p = psutil.Process(os.getpid())
-        for handler in p.get_open_files() + p.connections():
-            os.close(handler.fd)
-    except Exception as e:
-        logging.error(e)
-
-    python = sys.executable
-    os.execl(python, python, *sys.argv)
 
 
 objective = 'totex'
 run_pareto(objective)
 Totex_min = Results[objective][objective]
-restart_program()
+
 objective = 'emissions'
 run_pareto(objective)
 Emissions_min = Results[objective][objective]
-restart_program()
+
 objective = 'pareto_totex'
 run_pareto(objective, Totex_min)
 Emissions_max = Results[objective]['emissions']
-restart_program()
+
 objective = 'pareto_emissions'
 run_pareto(objective, Emissions_min)
 Totex_max = Results[objective]['totex']
-
+"""
 ##################################################################################################
 ### END
 ##################################################################################################

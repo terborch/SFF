@@ -21,6 +21,7 @@ Abbrev = {'BOI':    'Gas Boiler',
           'BAT':    'Battery', 
           'SOFC':   'Solid Oxide Fuel cell', 
           'AD':     'Anaerobic Digester',
+          'CGT':    'Compressed Gas Tank',
           'build':  'building',
           'Elec':   'Electricity',
           'Gas':    '(Synthetic) Natural Gas',
@@ -29,7 +30,7 @@ Abbrev = {'BOI':    'Gas Boiler',
           }
 
 # Eneregy conversion units
-Units = ['BOI', 'PV', 'BAT', 'SOFC', 'AD']
+Units = ['BOI', 'PV', 'BAT', 'SOFC', 'AD', 'CGT']
 
 # Resources and energy carriers
 Resources = ['Elec', 'Gas', 'Biogas', 'Biomass', 'Heat']
@@ -40,7 +41,8 @@ U_prod = {
     'PV':   ['Elec'],
     'BAT':  ['Elec'], 
     'SOFC': ['Elec', 'Heat'], 
-    'AD':   ['Biogas']
+    'AD':   ['Biogas'],
+    'CGT':  ['Biogas'] 
     }
 
 # The resources each unit consumes
@@ -48,7 +50,8 @@ U_cons = {
     'BOI':  ['Gas', 'Biogas'],
     'BAT':  ['Elec'], 
     'SOFC': ['Gas', 'Biogas'], 
-    'AD':   ['Biomass', 'Elec', 'Heat']
+    'AD':   ['Biomass', 'Elec', 'Heat'],
+    'CGT':  ['Biogas', 'Elec']
     }
 
 # The units producing and consuming a given resource
@@ -61,7 +64,7 @@ for r in Resources:
         U_res['cons'][r] = [u for u in U_cons if r in U_cons[u]]
 
 # Units that store energy
-Units_storage = ['BAT']
+Units_storage = ['BAT', 'CGT']
 
 # The buildings and units consuming and producing heat
 Heat_cons = ['build'] + U_res['cons']['Heat']
@@ -85,6 +88,7 @@ Linestyle_code = {'PV':     'dotted',
                   'AD':     'dashdotted', 
                   'build':  'densely dashdotted', 
                   'BOI':    'loosely dashed',
+                  'CGT':    'densely dashdotdotted',
                   'default':'solid'
                   }
 
@@ -99,4 +103,3 @@ Color_code = {'Elec':       'royalblue',
               'Diesel':     'black',
               'default':    'purple'
               }
-
