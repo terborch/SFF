@@ -130,7 +130,7 @@ def run_single(objective, relax=False, save_df=True, save_fig=True, big_vars=Fal
 # Execute single run
 ###run_single('emissions', save_fig=True)
 
-run_single('emissions', save_fig=True)
+run_single('totex', save_fig=True)
 
 
 end = time.time()

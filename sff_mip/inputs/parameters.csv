@@ -10,6 +10,7 @@ AD,Biomass_prod,117.2309028,kWh/h,Biomass Production,calc
 PV,Eff,0.14,-,PV efficiency,Paul
 PV,max_utilisation,0.5,-,Maximum utilisation of available rood area,guess
 BAT,Eff,0.9,-,BAT roundtrip efficiency,guess
+BAT,Self_discharge,0.003,-,Constant hourly self discharge,guess
 AD,Eff,0.3,-,AD efficiency,guess
 AD,Elec_cons,0.008,-,AD faction of electricity consumed,doi: 10.3390/en10081165
 AD,U_cap,0.00208,kW/°C/m^2,AD heat transmittance,doi: 10.12911/22998993/89660

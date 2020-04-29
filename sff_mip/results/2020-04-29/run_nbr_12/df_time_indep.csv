@@ -1,0 +1,33 @@
+,Value,Lower Bound,Upper Bound,Units,Decription,Type
+unit_size[BOI],621.6646955902065,0.0,100000.0,kW,Installed capacity of BOI,unique
+unit_size[PV],0.0,0.0,100000.0,kW,Installed capacity of PV,unique
+unit_size[BAT],300.0,0.0,100000.0,kWh,Installed capacity of BAT,unique
+unit_size[SOFC],0.0,0.0,100000.0,kW,Installed capacity of SOFC,unique
+unit_size[AD],0.0,0.0,100000.0,kW,Installed capacity of AD,unique
+unit_size[CGT],0.0,0.0,100000.0,kWh,Installed capacity of CGT,unique
+unit_install[BOI],1.0,0.0,1.0,-,BOI decision variable,bool
+unit_install[PV],-0.0,0.0,1.0,-,PV decision variable,bool
+unit_install[BAT],1.0,0.0,1.0,-,BAT decision variable,bool
+unit_install[SOFC],-0.0,0.0,1.0,-,SOFC decision variable,bool
+unit_install[AD],-0.0,0.0,1.0,-,AD decision variable,bool
+unit_install[CGT],-0.0,0.0,1.0,-,CGT decision variable,bool
+unit_capex[BOI],124.33462746654904,0.0,10000.0,kCHF,Investment cost of BOI,unique
+unit_capex[PV],0.0,0.0,10000.0,kCHF,Investment cost of PV,unique
+unit_capex[BAT],387.8546,0.0,10000.0,kCHF,Investment cost of BAT,unique
+unit_capex[SOFC],0.0,0.0,10000.0,kCHF,Investment cost of SOFC,unique
+unit_capex[AD],0.0,0.0,10000.0,kCHF,Investment cost of AD,unique
+unit_capex[CGT],0.0,0.0,10000.0,kCHF,Investment cost of CGT,unique
+min_T_AD,-1529.9138957279702,-10000.0,10000.0,,,
+max_T_AD,40.0,-10000.0,10000.0,,,
+penalty_a,0.04432917775361553,0.0,10000.0,MCHF,Sum of Penalty for deviating from the comfort temperature,unique
+grid_export_a[Elec],0.0,0.0,10000.0,,,
+grid_export_a[Gas],0.0,0.0,10000.0,,,
+grid_import_a[Elec],67.12676753801311,0.0,10000.0,,,
+grid_import_a[Gas],434.6176388753471,0.0,10000.0,,,
+unused_a[Biomass],77.33488193514087,0.0,10000.0,,,
+unused_a[Biogas],0.0,0.0,10000.0,,,
+unused_a[Gas],4.547473508864641e-16,0.0,10000.0,,,
+emissions,87.42841982833107,-10000.0,10000.0,t-CO2,Annual total CO2 emissions,unique
+capex,0.512189227466549,-10000.0,10000.0,MCHF,total CAPEX,unique
+opex,0.05087983531915091,0.0,10000.0,MCHF/year,total annual opex,unique
+totex,0.08373530362985876,0.0,10000.0,MCHF/year,total annualized expenses,unique

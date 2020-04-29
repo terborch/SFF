@@ -70,10 +70,10 @@ def bat(unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge):
     # Constraints
     n = f'{u}_SOC'
     C_meta[n] = ['State of Charge detla relative to Produced and Consumed Elec and Efficiency', 5]
-    m.addConstrs((unit_SOC[p + 1] - unit_SOC[p] ==  
+    m.addConstrs((unit_SOC[p + 1] - (1 - P[u]['Self_discharge'])*unit_SOC[p] ==  
                   (Eff*unit_cons[('Elec',p)] - (1/Eff)*unit_prod[('Elec',p)]) 
                   for p in Periods), n);
-    
+    P[u]['Self_discharge']
     n = f'{u}_charge_discharge'
     C_meta[n] = ['Prevent the unit from charging and discharging at the same time', 5]
     m.addConstrs((unit_charge[p] + unit_discharge[p] <= 1 for p in Periods), n);
@@ -89,7 +89,7 @@ def bat(unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge):
     m.addConstr((unit_SOC[0] == unit_SOC[Periods[-1]]), n);
     n = f'{u}_daily_initial'
     C_meta[n] = ['Set the initial State of Charge at 0', 5]
-    m.addConstr((unit_SOC[0] == 0), n);
+    m.addConstr((unit_SOC[0] == unit_size), n);
     
     n = f'{u}_size_SOC'
     C_meta[n] = ['Upper limit on the State of Charge relative to the Installed Capacity', 5]

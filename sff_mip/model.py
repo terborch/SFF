@@ -332,7 +332,7 @@ Cap = 26.217
 m.addConstr(emissions <= Cap, n);
 """
 
-
+m.addConstrs((unit_prod['BAT'][('Elec',p)] == 0 for p in Periods), 'stupid');
 
 ##################################################################################################
 ### Scenarios
