@@ -1,0 +1,33 @@
+,Value,Lower Bound,Upper Bound,Units,Decription,Type
+unit_size[BOI],613.5063766583272,0.0,100000.0,kW,Installed capacity of BOI,unique
+unit_size[PV],0.0,0.0,100000.0,kW,Installed capacity of PV,unique
+unit_size[BAT],0.0,0.0,100000.0,kWh,Installed capacity of BAT,unique
+unit_size[SOFC],0.0,0.0,100000.0,kW,Installed capacity of SOFC,unique
+unit_size[AD],0.0,0.0,100000.0,kW,Installed capacity of AD,unique
+unit_size[CGT],0.0,0.0,100000.0,kWh,Installed capacity of CGT,unique
+unit_install[BOI],1.0,0.0,1.0,-,BOI decision variable,bool
+unit_install[PV],-0.0,0.0,1.0,-,PV decision variable,bool
+unit_install[BAT],-0.0,0.0,1.0,-,BAT decision variable,bool
+unit_install[SOFC],-0.0,0.0,1.0,-,SOFC decision variable,bool
+unit_install[AD],-0.0,0.0,1.0,-,AD decision variable,bool
+unit_install[CGT],0.0,0.0,1.0,-,CGT decision variable,bool
+unit_capex[BOI],122.79270518842385,0.0,10000.0,kCHF,Investment cost of BOI,unique
+unit_capex[PV],0.0,0.0,10000.0,kCHF,Investment cost of PV,unique
+unit_capex[BAT],0.0,0.0,10000.0,kCHF,Investment cost of BAT,unique
+unit_capex[SOFC],0.0,0.0,10000.0,kCHF,Investment cost of SOFC,unique
+unit_capex[AD],0.0,0.0,10000.0,kCHF,Investment cost of AD,unique
+unit_capex[CGT],0.0,0.0,10000.0,kCHF,Investment cost of CGT,unique
+min_T_AD,-1529.9138957279702,-10000.0,10000.0,,,
+max_T_AD,40.0,-10000.0,10000.0,,,
+penalty_a,0.04405089345565158,0.0,10000.0,MCHF,Sum of Penalty for deviating from the comfort temperature,unique
+grid_export_a[Elec],0.0,0.0,10000.0,,,
+grid_export_a[Gas],458.24165972379495,0.0,10000.0,,,
+grid_import_a[Elec],66.84109589041094,0.0,10000.0,,,
+grid_import_a[Gas],893.1430180463149,0.0,10000.0,,,
+unused_a[Biomass],77.33488193514087,0.0,10000.0,,,
+unused_a[Biogas],0.0,0.0,10000.0,,,
+unused_a[Gas],-2.5295321393059567e-14,0.0,10000.0,,,
+emissions,170.4225119772631,-10000.0,10000.0,t-CO2,Annual total CO2 emissions,unique
+capex,0.12279270518842385,-10000.0,10000.0,MCHF,total CAPEX,unique
+opex,0.05999880487397612,0.0,10000.0,MCHF/year,total annual opex,unique
+totex,0.06787560434135234,0.0,10000.0,MCHF/year,total annualized expenses,unique

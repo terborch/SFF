@@ -162,7 +162,7 @@ def time_param():
         Time.append(datetime.strftime(Day_one + timedelta(hours=t*dt), S['Time_format']))
     make_param('Timedep', 'Time', Time, ['-', Description, 'calc'])
     
-    return Periods, Time_steps, dt, Days, Time
+    return Periods, Time_steps, dt, Days, Time, dt_end
 
     
 def initialize_model():
@@ -188,7 +188,7 @@ P, P_meta, Categories = get_param('parameters.csv', Categories)
 S, S_meta = get_settings('settings.csv')
 # List of periods, number of time steps and delta t (duration of a time step) in hours
 Datetime_format = S['Date_format'] + ' ' + S['Time_format']
-Periods, Time_steps, dt, Days, Time = time_param()
+Periods, Time_steps, dt, Days, Time, dt_end = time_param()
 # Default upper bound for most variables
 Bound = S['Var_bound']
 # Dictionnary of variable metadata

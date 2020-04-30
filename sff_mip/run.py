@@ -26,7 +26,7 @@ start = time.time()
 # Internal modules
 import results
 from initialize_model import m, S, V_meta, V_bounds, P, P_meta, C_meta
-from global_param import Costs_u, Periods, Ext_T, Irradiance
+from global_param import Costs_u, Periods, Ext_T, Irradiance, Dates
 import model
 import data
 import plot
@@ -36,6 +36,7 @@ from plot import fig_width, fig_height
 
 def run_single(objective, relax=False, save_df=True, save_fig=True, big_vars=False):
     
+
     # Build and run the MIP optimization model
     model.run(objective, relax)
     
@@ -46,7 +47,7 @@ def run_single(objective, relax=False, save_df=True, save_fig=True, big_vars=Fal
     var_result_time_indep, var_result_time_dep = results.all_dic(m, Periods, V_bounds)
     var_name_time_indep = list(var_result_time_indep.keys())
     var_name_time_dep = list(var_result_time_dep.keys())
-    
+        
     df_time_indep = results.var_time_indep_summary(m, var_result_time_indep, V_meta)
     df_time_dep = results.var_time_dep_summary(m, var_result_time_dep, V_meta, V_bounds)
     df_parameters = results.parameters(P, P_meta)
@@ -108,7 +109,7 @@ def run_single(objective, relax=False, save_df=True, save_fig=True, big_vars=Fal
     plot.print_fig(save_fig, os.path.join(cd, 'temperature_results.png'))
 
     for r in ['Elec', 'Gas', 'Biogas']:
-        plot.resource(r, var_result_time_dep, var_name_time_dep)
+        plot.resource(r, var_result_time_dep, var_name_time_dep, Dates, daily=True)
         plot.print_fig(save_fig, os.path.join(cd, 'resource{}.png'.format(r)))
     
     plot.flows('v[', 'water flows', 'm^3/h', var_result_time_dep, True)
@@ -117,13 +118,13 @@ def run_single(objective, relax=False, save_df=True, save_fig=True, big_vars=Fal
     plot.flows('Heat', 'heat flows', 'kW', var_result_time_dep, True)
     plot.print_fig(save_fig, os.path.join(cd, 'Heat_flows.png'))
     
-    plot.PV_results(var_result_time_dep, Irradiance)
+    plot.PV_results(var_result_time_dep, Irradiance, Dates, daily=False)
     plot.print_fig(save_fig, os.path.join(cd, 'PV.png'))  
         
     plot.SOFC_results(var_result_time_dep)
     plot.print_fig(save_fig, os.path.join(cd, 'SOFC.png'))
 
-    plot.all_results(var_result_time_dep, var_name_time_dep)
+    plot.all_results(var_result_time_dep, var_name_time_dep, Dates, daily=True)
     plot.print_fig(save_fig, os.path.join(cd, 'all_results.png'))
 
 
@@ -141,7 +142,6 @@ print('global runtime: ', end - start, 's')
 var_result_time_indep, var_result_time_dep = results.all_dic(m, Periods, V_bounds)
 var_name_time_indep = list(var_result_time_indep.keys())
 var_name_time_dep = list(var_result_time_dep.keys())
-
 
 
 """

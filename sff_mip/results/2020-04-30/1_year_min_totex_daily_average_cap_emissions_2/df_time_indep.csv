@@ -1,0 +1,33 @@
+,Value,Lower Bound,Upper Bound,Units,Decription,Type
+unit_size[BOI],708.5258295454507,0.0,100000.0,kW,Installed capacity of BOI,unique
+unit_size[PV],2829.932979096838,0.0,100000.0,kW,Installed capacity of PV,unique
+unit_size[BAT],0.0,0.0,100000.0,kWh,Installed capacity of BAT,unique
+unit_size[SOFC],49.15896709116012,0.0,100000.0,kW,Installed capacity of SOFC,unique
+unit_size[AD],31.183420135137496,0.0,100000.0,kW,Installed capacity of AD,unique
+unit_size[CGT],1000.0,0.0,100000.0,kWh,Installed capacity of CGT,unique
+unit_install[BOI],1.0,0.0,1.0,-,BOI decision variable,bool
+unit_install[PV],1.0,0.0,1.0,-,PV decision variable,bool
+unit_install[BAT],0.0,0.0,1.0,-,BAT decision variable,bool
+unit_install[SOFC],1.0,0.0,1.0,-,SOFC decision variable,bool
+unit_install[AD],1.0,0.0,1.0,-,AD decision variable,bool
+unit_install[CGT],1.0,0.0,1.0,-,CGT decision variable,bool
+unit_capex[BOI],140.7513817840902,0.0,10000.0,kCHF,Investment cost of BOI,unique
+unit_capex[PV],10000.0,0.0,10000.0,kCHF,Investment cost of PV,unique
+unit_capex[BAT],0.0,0.0,10000.0,kCHF,Investment cost of BAT,unique
+unit_capex[SOFC],213.7964956045853,0.0,10000.0,kCHF,Investment cost of SOFC,unique
+unit_capex[AD],93.19523436487124,0.0,10000.0,kCHF,Investment cost of AD,unique
+unit_capex[CGT],130.54139999999998,0.0,10000.0,kCHF,Investment cost of CGT,unique
+min_T_AD,30.0,-10000.0,10000.0,,,
+max_T_AD,40.0,-10000.0,10000.0,,,
+penalty_a,0.5815232595049504,0.0,10000.0,MCHF,Sum of Penalty for deviating from the comfort temperature,unique
+grid_export_a[Elec],116.78597136087642,0.0,10000.0,,,
+grid_export_a[Gas],0.0,0.0,10000.0,,,
+grid_import_a[Elec],464.4464720071774,0.0,10000.0,,,
+grid_import_a[Gas],1965.8716952829457,0.0,10000.0,,,
+unused_a[Biomass],0.43103581902492993,0.0,10000.0,,,
+unused_a[Biogas],0.21402623239253843,0.0,10000.0,,,
+unused_a[Gas],0.0,0.0,10000.0,,,
+emissions,416.36432094531665,-10000.0,10000.0,t-CO2,Annual total CO2 emissions,unique
+capex,10.578284511753546,-10000.0,10000.0,MCHF,total CAPEX,unique
+opex,0.2593940111954881,0.0,10000.0,MCHF/year,total annual opex,unique
+totex,0.9379605895608422,0.0,10000.0,MCHF/year,total annualized expenses,unique

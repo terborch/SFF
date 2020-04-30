@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import os.path
 # Internal modules
-from initialize_model import Periods
+from initialize_model import Periods, dt_end
 from global_param import Dates, Ext_T, Irradiance, Build_cons_Elec
 from global_set import (Units, Units_storage, Resources, Color_code, Linestyle_code, Linestyles,
                         Abbrev)
@@ -18,6 +18,13 @@ from global_set import (Units, Units_storage, Resources, Color_code, Linestyle_c
 # Plot settings
 fig_width, fig_height = 11.7*2, 5.8
 
+# Converting hourly to daily values
+Day_Dates = []
+Days = (Dates[-1] - Dates[0]).days
+Last_day_hours = int((Dates[-1] - Dates[0]).seconds/3600)
+Days += 1 if Last_day_hours >= 0 else 0
+Day_Dates = [Dates[i*24] for i in range(Days)]
+Day_Dates.append(dt_end)
 
 def get_resource_name(var_name):
     """ Get the abbreviated name of a resoucre from a variable name string """
@@ -52,6 +59,22 @@ def ls(var_name):
     else:
         return Linestyle_code[u]
 
+def hourly_to_daily(hourly_values):
+    i, j = 0, 24
+    daily_average = []
+    for d in range(Days):
+        daily_average.append(sum(hourly_values[i:j])/24)
+        i, j = 24*d, 24*(1 + d)
+    daily_average.append(sum(hourly_values[i:-1])/Last_day_hours)
+    return daily_average
+
+
+def hourly_to_daily_list(var_result, var_name):     
+    daily_var_result = {}
+    for n in var_name:
+        daily_var_result[n] = hourly_to_daily(var_result[n])
+    return daily_var_result
+
 
 def unit_results(var_result_time_indep, var_name_time_indep, title=None):
     """ Given a dictionnary of time independent results plot a bar chart of the size of units
@@ -85,17 +108,21 @@ def unit_results(var_result_time_indep, var_name_time_indep, title=None):
     plt.xticks(range(len(Units)), [names[i] for i in range(len(Units))])
 
 
-def resource(resource, var_result, var_name):
-
+def resource(resource, var_result, var_name, Dates, daily=False):
+    
+    if daily:
+        Dates = Day_Dates
+        var_result = hourly_to_daily_list(var_result, var_name)
+        Build_cons = hourly_to_daily(Build_cons_Elec)
+    else:
+        Build_cons = Build_cons_Elec
+    
     name = []
     for n in var_name:
         if resource in n:
             name.append(n)
     
-    if resource == 'Elec':
-        nbr_fig = len(name) + 1
-    else:
-        nbr_fig = len(name)
+    nbr_fig = len(name) + 1 if resource == 'Elec' else len(name)
     
     fig, axs = plt.subplots(nbr_fig, 1, sharex=True)
     fig.set_size_inches(fig_width, fig_height*nbr_fig)
@@ -109,16 +136,11 @@ def resource(resource, var_result, var_name):
         i += 1        
     
     if resource == 'Elec':
-        axs[i].plot(Dates, Build_cons_Elec, label = 'Building consumption', c=col('Elec'), 
+        axs[i].plot(Dates, Build_cons, label = 'Building consumption', c=col('Elec'), 
                     ls=ls('build'))
         axs[i].legend()
         axs[i].set_ylabel(get_resource_name(n) + ' in kW')
         
-        
-###cd = 'results\\2020-04-22\\run_nbr_46\\'
-###r='Elec'
-###resource(r, var_result_time_dep, var_name_time_dep)
-###print_fig(False, os.path.join(cd, 'resource{}.png'.format(r)))
 
 def temperature_results(var_result):
     fig, ax1 = plt.subplots()
@@ -143,7 +165,16 @@ def temperature_results(var_result):
     ax2.legend(loc='center right')
 
 
-def PV_results(var_result, Irradiance):
+def PV_results(var_result, Irradiance, Dates, daily=False):
+    
+    if daily:
+        Dates = Day_Dates
+        Irr = hourly_to_daily(Irradiance)
+        n = 'unit_prod[PV][Elec]'
+        var_result[n] = hourly_to_daily(var_result[n])
+    else:
+        Irr = Irradiance
+        
     fig, ax1 = plt.subplots()
     fig.set_size_inches(fig_width, fig_height)
     plt.title('PV')
@@ -153,18 +184,20 @@ def PV_results(var_result, Irradiance):
     ax2.set_ylabel('Electricity produced in kW')
     
     name = 'Irradiance'
-    ax1.plot(Dates, Irradiance, label=name, color=col(name))
+    ax1.plot(Dates, Irr, label=name, color=col(name))
     name = 'unit_prod[PV][Elec]'
     ax2.plot(Dates, var_result[name], label=name, color=col(name), ls=ls(name))
 
     ax1.legend(loc='center left') 
     ax2.legend(loc='center right')
-    
+
 
 def SOFC_results(var_result):
     fig, ax1 = plt.subplots()
     fig.set_size_inches(fig_width, fig_height)
     plt.title('SOFC')
+    
+    
     ax1.set_xlabel('Dates')
     ax1.set_ylabel('Resources consumed and produced by the SOFC in kW')
     ax2 = ax1.twinx()
@@ -188,8 +221,11 @@ def normalize(l):
     return [l[i]/max(l) for i in range(len(l))]
 
 
-def all_results(var_result, var_name):
+def all_results(var_result, var_name, Dates, daily=False):
     """ Plot all time dependent results that vary more than 1%"""
+    if daily:
+        Dates = Day_Dates
+        var_result = hourly_to_daily_list(var_result, var_name)
     
     var_name_vary = []
     for n in var_name:

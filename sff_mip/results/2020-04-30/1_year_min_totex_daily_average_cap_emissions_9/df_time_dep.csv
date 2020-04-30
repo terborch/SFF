@@ -1,0 +1,38 @@
+,Minimum,Average,Maximum,Length,Lower Bound,Upper Bound,Units,Decription,Type
+unit_prod[BOI][Heat],0.0,232.05367507939147,509.52963550073514,8760,0.0,10000.0,kW,Heat produced by BOI,time
+unit_cons[BOI][Gas],0.0,254.40403781824608,566.1440394452612,8760,0.0,10000.0,kW,Gas consumed by BOI,time
+unit_cons[BOI][Biogas],0.0,3.4333789366333978,31.183420135138242,8760,0.0,10000.0,kW,Biogas consumed by BOI,time
+unit_prod[PV][Elec],0.0,0.0,0.0,8760,0.0,10000.0,kW,Elec produced by PV,time
+unit_prod[BAT][Elec],0.0,0.0,0.0,8760,0.0,10000.0,kW,Elec produced by BAT,time
+unit_cons[BAT][Elec],0.0,0.0,0.0,8760,0.0,10000.0,kW,Elec consumed by BAT,time
+unit_prod[SOFC][Elec],0.0,55.20452964145226,159.12473772878158,8760,0.0,10000.0,kW,Elec produced by SOFC,time
+unit_prod[SOFC][Heat],0.0,34.04279327889556,98.12692159941531,8760,0.0,10000.0,kW,Heat produced by SOFC,time
+unit_cons[SOFC][Gas],0.0,70.34507731329293,279.1662065417214,8760,0.0,10000.0,kW,Gas consumed by SOFC,time
+unit_cons[SOFC][Biogas],0.0,26.50497468925492,31.183420135138284,8760,0.0,10000.0,kW,Biogas consumed by SOFC,time
+unit_prod[AD][Biogas],0.0,30.273291933244614,31.183420135137496,8760,0.0,10000.0,kW,Biogas produced by AD,time
+unit_cons[AD][Biomass],0.0,100.91097311081536,103.94473378379166,8760,0.0,10000.0,kW,Biomass consumed by AD,time
+unit_cons[AD][Elec],0.0,0.24218633546595678,0.24946736108109996,8760,0.0,10000.0,kW,Elec consumed by AD,time
+unit_cons[AD][Heat],-1.194966898765415e-07,6.850057930421916,607.6565571001502,8760,0.0,10000.0,kW,Heat consumed by AD,time
+unit_prod[CGT][Biogas],0.0,1.542333273762899e-14,7.899876815398222e-13,8760,0.0,10000.0,kW,Biogas produced by CGT,time
+unit_cons[CGT][Biogas],-7.516183738087769e-13,1.6127509357401865e-14,7.473551173942162e-13,8760,0.0,10000.0,kW,Biogas consumed by CGT,time
+unit_cons[CGT][Elec],-2.5053945793625894e-14,5.375836452467288e-16,2.4911837246473874e-14,8760,0.0,10000.0,kW,Elec consumed by CGT,time
+unit_SOC[BAT],0.0,0.0,0.0,8760,0.0,10000.0,kWh,State of charge of BAT,bool
+unit_SOC[CGT],0.0,7.24579179864538e-13,1.4210854715202004e-12,8760,0.0,10000.0,kWh,State of charge of CGT,bool
+unit_T[AD],29.999999995070212,32.901256872970265,40.00000000009842,8760,-10000.0,10000.0,°C,Temperature in the AD,time
+build_cons_Heat,-9.379515608642917e-08,259.2464104278652,607.6565571001503,8760,0.0,10000.0,kW,Heat consumed by the building,time
+v[BOI][build],0.0,13.125976718030216,29.227321348034575,8760,0.0,10000.0,m^3/h,Volume flow of heating water,time
+v[BOI][AD],-3.5818751406584857e-10,0.277412319843087,43.84098202205186,8760,0.0,10000.0,m^3/h,Volume flow of heating water,time
+v[SOFC][build],-5.380219278380269e-09,1.7447542816561519,5.628695318484432,8760,0.0,10000.0,m^3/h,Volume flow of heating water,time
+v[SOFC][AD],-1.028174195878466e-08,0.31198080992553023,8.443042967444907,8760,0.0,10000.0,m^3/h,Volume flow of heating water,time
+heat_loss_biomass,0.0,7.936306608015844,8.174901620370354,8760,0.0,10000.0,kW,Heat loss from biomass input,time
+build_T,17.999999999999996,20.268235340493842,32.79711292325808,8760,-10000.0,10000.0,°C,Interior temperature of the building,time
+penalty,6.42763092685684e-08,6.906153632237557e-05,0.00042247531578974565,8760,0.0,10000.0,MCHF,Isntant Penalty for deviating from the comfort temperature,time
+comfort_delta_T,-12.797112923258076,-0.26823534049383846,2.0000000000000036,8760,-10000.0,10000.0,°C,Temerature difference between comfort and actual building temperature,time
+comfort_delta_T_abs,0.0019469804678706737,2.0919287966423266,12.797112923258076,8760,0.0,10000.0,°C,Absolute Temerature difference between comfort and actual building temperature,time
+grid_export[Elec],0.0,9.381617096624609,147.7765041310883,8760,0.0,10000.0,,,
+grid_export[Gas],0.0,0.0,0.0,8760,0.0,10000.0,,,
+grid_import[Elec],0.0,44.25945643904012,227.21413931493836,8760,0.0,10000.0,,,
+grid_import[Gas],0.0,324.74911513153904,845.3102459869826,8760,0.0,10000.0,,,
+unused[Biomass],0.0,3.033760672976304,103.94473378379166,8760,0.0,10000.0,,,
+unused[Biogas],-7.602807272633072e-13,0.3349383073562968,31.18342013513675,8760,0.0,10000.0,,,
+unused[Gas],0.0,0.0,0.0,8760,0.0,10000.0,,,

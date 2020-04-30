@@ -15,7 +15,7 @@ import datetime
 import numpy as np
 import pandas as pd
 # Internal modules
-from initialize_model import P, P_meta, S, Periods, Days
+from initialize_model import P, P_meta, S, C_meta, Periods, Days
 from initialize_model import make_param as make_param
 from global_set import Units
 import data
@@ -42,6 +42,7 @@ def biomass_prod(Pigs, Cows):
     make_param(c, 'LSU', LSU, ['LSU', 'Number of LSU', 'calc'])
     
     P_meta[c]['Manure_prod'] = ['kW', 'Manure Production', 'calc']
+    C_meta['Manure_prod'] = ['Production of manue relative to the number of LSU', 1, 'P']
     P[c]['Manure_prod'] = LSU*P[c]['Manure_per_cattle']*P[c]['Manure_HHV_dry']/24
     
     return [P[c]['Manure_prod'] for p in Periods]

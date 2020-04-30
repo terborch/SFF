@@ -22,12 +22,12 @@ import global_param
 def boi(unit_prod, unit_cons, unit_size):
     c = 'BOI'
     n = 'BOI_production'
-    C_meta[n] = ['Heat produced relative to Gas and Biogas consumed and Efficiency', 2]
+    C_meta[n] = ['Heat produced relative to Gas and Biogas consumed and Efficiency', 0]
     m.addConstrs(((unit_cons[('Biogas',p)] + unit_cons[('Gas',p)])*P[c]['Eff'] == 
                   unit_prod[('Heat',p)] for p in Periods), n);
     
     n = 'BOI_size'
-    C_meta[n] = ['Upper limit on Heat produced relative to installed capacity', 3]
+    C_meta[n] = ['Upper limit on Heat produced relative to installed capacity', 0]
     m.addConstrs((unit_prod[('Heat',p)] <= unit_size for p in Periods), n);
 
 
@@ -40,12 +40,12 @@ def boi(unit_prod, unit_cons, unit_size):
 def pv(unit_prod, unit_size, Irradiance):
     c = 'PV'
     n = 'PV_production'
-    C_meta[n] = ['Elec produced relative to Irradiance, Efficiency and Installed capacity', 4]
+    C_meta[n] = ['Elec produced relative to Irradiance, Efficiency and Installed capacity', 5]
     m.addConstrs((unit_prod[('Elec',p)] == Irradiance[p] * P[c]['Eff'] * unit_size 
                   for p in Periods), n);
     
     n = 'PV_roof_size'
-    C_meta[n] = ['Upper limit on Installed capacity relative to Available area', 5]
+    C_meta[n] = ['Upper limit on Installed capacity relative to Available area', 6]
     m.addConstr(unit_size <= P['build']['Ground_area'] * P['PV']['max_utilisation'], n);    
     
     
@@ -69,36 +69,36 @@ def bat(unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge):
     
     # Constraints
     n = f'{u}_SOC'
-    C_meta[n] = ['State of Charge detla relative to Produced and Consumed Elec and Efficiency', 5]
+    C_meta[n] = ['State of Charge detla relative to Produced and Consumed Elec and Efficiency', 0]
     m.addConstrs((unit_SOC[p + 1] - (1 - P[u]['Self_discharge'])*unit_SOC[p] ==  
                   (Eff*unit_cons[('Elec',p)] - (1/Eff)*unit_prod[('Elec',p)]) 
                   for p in Periods), n);
     P[u]['Self_discharge']
     n = f'{u}_charge_discharge'
-    C_meta[n] = ['Prevent the unit from charging and discharging at the same time', 5]
+    C_meta[n] = ['Prevent the unit from charging and discharging at the same time', 0]
     m.addConstrs((unit_charge[p] + unit_discharge[p] <= 1 for p in Periods), n);
     n = f'{u}_charge'
-    C_meta[n] = ['M constraint to link the boolean variable Charge with Elec consumption', 5]
+    C_meta[n] = ['M constraint to link the boolean variable Charge with Elec consumption', 0]
     m.addConstrs((unit_charge[p]*Bound >= unit_cons[('Elec',p)] for p in Periods), n);
     n = f'{u}_discharge'
-    C_meta[n] = ['M constraint to link the boolean variable Discharge with Elec production', 5]
+    C_meta[n] = ['M constraint to link the boolean variable Discharge with Elec production', 0]
     m.addConstrs((unit_discharge[p]*Bound >= unit_prod[('Elec',p)] for p in Periods), n);
     
     n = f'{u}_daily_cycle'
-    C_meta[n] = ['Cycling constraint for the State of Charge over the entire modelling Period', 5]
+    C_meta[n] = ['Cycling constraint for the State of Charge over the entire modelling Period', 0]
     m.addConstr((unit_SOC[0] == unit_SOC[Periods[-1]]), n);
     n = f'{u}_daily_initial'
-    C_meta[n] = ['Set the initial State of Charge at 0', 5]
-    m.addConstr((unit_SOC[0] == unit_size), n);
+    C_meta[n] = ['Set the initial State of Charge at 0', 0]
+    m.addConstr((unit_SOC[0] == 0), n);
     
     n = f'{u}_size_SOC'
-    C_meta[n] = ['Upper limit on the State of Charge relative to the Installed Capacity', 5]
+    C_meta[n] = ['Upper limit on the State of Charge relative to the Installed Capacity', 0]
     m.addConstrs((unit_SOC[p] <= unit_size for p in Periods), n);
     n = f'{u}_size_discharge'
-    C_meta[n] = ['Upper limit on Elec produced relative to the Installed Capacity', 5]
+    C_meta[n] = ['Upper limit on Elec produced relative to the Installed Capacity', 0]
     m.addConstrs((unit_prod[('Elec',p)] <= unit_size for p in Periods), n);
     n = f'{u}_size_charge'
-    C_meta[n] = ['Upper limit on Elec consumed relative to the Installed Capacity', 5]
+    C_meta[n] = ['Upper limit on Elec consumed relative to the Installed Capacity', 0]
     m.addConstrs((unit_cons[('Elec',p)] <= unit_size for p in Periods), n);
 
 
@@ -114,17 +114,17 @@ def ad(unit_prod, unit_cons, unit_size, unit_T, unit_install, Ext_T, Irradiance)
     
     c, g = 'AD', 'General'
     n = 'AD_production'
-    C_meta[n] = ['Biogas produced relative to Biomass consumed and Efficiency', 5]
+    C_meta[n] = ['Biogas produced relative to Biomass consumed and Efficiency', 0]
     m.addConstrs((unit_prod[('Biogas',p)] == 
                   unit_cons[('Biomass',p)]*P[c]['Eff'] for p in Periods), n);
     
     n = 'AD_elec_cons'
-    C_meta[n] = ['Elec consumed relative to Biogas produced and Elec consumption factor', 5]
+    C_meta[n] = ['Elec consumed relative to Biogas produced and Elec consumption factor', 0]
     m.addConstrs((unit_cons[('Elec',p)] == 
                   unit_prod[('Biogas',p)]*P[c]['Elec_cons'] for p in Periods), n);
     
     n = 'AD_size'
-    C_meta[n] = ['Upper limit on Biogas produced relative to Installed capacity', 5]
+    C_meta[n] = ['Upper limit on Biogas produced relative to Installed capacity', 0]
     m.addConstrs((unit_prod[('Biogas',p)] <= unit_size for p in Periods), n);
 
     # Thermodynamics parameters
@@ -142,7 +142,7 @@ def ad(unit_prod, unit_cons, unit_size, unit_T, unit_install, Ext_T, Irradiance)
     heat_loss_biomass = m.addVars(Periods, lb=0, ub=Bound, name= n)
     
     # Thermodynamic constraints 
-    C_meta[n] = ['Heat losses relative to Biomass consumption and mean external temperature', 5]
+    C_meta[n] = ['Heat losses relative to Biomass consumption and mean external temperature', 0]
     m.addConstrs((heat_loss_biomass[p] == ((unit_cons[('Biomass',p)]/P[c]['Manure_HHV_dry'])/
                   (1 - P[c]['Biomass_water'])/1000)*
                   P[g]['Cp_water']*(P[c]['T_mean'] - P[g]['Temp_ext_mean']) for p in Periods), n);
@@ -154,12 +154,12 @@ def ad(unit_prod, unit_cons, unit_size, unit_T, unit_install, Ext_T, Irradiance)
     Gains_AD = [unit_cons[('Elec',p)] + Gains_solar_AD[p] for p in Periods]
     
     n = 'AD_temperature'
-    C_meta[n] = ['AD Temperature change relative to External Temperature, Gains and Losses', 5]
+    C_meta[n] = ['AD Temperature change relative to External Temperature, Gains and Losses', 0]
     m.addConstrs((P[c]['C']*(unit_T[p+1] - unit_T[p])/dt == P[c]['U']*(Ext_T[p] - unit_T[p]) +
                   Gains_AD[p] - heat_loss_biomass[p] + unit_cons[('Heat',p)] for p in Periods), n);
     
     n = 'AD_final_temperature'
-    C_meta[n] = ['Cycling constraint for the AD Temperate over the entire modelling Period', 5]
+    C_meta[n] = ['Cycling constraint for the AD Temperate over the entire modelling Period', 0]
     m.addConstr(unit_T[Periods[-1] + 1] == unit_T[0], n);
     
     # Add temperature constraints only if the the unit is installed
@@ -169,7 +169,7 @@ def ad(unit_prod, unit_cons, unit_size, unit_T, unit_install, Ext_T, Irradiance)
     max_T_AD = m.addVar(lb=-Bound, ub=Bound, name='max_T_AD')
     
     n = 'AD_temperature_constraint'
-    C_meta[n] = ['Limit AD Temperature only if AD is installed', 5]
+    C_meta[n] = ['Limit AD Temperature only if AD is installed', 0]
     m.addGenConstrIndicator(unit_install, True, min_T_AD == P[c]['T_min'])
     m.addGenConstrIndicator(unit_install, True, max_T_AD == P[c]['T_max'])
 
@@ -217,39 +217,39 @@ def cgt(unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge):
     
     # Constraints
     n = f'{u}_SOC'
-    C_meta[n] = ['State of Charge detla relative to Produced and Consumed Gas', 5]
+    C_meta[n] = ['State of Charge detla relative to Produced and Consumed Gas', 0]
     m.addConstrs((unit_SOC[p + 1] - unit_SOC[p] == (unit_cons[(r,p)] - unit_prod[(r,p)])/
                   P[g]['Biogas_CH4'] for p in Periods), n);
     n = f'{u}_Compression_Elec'
-    C_meta[n] = ['Electricity requiered to compress the Gas', 5]
+    C_meta[n] = ['Electricity requiered to compress the Gas', 0]
     m.addConstrs((unit_cons[('Elec',p)] == unit_cons[(r,p)]*
                   P[u]['Elec_comp']/P[g]['Biogas_CH4'] for p in Periods), n);
     
     n = f'{u}_charge_discharge'
-    C_meta[n] = ['Prevent the unit from charging and discharging at the same time', 5]
+    C_meta[n] = ['Prevent the unit from charging and discharging at the same time', 0]
     m.addConstrs((unit_charge[p] + unit_discharge[p] <= 1 for p in Periods), n);
     n = f'{u}_charge'
-    C_meta[n] = ['M constraint to link the boolean variable Charge with Gas consumption', 5]
+    C_meta[n] = ['M constraint to link the boolean variable Charge with Gas consumption', 0]
     m.addConstrs((unit_charge[p]*Bound >= unit_cons[(r,p)] for p in Periods), n);
     n = f'{u}_discharge'
-    C_meta[n] = ['M constraint to link the boolean variable Discharge with Gas production', 5]
+    C_meta[n] = ['M constraint to link the boolean variable Discharge with Gas production', 0]
     m.addConstrs((unit_discharge[p]*Bound >= unit_prod[(r,p)] for p in Periods), n);
     
     n = f'{u}_daily_cycle'
-    C_meta[n] = ['Cycling constraint for the State of Charge over the entire modelling Period', 5]
+    C_meta[n] = ['Cycling constraint for the State of Charge over the entire modelling Period', 0]
     m.addConstr((unit_SOC[0] == unit_SOC[Periods[-1]]), n);
     n = f'{u}_daily_initial'
-    C_meta[n] = ['Set the initial State of Charge at 0', 5]
+    C_meta[n] = ['Set the initial State of Charge at 0', 0]
     m.addConstr((unit_SOC[0] == 0), n);
     
     n = f'{u}_size_SOC'
-    C_meta[n] = ['Upper limit on the State of Charge relative to the Installed Capacity', 5]
+    C_meta[n] = ['Upper limit on the State of Charge relative to the Installed Capacity', 0]
     m.addConstrs((unit_SOC[p] <= unit_size for p in Periods), n);
     n = f'{u}_size_discharge'
-    C_meta[n] = ['Upper limit on Gas produced relative to the Installed Capacity', 5]
+    C_meta[n] = ['Upper limit on Gas produced relative to the Installed Capacity', 0]
     m.addConstrs((unit_prod[(r,p)] <= unit_size for p in Periods), n);
     n = f'{u}_size_charge'
-    C_meta[n] = ['Upper limit on Gas consumed relative to the Installed Capacity', 5]
+    C_meta[n] = ['Upper limit on Gas consumed relative to the Installed Capacity', 0]
     m.addConstrs((unit_cons[(r,p)] <= unit_size for p in Periods), n);
 
 ##################################################################################################

@@ -57,11 +57,11 @@ def cstr_unit_size(S):
         
     n = 'unit_max_size'
     for u in Units:
-        C_meta[n + f'[{u}]'] = [f'Upper limit on the installed capacity of {u} fixed in settings', 1]
+        C_meta[n + f'[{u}]'] = [f'Upper limit on the installed capacity of {u} fixed in settings', 0]
     m.addConstrs((unit_size[u] <= Unit_size_limit[u][1] for u in Units), n);
     n = 'unit_min_size'
     for u in Units:
-        C_meta[n + f'[{u}]'] = [f'Lower limit on the installed capacity of {u} fixed in settings', 1]
+        C_meta[n + f'[{u}]'] = [f'Lower limit on the installed capacity of {u} fixed in settings', 0]
     m.addConstrs((unit_size[u] >= Unit_size_limit[u][0] for u in Units), n);
 
 
@@ -95,32 +95,36 @@ n = 'build_T'
 V_meta[n] = ['°C', 'Interior temperature of the building', 'time']
 build_T = m.addVars(Periods + [Periods[-1] + 1], lb=-Bound, ub=Bound, name= n)
 
-P_meta[c]['Gains_ppl_t'] = ['kW/m^2', 'Heat gains from people', 'calc']
+P_meta[c]['Gains_ppl'] = ['kW/m^2', 'Heat gains from people', 'calc']
+C_meta['Gains_ppl'] = ['Building people gains', 4, 'P']
 Gains_ppl = annual_to_instant(P[c]['Gains_ppl'], df_cons['Gains'].values) * int(len(Periods)/24)
 
-P_meta[c]['Gains_elec_t'] = ['kW/m^2', 'Heat gains from appliances', 'calc']
+P_meta[c]['Gains_elec'] = ['kW/m^2', 'Heat gains from appliances', 'calc']
+C_meta['Gains_elec'] = ['Building electric gains', 3, 'P']
 Gains_elec = [P[c]['Elec_heat_frac'] * Build_cons_Elec[p] / Heated_area for p in Periods]
 
-P_meta[c]['Gains_solar_t'] = ['kW/m^2', 'Heat gains from irradiation', 'calc']
+P_meta[c]['Gains_solar'] = ['kW/m^2', 'Heat gains from irradiation', 'calc']
+C_meta['Gains_solar'] = ['Building solar gains', 3, 'P']
 Gains_solar = [P[c]['Building_absorptance'] * Irradiance[p] for p in Periods ]
 
-P_meta[c]['Gains_t'] = ['kW/m^2', 'Sum of all heat gains', 'calc']
+P_meta[c]['Gains'] = ['kW/m^2', 'Sum of all heat gains', 'calc']
+C_meta['Gains'] = ['Sum of all building heating gains', 3, 'P']
 Gains = Gains_ppl + Gains_elec + Gains_solar
 
 n = 'Building_temperature'
-C_meta[n] = ['Building Temperature change relative to External Temperature, Gains and Losses', 5]
+C_meta[n] = ['Building Temperature change relative to External Temperature, Gains and Losses', 2]
 m.addConstrs((P[c]['C_b']*(build_T[p+1] - build_T[p]) == 
               P[c]['U_b']*(Ext_T[p] - build_T[p]) + Gains[p] + build_cons_Heat[p]/Heated_area
               for p in Periods), n);
 
 n = 'Building_final_temperature'
-C_meta[n] = ['Cycling constraint for the Building Temperate over the entire modelling Period', 5]
+C_meta[n] = ['Cycling constraint for the Building Temperate over the entire modelling Period', 0]
 m.addConstr( build_T[Periods[-1] + 1] == build_T[0], n);
 
 n = 'Building_temperature_min'
-C_meta[n] = ['Lower limit on Building Temperature', 5]
+C_meta[n] = ['Lower limit on Building Temperature', 0]
 m.addConstrs((build_T[p] >= P[c]['T_min'] for p in Periods), n);
-C_meta[n] = ['Upper limit on Building Temperature', 5]
+C_meta[n] = ['Upper limit on Building Temperature', 0]
 n = 'Building_temperature_max'
 m.addConstrs((build_T[p] <= P[c]['T_max'] for p in Periods), n);
 
@@ -135,7 +139,7 @@ n = 'comfort_delta_T'
 V_meta[n] = ['°C', 'Temerature difference between comfort and actual building temperature', 'time']
 delta_T_1 = m.addVars(Periods, lb=-Bound, ub=Bound, name=n)
 n = 'Comfort_delta_T'
-C_meta[n] = ['Temerature difference between comfort and actual building temperature', 5]
+C_meta[n] = ['Temerature difference between comfort and actual building temperature', 0]
 m.addConstrs((delta_T_1[p] == P[c]['T_amb'] - build_T[p] for p in Periods), n);
 
 n = 'comfort_delta_T_abs'
@@ -143,15 +147,15 @@ V_meta[n] = ['°C', 'Absolute Temerature difference between comfort and actual b
              'time']
 delta_T_abs = m.addVars(Periods, lb=0, ub=Bound, name=n)
 n = 'Comfort_delta_T_abs'
-C_meta[n] = ['Absolute Temerature difference between comfort and actual building temperature', 'time', 5]
+C_meta[n] = ['Absolute Temerature difference between comfort and actual building temperature', 'time', 0]
 m.addConstrs((delta_T_abs[p] == gp.abs_(delta_T_1[p]) for p in Periods), n);
 
 n = 'comfort_T_penalty'
-C_meta[n] = ['Instant penalty value relative to temperature difference and penalty factor', 5]
+C_meta[n] = ['Instant penalty value relative to temperature difference and penalty factor', 0]
 m.addConstrs((penalty[p] == delta_T_abs[p]*3.3013330297486014e-05 for p in Periods), n);
 
 n = 'comfort_T_penalty_tot'
-C_meta[n] = ['Sum of penalty value relative to instant penalty', 5]
+C_meta[n] = ['Sum of penalty value relative to instant penalty', 0]
 m.addConstr(penalty_a == penalty.sum('*'), n);
 
 
@@ -162,24 +166,24 @@ m.addConstr(penalty_a == penalty.sum('*'), n);
 
 g = 'General'
 n = 'Heat_load_balance_AD'
-C_meta[n] = ['Heat consumed by the AD relative to hot water supply and temperature delta', 5]
+C_meta[n] = ['Heat consumed by the AD relative to hot water supply and temperature delta', 0]
 m.addConstrs((unit_cons['AD'][('Heat',p)] == P[g]['Cp_water']*(P['AD']['Th'] - P['AD']['Tc'])*
               (v['BOI'][('AD', p)] + v['SOFC'][('AD', p)]) for p in Periods), n);
 
 n = 'Heat_load_balance_build'
-C_meta[n] = ['Heat consumed by the Building relative to hot water supply and temperature delta', 5]
+C_meta[n] = ['Heat consumed by the Building relative to hot water supply and temperature delta', 0]
 m.addConstrs((build_cons_Heat[p] == P[g]['Cp_water']*(P['build']['Th'] - P['build']['Tc'])*
               (v['BOI'][('build', p)] + v['SOFC'][('build', p)]) for p in Periods), n);
 
 n = 'Heat_load_balance_heat_prod'
-C_meta[n] = ['Heat produced by each unit relative to hot water supplied and temperature delta', 5]
+C_meta[n] = ['Heat produced by each unit relative to hot water supplied and temperature delta', 0]
 m.addConstrs((unit_prod[u][('Heat',p)] == 
               P[g]['Cp_water']*(v[u][('build', p)]*(P['build']['Th'] - P['build']['Tc']) + 
                              v[u][('AD', p)]*(P['AD']['Th'] - P['AD']['Tc'])) 
               for u in Heat_prod for p in Periods), n);
 
 n = 'AD_is_installed_heat'
-C_meta[n] = ['Prevent the AD from consuming heat if it is not installed', 5]
+C_meta[n] = ['Prevent the AD from consuming heat if it is not installed', 0]
 m.addConstrs((unit_install[u]*Bound >= unit_cons[u][('Heat', p)] 
               for u in Heat_cons[1:] for p in Periods), n)
     
@@ -220,42 +224,42 @@ unused_a = m.addVars(Unused_res, lb=0, ub=Bound, name=n)
 # Resource balances
 r = 'Elec'
 n = 'Balance_' + r
-C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 5]
+C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
 m.addConstrs((grid_import[(r,p)] + sum(unit_prod[up][(r,p)] for up in U_res['prod'][r])  == 
               grid_export[(r,p)] + sum(unit_cons[uc][(r,p)] for uc in U_res['cons'][r]) + 
               Build_cons_Elec[p] for p in Periods), n);
 r = 'Biomass'
 n = 'Balance_' + r
-C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 5]
+C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
 m.addConstrs((Biomass_prod[p] - unused[(r,p)] == unit_cons['AD'][('Biomass',p)]
               for p in Periods), n);
 r = 'Biogas'
 n = 'Balance_' + r
-C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 5]
+C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
 m.addConstrs((unit_prod['AD'][(r,p)] + unit_prod['CGT'][(r,p)] - unused[(r,p)] == 
               unit_cons['SOFC'][(r,p)] + unit_cons['BOI'][(r,p)] + unit_cons['CGT'][(r,p)] 
               for p in Periods), n);
 r = 'Gas'
 n = 'Balance_' + r
-C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 5]
+C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
 m.addConstrs((grid_import[(r,p)] - grid_export[(r,p)] - unused[(r,p)] == 
               unit_cons['SOFC'][(r,p)] + unit_cons['BOI'][(r,p)] for p in Periods), n);
 
 # Total annual import / export
 n = 'Electricity_grid_import'
-C_meta[n] = ['Annual Elec import relative to instant Elec imports', 5]
+C_meta[n] = ['Annual Elec import relative to instant Elec imports', 0]
 m.addConstr(grid_import_a['Elec'] == sum(grid_import[('Elec',p)]/1000 for p in Periods), n);
 n = 'Electricity_grid_export'
-C_meta[n] = ['Annual Elec export relative to instant Elec exports', 5]
+C_meta[n] = ['Annual Elec export relative to instant Elec exports', 0]
 m.addConstr(grid_export_a['Elec'] == sum(grid_export[('Elec',p)]/1000 for p in Periods), n);
 n = 'Gas_grid_import'
-C_meta[n] = ['Annual Gas import relative to instant Gas imports', 5]
+C_meta[n] = ['Annual Gas import relative to instant Gas imports', 0]
 m.addConstr(grid_import_a['Gas'] == sum(grid_import[('Gas',p)]/1000 for p in Periods), n);
 n = 'Gas_grid_export'
-C_meta[n] = ['Annual Gas export relative to instant Gas exports', 5]
+C_meta[n] = ['Annual Gas export relative to instant Gas exports', 0]
 m.addConstr(grid_export_a['Gas'] == sum(grid_export[('Gas',p)]/1000 for p in Periods), n);
 n = 'Unused_resources'
-C_meta[n] = ['Annual unused resource relative to instant unused resources', 5]
+C_meta[n] = ['Annual unused resource relative to instant unused resources', 0]
 m.addConstrs((unused_a[r] == sum(unused[(r,p)]/1000 for p in Periods) for r in Unused_res), n);
 
 # CO2 emissions
@@ -265,7 +269,7 @@ emissions = m.addVar(lb=-Bound, ub=Bound, name=n)
 
 c = 'CO2'
 n = 'Emissions'
-C_meta[n] = ['Instant CO2 emissions relative to Elec and Gas imports', 5]
+C_meta[n] = ['Instant CO2 emissions relative to Elec and Gas imports', 0]
 m.addConstr(emissions == grid_import_a['Elec']*P[c]['Elec'] + grid_import_a['Gas']*P[c]['Gas'], n);
 
 ###m.addConstr(emissions == (grid_import_a['Elec'] - grid_export_a['Elec'])*P[c]['Elec'] +
@@ -297,40 +301,47 @@ V_meta[n] = ['MCHF/year', 'total annualized expenses', 'unique']
 totex = m.addVar(lb=0, ub=Bound, name=n)
 
 # Constraints
-n = 'is_installed'
-C_meta[n] = ['M constraint to link the boolean var unit_installed with the installed capacity', 5]
+n = 'Is_installed'
+C_meta[n] = ['M constraint to link the boolean var unit_installed with the installed capacity', 0]
 m.addConstrs((unit_install[u]*Bound >= unit_size[u] for u in Units), n);
-n = 'capex'
-C_meta[n] = ['Unit CAPEX relative to unit size and cost parameters', 5]
+n = 'Capex'
+C_meta[n] = ['Unit CAPEX relative to unit size and cost parameters', 0]
 m.addConstrs((unit_capex[u] == Costs_u['Cost_multiplier'][u]*
               (unit_size[u]*Costs_u['Cost_per_size'][u] + unit_install[u]*Costs_u['Cost_per_unit'][u]) 
               for u in Units), n);
 
 n = 'capex_sum'
-C_meta[n] = ['Sum of the CAPEX of all units', 5]
+C_meta[n] = ['Sum of the CAPEX of all units', 0]
 m.addConstr(capex == sum([unit_capex[u] for u in Units])/1000, n);
 
 n = 'opex_sum'
-C_meta[n] = ['Sum of the OPEX of all resources', 5]
+C_meta[n] = ['Sum of the OPEX of all resources', 0]
 m.addConstr(opex == sum(grid_import_a[r]*Costs_res['Import_cost'][r] - 
                         grid_export_a[r]*Costs_res['Export_cost'][r] for r in G_res), n);
 
 n = 'totex_sum'
-C_meta[n] = ['TOTEX relative to the OPEX, the CAPEX and the annualization factor', 5]
+C_meta[n] = ['TOTEX relative to the OPEX, the CAPEX and the annualization factor', 0]
 m.addConstr(totex == opex + P[c]['Tau']*capex, n);
 
-C_meta['Limit_emissions'] = ['Fix a limit to the emissions, for Pareto only', 5]
-C_meta['Limit_totex'] = ['Fix a limit to the TOTEX, for Pareto only', 5]
+C_meta['Limit_emissions'] = ['Fix a limit to the emissions, for Pareto only', 0]
+C_meta['Limit_totex'] = ['Fix a limit to the TOTEX, for Pareto only', 0]
 
-"""
+
 ### capping emissions (Manual Pareto)
 n = 'Emissions_cap'
-#Cap = 27.7
-#Cap = 26.5
-#Cap = 26.22
-Cap = 26.217
+Min_emissions = 416.3226886764463
+# 1. Relaxation = 1 + 1e-5
+# 2. Relaxation = 1 + 1e-4
+# 3. Relaxation = 1 + 1e-3
+# 4. Relaxation = 1 + 1e-2
+# 5. Relaxation = 1 + 1e-1
+# 6. Relaxation = 1.15
+# 7. Relaxation = 1.2
+# 8. Relaxation = 1.3
+Relaxation = 2
+Cap = Min_emissions*Relaxation
 m.addConstr(emissions <= Cap, n);
-"""
+
 
 m.addConstrs((unit_prod['BAT'][('Elec',p)] == 0 for p in Periods), 'stupid');
 
