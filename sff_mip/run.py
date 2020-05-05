@@ -34,7 +34,8 @@ from plot import fig_width, fig_height
 
 
 
-def run_single(objective, relax=False, save_df=True, save_fig=True, big_vars=False):
+def run_single(objective, relax=False, save_df=True, save_fig=True, big_vars=False, 
+               discard_fig=False):
     
 
     # Build and run the MIP optimization model
@@ -63,6 +64,9 @@ def run_single(objective, relax=False, save_df=True, save_fig=True, big_vars=Fal
     matplotlib.rcParams['figure.figsize'] = (fig_width, fig_height)
     plot.unit_results(var_result_time_indep, var_name_time_indep)
     plt.show()
+    
+    if discard_fig:
+        return
     
     if save_df or save_fig:
         # datetime object containing current date and time
@@ -124,14 +128,14 @@ def run_single(objective, relax=False, save_df=True, save_fig=True, big_vars=Fal
     plot.SOFC_results(var_result_time_dep)
     plot.print_fig(save_fig, os.path.join(cd, 'SOFC.png'))
 
-    plot.all_results(var_result_time_dep, var_name_time_dep, Dates, daily=True)
+    plot.all_results(var_result_time_dep, var_name_time_dep, Dates, daily=False)
     plot.print_fig(save_fig, os.path.join(cd, 'all_results.png'))
 
 
 # Execute single run
 ###run_single('emissions', save_fig=True)
 
-run_single('totex', save_fig=True)
+run_single('totex', save_fig=False, discard_fig=True)
 
 
 end = time.time()

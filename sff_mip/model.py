@@ -282,11 +282,6 @@ m.addConstr(emissions == grid_import_a['Elec']*P[c]['Elec'] + grid_import_a['Gas
     #   TOTEX 
 ##################################################################################################
 
-c = 'Eco'
-# Annualization factor Tau
-P_meta[c]['Tau'] = ['-', 'Annualization factor', 'calc']
-P[c]['Tau'] = (P[c]['i']*(1 + P[c]['i'])**P[c]['n']) / ((1 + P[c]['i'])**P[c]['n'] - 1)
-
 # Variable
 n = 'capex'
 V_meta[n] = ['MCHF', 'total CAPEX', 'unique']
@@ -321,7 +316,7 @@ m.addConstr(opex == sum(grid_import_a[r]*Costs_res['Import_cost'][r] -
 
 n = 'totex_sum'
 C_meta[n] = ['TOTEX relative to the OPEX, the CAPEX and the annualization factor', 0]
-m.addConstr(totex == opex + P[c]['Tau']*capex, n);
+m.addConstr(totex == opex + P['Eco']['Tau']*capex, n);
 
 C_meta['Limit_emissions'] = ['Fix a limit to the emissions, for Pareto only', 0]
 C_meta['Limit_totex'] = ['Fix a limit to the TOTEX, for Pareto only', 0]

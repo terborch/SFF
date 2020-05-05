@@ -186,3 +186,7 @@ make_param('build', 'Ground_area', Ground_area, meta)
 Costs_u = unit_economics('unit_costs.csv')
 Costs_res = resource_economics('resource_costs.csv')
 
+# Annualization factor Tau
+c = 'Eco'
+P_meta[c]['Tau'] = ['-', 'Annualization factor', 'calc']
+P[c]['Tau'] = (P[c]['i']*(1 + P[c]['i'])**P[c]['n']) / ((1 + P[c]['i'])**P[c]['n'] - 1)

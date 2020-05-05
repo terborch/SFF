@@ -30,28 +30,28 @@ Abbrev = {'BOI':    'Gas Boiler',
           }
 
 # Eneregy conversion units
-Units = ['BOI', 'PV', 'BAT', 'SOFC', 'AD', 'CGT']
+Units = ('BOI', 'PV', 'BAT', 'SOFC', 'AD', 'CGT')
 
 # Resources and energy carriers
-Resources = ['Elec', 'Gas', 'Biogas', 'Biomass', 'Heat']
+Resources = ('Elec', 'Gas', 'Biogas', 'Biomass', 'Heat')
 
 # The resources each unit produce
 U_prod = {
-    'BOI':  ['Heat'],
-    'PV':   ['Elec'],
-    'BAT':  ['Elec'], 
-    'SOFC': ['Elec', 'Heat'], 
-    'AD':   ['Biogas'],
-    'CGT':  ['Biogas'] 
+    'BOI':  ('Heat',),
+    'PV':   ('Elec',),
+    'BAT':  ('Elec',), 
+    'SOFC': ('Elec', 'Heat'), 
+    'AD':   ('Biogas',),
+    'CGT':  ('Biogas',) 
     }
 
 # The resources each unit consumes
 U_cons = {
-    'BOI':  ['Gas', 'Biogas'],
-    'BAT':  ['Elec'], 
-    'SOFC': ['Gas', 'Biogas'], 
-    'AD':   ['Biomass', 'Elec', 'Heat'],
-    'CGT':  ['Biogas', 'Elec']
+    'BOI':  ('Gas', 'Biogas'),
+    'BAT':  ('Elec',), 
+    'SOFC': ('Gas', 'Biogas'), 
+    'AD':   ('Biomass', 'Elec', 'Heat'),
+    'CGT':  ('Biogas', 'Elec')
     }
 
 # The units producing and consuming a given resource
@@ -59,19 +59,19 @@ U_cons = {
 U_res = {'prod': {}, 'cons': {}}
 for r in Resources:
     for u in U_prod:
-        U_res['prod'][r] = [u for u in U_prod if r in U_prod[u]]
+        U_res['prod'][r] = tuple(u for u in U_prod if r in U_prod[u])
     for u in U_cons:
-        U_res['cons'][r] = [u for u in U_cons if r in U_cons[u]]
+        U_res['cons'][r] = tuple(u for u in U_cons if r in U_cons[u])
 
 # Units that store energy
 Units_storage = ['BAT', 'CGT']
 
 # The buildings and units consuming and producing heat
-Heat_cons = ['build'] + U_res['cons']['Heat']
+Heat_cons = tuple(['build'] + list(U_res['cons']['Heat']))
 Heat_prod = U_res['prod']['Heat']
 
 # Resources that can be exchanged with the grids
-G_res = ['Elec', 'Gas']
+G_res = ('Elec', 'Gas')
 
 # Linestyles for differentiating units
 Linestyles = {'loosely dotted': (0, (1, 10)),
