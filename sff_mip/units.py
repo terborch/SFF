@@ -59,7 +59,6 @@ def bat(unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge):
     """ MILP model of a battery
         Charge and discharge efficiency follows Dirk Lauinge MA thesis
         Unit is force to cycle once a day
-        TODO: Self discharge
         TODO: Discharge rate dependent on size and time step
     """
     
@@ -172,7 +171,7 @@ def ad(unit_prod, unit_cons, unit_size, unit_T, unit_install, Ext_T, Irradiance)
     C_meta[n] = ['Limit AD Temperature only if AD is installed', 0]
     m.addGenConstrIndicator(unit_install, True, min_T_AD == P[c]['T_min'])
     m.addGenConstrIndicator(unit_install, True, max_T_AD == P[c]['T_max'])
-
+    
     m.addConstrs((unit_T[p] >= min_T_AD for p in Periods), n);
     m.addConstrs((unit_T[p] <= max_T_AD for p in Periods), n);
 
@@ -186,13 +185,12 @@ def sofc(unit_prod, unit_cons, unit_size):
     n = 'SOFC_Elec_production'
     C_meta[n] = ['Elec produced relative to Biogas and gas consumed and Elec Efficiency', 6]
     m.addConstrs((unit_prod[('Elec',p)] == (unit_cons[('Biogas',p)] + unit_cons[('Gas',p)])*
-                  (P[c]['Eff_elec'] - P[c]['GC_elec_frac']) for p in Periods), n);
+                  P[c]['Eff_elec'] for p in Periods), n);
     
     n = 'SOFC_Heat_production'
     C_meta[n] = ['Heat produced relative to Biogas and gas consumed and Heat Efficiency', 6]
     m.addConstrs((unit_prod[('Heat',p)] == (unit_cons[('Biogas',p)] + unit_cons[('Gas',p)])*
-                  ((1 - P[c]['Eff_elec']) - P[c]['GC_elec_frac'])*P[c]['Eff_thermal'] 
-                  for p in Periods), n);    
+                  (1 - P[c]['Eff_elec'])*P[c]['Eff_thermal'] for p in Periods), n);    
     
     n = 'SOFC_size'
     C_meta[n] = ['Upper limit on Elec produced relative to installed capacity', 6]

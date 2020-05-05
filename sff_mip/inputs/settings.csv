@@ -1,5 +1,5 @@
 Category,Name,Value,Units,Description
-Model,Solver_time_limit,1000,s,Maximum solving time allowed
+Model,Solver_time_limit,2000,s,Maximum solving time allowed
 Model,Var_bound,10000,-,Default upper bound for all variables
 Time,Time_step,01:00:00,time,Number of minutes in a time step
 Time,Period_start,2019-01-01,date,Period starting from this date
@@ -17,5 +17,5 @@ Units,SOFC_max,1000,kW,Maximum SOFC installed capacity
 Units,SOFC_min,0,kW,Minimum SOFC installed capacity
 Units,BOI_max,1000,kW,Maximum BOI installed capacity
 Units,BOI_min,0,kW,Minimum BOI installed capacity
-Units,CGT_max,1000,kW,Minimum CGT installed capacity
+Units,CGT_max,10000,kW,Minimum CGT installed capacity
 Units,CGT_min,0,kW,Minimum CGT installed capacity

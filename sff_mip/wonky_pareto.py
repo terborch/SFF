@@ -16,12 +16,12 @@ def open_csv(file, date, run_name, separator):
         
     return df
 
-date = '2020-04-30'
+date = '2020-05-04'
 file = 'df_time_indep.csv' 
-nbr_pareto = 9
+nbr_pareto = 11
 Pareto_totex, Perto_emissions = [], []
 for i in range(1, nbr_pareto + 1):
-    run_name = f'1_year_min_totex_daily_average_cap_emissions_{i}'
+    run_name = f'pareto_{i}'
     df = open_csv(file, date, run_name, ',')
     Pareto_totex.append(df['Value']['totex'])
     Perto_emissions.append(df['Value']['emissions'])
@@ -30,11 +30,14 @@ for i in range(1, nbr_pareto + 1):
     
     
 plt.title('Pareto possibility frontiere')
-plt.xlabel('TOTEX in [MCHF]')
-plt.ylabel('emissions in [t-CO2]')
+plt.xlabel('TOTEX in [MCHF/year]')
+plt.ylabel('emissions in [t-CO2/year]')
+plt.ylim(Perto_emissions[0]*0.95, Perto_emissions[-1]*1.05)
 
-plt.plot(Pareto_totex, Perto_emissions, label='emissions')
-plt.legend()
+for i in range(0, nbr_pareto):
+    plt.text(Pareto_totex[i], Perto_emissions[i] + 5, f'{i + 1}')
+    
+plt.plot(Pareto_totex, Perto_emissions, label='emissions', marker='o')
 
 path = os.path.join('results', date, 'pareto.png')
 plt.savefig(path)

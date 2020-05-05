@@ -230,7 +230,8 @@ def all_results(var_result, var_name, Dates, daily=False):
     var_name_vary = []
     for n in var_name:
         if max(var_result[n]) > 1.01*min(var_result[n]):
-            var_name_vary.append(n)
+            if max(var_result[n]) > 1e-5:
+                var_name_vary.append(n)
             
     fig, axs = plt.subplots(len(var_name_vary), 1, sharex=True)
     fig.set_size_inches(20, 50)

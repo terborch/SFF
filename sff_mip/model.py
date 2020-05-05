@@ -326,25 +326,24 @@ m.addConstr(totex == opex + P[c]['Tau']*capex, n);
 C_meta['Limit_emissions'] = ['Fix a limit to the emissions, for Pareto only', 0]
 C_meta['Limit_totex'] = ['Fix a limit to the TOTEX, for Pareto only', 0]
 
-
+"""
 ### capping emissions (Manual Pareto)
 n = 'Emissions_cap'
-Min_emissions = 416.3226886764463
+Min_emissions = 403.621968609974
 # 1. Relaxation = 1 + 1e-5
 # 2. Relaxation = 1 + 1e-4
 # 3. Relaxation = 1 + 1e-3
 # 4. Relaxation = 1 + 1e-2
-# 5. Relaxation = 1 + 1e-1
-# 6. Relaxation = 1.15
-# 7. Relaxation = 1.2
-# 8. Relaxation = 1.3
-Relaxation = 2
+# 5. Relaxation = 1 + 2e-2
+# 6. Relaxation = 1 + 4e-2
+# 7. Relaxation = 1 + 1e-1
+# 8. Relaxation = 1.15
+# 9. Relaxation = 1.2
+# 10. Relaxation = 1.3
+# 11. Relaxation = 2
 Cap = Min_emissions*Relaxation
 m.addConstr(emissions <= Cap, n);
-
-
-m.addConstrs((unit_prod['BAT'][('Elec',p)] == 0 for p in Periods), 'stupid');
-
+"""
 ##################################################################################################
 ### Scenarios
 ##################################################################################################
