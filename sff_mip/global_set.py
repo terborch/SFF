@@ -1,15 +1,15 @@
 """
-### Declare global sets of units and resources
+### Declare global sets of units and resources - They are immutable (tuples) or treated as such
     #   Abbrev      dict of abbreviations
-    #   Units       list of all units in the list units
-    #   Resources   list of resources
+    #   Units       tuple of all units in the list units
+    #   Resources   tuple of resources
     #   U_prod      dict of resource each unit produce
     #   U_cons      dict of resource each unit consume 
     #   U_res       dict of units producing and consuming each resource
-    #   U_storage   list of storage units
-    #   Heat_cons   list of units and buildings consuming heat
-    #   Heat_prod   list of units producing heat
-    #   G_res       list of resources exchanged by the grid
+    #   U_storage   tuple of storage units
+    #   Heat_cons   tuple of units and buildings consuming heat
+    #   Heat_prod   tuple of units producing heat
+    #   G_res       tuple of resources exchanged by the grid
     #   Color_code      dict of colors, one for each resource
     #   Linestyle_code  dict of linestyle names, on for each unit building and grid
     #   Linestyles      dict relating linestyle names to linestyles
@@ -103,3 +103,4 @@ Color_code = {'Elec':       'royalblue',
               'Diesel':     'black',
               'default':    'purple'
               }
+

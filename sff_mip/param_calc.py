@@ -15,8 +15,7 @@ import datetime
 import numpy as np
 import pandas as pd
 # Internal modules
-from initialize_model import P, P_meta, S, C_meta, Periods, Days
-from initialize_model import make_param as make_param
+from param_input import make_param, P, P_meta, S, C_meta, Periods, Days
 from global_set import Units
 import data
 
@@ -28,7 +27,7 @@ def annual_to_instant(Annual, Profile_norm):
         actual profile or instanteneous load.
     """
     Average = Annual / P['Time']['Hours_per_year']
-    Average_profile_norm = np.mean(Profile_norm)
+    Average_profile_norm = float(np.mean(Profile_norm))
     Peak = Average / Average_profile_norm
 
     return list(Peak * Profile_norm)
@@ -45,7 +44,7 @@ def biomass_prod(Pigs, Cows):
     C_meta['Manure_prod'] = ['Production of manue relative to the number of LSU', 1, 'P']
     P[c]['Manure_prod'] = LSU*P[c]['Manure_per_cattle']*P[c]['Manure_HHV_dry']/24
     
-    return [P[c]['Manure_prod'] for p in Periods]
+    return P[c]['Manure_prod']
 
 
 def AD_dimentions(P, P_meta):
@@ -147,11 +146,11 @@ df_weather.drop(df_weather.tail(1).index,inplace=True)
 
 # External temperature
 Ext_T = list(df_weather['Temperature'].values)
-make_param('Timedep', 'Ext_T', Ext_T, ['°C', 'Exterior temperature', 'agrometeo.ch'])
+P_meta['Timedep']['Ext_T'] = ['°C', 'Exterior temperature', 'agrometeo.ch']
 
 # Global irradiance
 Irradiance = list(df_weather['Irradiance'].values)
-make_param('Timedep', 'Irradiance', Irradiance, ['kW/m^2', 'Global irradiance', 'agrometeo.ch'])
+P_meta['Timedep']['Irradiance'] = ['kW/m^2', 'Global irradiance', 'agrometeo.ch']
 
 # List of dates modelled
 Dates, Dates_pd = [], df_weather.index
@@ -168,7 +167,7 @@ make_param('Timedep', 'Build_cons_Elec', Build_cons_Elec, meta)
 
 # Biomass potential
 Biomass_prod = biomass_prod(P['AD']['Pigs'], P['AD']['Cows'])
-make_param('Timedep', 'Biomass_prod', Biomass_prod, ['kW', 'Biomass production', 'calc'])
+make_param('AD', 'Biomass_prod', Biomass_prod, ['kW', 'Biomass production', 'calc'])
 
 # Building heated surface area and ground floor area
 file = 'buildings.csv'
@@ -190,3 +189,6 @@ Costs_res = resource_economics('resource_costs.csv')
 c = 'Eco'
 P_meta[c]['Tau'] = ['-', 'Annualization factor', 'calc']
 P[c]['Tau'] = (P[c]['i']*(1 + P[c]['i'])**P[c]['n']) / ((1 + P[c]['i'])**P[c]['n'] - 1)
+
+
+AD_dimentions(P, P_meta)

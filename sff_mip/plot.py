@@ -10,8 +10,8 @@ from matplotlib import pyplot as plt
 import numpy as np
 import os.path
 # Internal modules
-from initialize_model import Periods, dt_end
-from global_param import Dates, Ext_T, Irradiance, Build_cons_Elec
+from param_input import Periods, dt_end
+from param_calc import Dates, Ext_T, Irradiance, Build_cons_Elec
 from global_set import (Units, Units_storage, Resources, Color_code, Linestyle_code, Linestyles,
                         Abbrev)
 
@@ -142,7 +142,14 @@ def resource(resource, var_result, var_name, Dates, daily=False):
         axs[i].set_ylabel(get_resource_name(n) + ' in kW')
         
 
-def temperature_results(var_result):
+def temperature_results(var_result, var_name, Ext_T, Irradiance, daily=True):
+    
+    if daily:
+        Dates = Day_Dates
+        var_result = hourly_to_daily_list(var_result, var_name)
+        Ext_T = hourly_to_daily(Ext_T)
+        Irradiance = hourly_to_daily(Irradiance)
+        
     fig, ax1 = plt.subplots()
     fig.set_size_inches(fig_width, fig_height)
     plt.title('Building and unit temperatures')
@@ -277,7 +284,12 @@ def transpose_list(l):
     return list(map(list, zip(*l)))
 
 
-def flows(indicator, name, units, var_result_time_dep, sort = False):
+def flows(indicator, name, units, var_result, var_name, sort=False,  daily=True):
+    
+    if daily:
+        Dates = Day_Dates
+        var_result = hourly_to_daily_list(var_result, var_name)
+        
     fig, ax = plt.subplots()
     fig.set_size_inches(fig_width, fig_height)
     plt.title(name)
@@ -285,9 +297,9 @@ def flows(indicator, name, units, var_result_time_dep, sort = False):
     plt.ylabel(name + units)
     # Get relevant flows according to indicator
     flows, flows_name = [], []
-    for n in var_result_time_dep:
+    for n in var_result:
         if indicator in n:
-            flows.append(var_result_time_dep[n])
+            flows.append(var_result[n])
             flows_name.append(n)
     # Sort in decreasing order each flow by maximum value
     if sort:

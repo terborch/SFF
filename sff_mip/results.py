@@ -89,9 +89,9 @@ def parameters(P, P_meta):
     Categories = list(P.keys())
     for c in Categories:
         if c == 'Timedep':
-            a = 1
+            pass
         if c == 'Eco':
-            a = 1
+            pass
         else:
             for p in P[c].keys():
                 dic[p] = [c]

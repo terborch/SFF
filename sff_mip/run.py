@@ -19,27 +19,31 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib
 import time
-import numpy as np
 
 start = time.time()
 
 # Internal modules
 import results
-from initialize_model import m, S, V_meta, V_bounds, P, P_meta, C_meta
-from global_param import Costs_u, Periods, Ext_T, Irradiance, Dates
+from param_input import V_meta, V_bounds, P, P_meta
+from param_calc import Periods, Irradiance, Ext_T, Dates
 import model
-import data
 import plot
 from plot import fig_width, fig_height
 
 
 
 def run_single(objective, relax=False, save_df=True, save_fig=True, big_vars=False, 
-               discard_fig=False):
+               discard_fig=False, Pareto=False, Limit=None):
     
-
-    # Build and run the MIP optimization model
-    model.run(objective, relax)
+    if Pareto:
+        if Limit:
+            m = model.run(objective, Limit=Limit)
+            print('----------------- Limit on emissions: {} --------------------'.format(Limit))
+        else:
+            m = model.run(objective)
+    else:
+        
+        m = model.run(objective, relax=relax)
     
     end = time.time()
     print('solve time model: ', end - start, 's')
@@ -58,13 +62,21 @@ def run_single(objective, relax=False, save_df=True, save_fig=True, big_vars=Fal
     pd.options.display.max_columns = 10
     pd.set_option('precision', 2)
 
-    print(df_time_indep)
-    print(df_time_dep)
+    if not Pareto:
+        print(df_time_indep)
+        print(df_time_dep)
     
     matplotlib.rcParams['figure.figsize'] = (fig_width, fig_height)
     plot.unit_results(var_result_time_indep, var_name_time_indep)
     plt.show()
     
+    if Pareto:
+        result_name = 'Objective_{}_CO2Limit_{}'.format(objective, None)
+        if Limit:
+            result_name = 'Objective_{}_CO2Limit_{:.5f}'.format(objective, Limit)
+    else:
+        result_name = 'run_nbr'
+        
     if discard_fig:
         return
     
@@ -87,7 +99,7 @@ def run_single(objective, relax=False, save_df=True, save_fig=True, big_vars=Fal
         else:
             run_nbr = max([int(i.split('_')[-1]) for i in runs]) + 1
         
-        cd = os.path.join(cd, 'run_nbr_{}'.format(run_nbr), '')
+        cd = os.path.join(cd, result_name + '_{}'.format(run_nbr), '')
         os.makedirs(os.path.dirname(cd), exist_ok=True)
     
     if save_df:
@@ -109,58 +121,57 @@ def run_single(objective, relax=False, save_df=True, save_fig=True, big_vars=Fal
         plot.unit_results(var_result_time_indep, var_name_time_indep)
         plt.savefig(os.path.join(cd, 'installed_capacity.png'))
         
-    plot.temperature_results(var_result_time_dep)
+    plot.temperature_results(var_result_time_dep, var_name_time_dep, Ext_T, Irradiance, daily=True)
     plot.print_fig(save_fig, os.path.join(cd, 'temperature_results.png'))
 
     for r in ['Elec', 'Gas', 'Biogas']:
         plot.resource(r, var_result_time_dep, var_name_time_dep, Dates, daily=True)
         plot.print_fig(save_fig, os.path.join(cd, 'resource{}.png'.format(r)))
     
-    plot.flows('v[', 'water flows', 'm^3/h', var_result_time_dep, True)
+    plot.flows('v[', 'water flows', 'm^3/h', var_result_time_dep, var_name_time_dep, sort=True, daily=True)
     plot.print_fig(save_fig, os.path.join(cd, 'Hot_water_flows.png'))
     
-    plot.flows('Heat', 'heat flows', 'kW', var_result_time_dep, True)
+    plot.flows('Heat', 'heat flows', 'kW', var_result_time_dep, var_name_time_dep, sort=True, daily=True)
     plot.print_fig(save_fig, os.path.join(cd, 'Heat_flows.png'))
     
-    plot.PV_results(var_result_time_dep, Irradiance, Dates, daily=False)
+    plot.PV_results(var_result_time_dep, Irradiance, Dates, daily=True)
     plot.print_fig(save_fig, os.path.join(cd, 'PV.png'))  
         
     plot.SOFC_results(var_result_time_dep)
     plot.print_fig(save_fig, os.path.join(cd, 'SOFC.png'))
 
-    plot.all_results(var_result_time_dep, var_name_time_dep, Dates, daily=False)
+    plot.all_results(var_result_time_dep, var_name_time_dep, Dates, daily=True)
     plot.print_fig(save_fig, os.path.join(cd, 'all_results.png'))
 
+
+    if Pareto:
+        return m.getVarByName('emissions').x
 
 # Execute single run
 ###run_single('emissions', save_fig=True)
 
-run_single('totex', save_fig=False, discard_fig=True)
+# run_single('totex', save_fig=True, discard_fig=False)
 
 
-end = time.time()
-
-print('global runtime: ', end - start, 's')
-
-# Dicts of all variables and their results
-var_result_time_indep, var_result_time_dep = results.all_dic(m, Periods, V_bounds)
-var_name_time_indep = list(var_result_time_indep.keys())
-var_name_time_dep = list(var_result_time_dep.keys())
+# # Dicts of all variables and their results
+# var_result_time_indep, var_result_time_dep = results.all_dic(m, Periods, V_bounds)
+# var_name_time_indep = list(var_result_time_indep.keys())
+# var_name_time_dep = list(var_result_time_dep.keys())
 
 
-"""
+
 # Execute Pareto optimization
 def run_pareto(objective, Limit=None):
     
     # Multiobjective relaxation
-    Relaxation = 1+1e-4
+    Relaxation = 1+1e-5
     
     # Build and run the MIP optimization model
     if Limit:
-        model.run(objective, Limit=Limit*Relaxation)
+        m = model.run(objective, Limit=Limit*Relaxation)
         print('-----------------{}--------------------'.format(Limit*Relaxation))
     else:
-        model.run(objective)
+        m = model.run(objective)
     
     var_result_time_indep, var_result_time_dep = results.all_dic(m, Periods, V_bounds)
     var_name_time_indep = list(var_result_time_indep.keys())
@@ -180,22 +191,44 @@ Objective_description = {
     }
 
 
-objective = 'totex'
-run_pareto(objective)
-Totex_min = Results[objective][objective]
+
+Relaxation = {1: 1 + 1e-5,
+              2: 1 + 1e-4,
+              3: 1 + 1e-3,
+              4: 1 + 1e-2,
+              5: 1 + 2e-2,
+              6: 1 + 4e-2,
+              7: 1 + 1e-1,
+              8: 1.15,
+              9: 1.2,
+              10: 1.25,}
+
+solve_time = []
 
 objective = 'emissions'
-run_pareto(objective)
-Emissions_min = Results[objective][objective]
+min_emissions = run_single(objective, relax=False, save_df=True, save_fig=True, big_vars=False, 
+                discard_fig=False, Pareto=True, Limit=None)
 
-objective = 'pareto_totex'
-run_pareto(objective, Totex_min)
-Emissions_max = Results[objective]['emissions']
+solve_time.append(time.time() - start)
 
-objective = 'pareto_emissions'
-run_pareto(objective, Emissions_min)
-Totex_max = Results[objective]['totex']
-"""
+for i in range(1, len(Relaxation)):
+    objective = 'pareto_emissions'
+    Limit = Relaxation[i]*min_emissions
+    run_single(objective, relax=False, save_df=True, save_fig=True, big_vars=False, 
+                    discard_fig=False, Pareto=True, Limit=Limit)
+    solve_time.append(time.time() - start)
+    
+objective = 'totex'
+run_single(objective, relax=False, save_df=True, save_fig=True, big_vars=False, 
+                discard_fig=False, Pareto=True, Limit=None)
+
+solve_time.append([time.time() - solve_time[i]])
+end = time.time()
+
+print('global runtime: ', end - start, 's')
+for i in range(10):
+    print(f'Pareto_{i}_solve_time', solve_time[i] )
+
 ##################################################################################################
 ### END
 ##################################################################################################

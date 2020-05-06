@@ -1,17 +1,10 @@
 """ This module contains all functions necessary to model each unit
-    #   TODO: add actual losses to battery (see Dirk's thesis)
-    #   TODO: add discharge and charge rate limit to battery
     #   TODO: add depth of discharge limit to battery
-    #   TODO: add self discharge to battery
-    #   TODO: generalise storage unit variables
     #   TODO: add better aprox for biomass temperature
 """
 
-# External modules
-from gurobipy import GRB
 # Internal modules
-from initialize_model import m, P, Periods, P_meta, V_meta, C_meta, Bound, dt
-import global_param
+from param_input import P, P_meta, V_meta, C_meta, Bound, dt
 
 
 ##################################################################################################
@@ -19,7 +12,7 @@ import global_param
 ##################################################################################################
 
 
-def boi(unit_prod, unit_cons, unit_size):
+def boi(m, Periods, unit_prod, unit_cons, unit_size):
     c = 'BOI'
     n = 'BOI_production'
     C_meta[n] = ['Heat produced relative to Gas and Biogas consumed and Efficiency', 0]
@@ -37,7 +30,7 @@ def boi(unit_prod, unit_cons, unit_size):
 ##################################################################################################
 
 
-def pv(unit_prod, unit_size, Irradiance):
+def pv(m, Periods, unit_prod, unit_size, Irradiance):
     c = 'PV'
     n = 'PV_production'
     C_meta[n] = ['Elec produced relative to Irradiance, Efficiency and Installed capacity', 5]
@@ -55,7 +48,7 @@ def pv(unit_prod, unit_size, Irradiance):
 ##################################################################################################
 
 
-def bat(unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge):
+def bat(m, Periods, unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge):
     """ MILP model of a battery
         Charge and discharge efficiency follows Dirk Lauinge MA thesis
         Unit is force to cycle once a day
@@ -107,9 +100,7 @@ def bat(unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge):
 ##################################################################################################
 
 
-def ad(unit_prod, unit_cons, unit_size, unit_T, unit_install, Ext_T, Irradiance):
-    # Parameters
-    global_param.AD_dimentions(P, P_meta)
+def ad(m, Periods, unit_prod, unit_cons, unit_size, unit_T, unit_install, Ext_T, Irradiance):
     
     c, g = 'AD', 'General'
     n = 'AD_production'
@@ -180,7 +171,7 @@ def ad(unit_prod, unit_cons, unit_size, unit_T, unit_install, Ext_T, Irradiance)
 ##################################################################################################
 
 
-def sofc(unit_prod, unit_cons, unit_size):
+def sofc(m, Periods, unit_prod, unit_cons, unit_size):
     c = 'SOFC'
     n = 'SOFC_Elec_production'
     C_meta[n] = ['Elec produced relative to Biogas and gas consumed and Elec Efficiency', 6]
@@ -203,7 +194,7 @@ def sofc(unit_prod, unit_cons, unit_size):
 ##################################################################################################
 
 
-def cgt(unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge):
+def cgt(m, Periods, unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge):
     """ MILP model of Compressed Gas Tank for storing Natural Gas. No losses are modeled.
         The tank only accepts Biogas and assumes the energy consumption and volume takeup
         to be equivalent between 1m^3 of Methane and 1m^3 of CO2

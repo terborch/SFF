@@ -1,6 +1,5 @@
 """
-### Model setup and initialization. Get parameters and settings. Define time related parameters. 
-    #   m       the global Gurobi MILP model
+### Get input parameters and settings. Define time related parameters. 
     #   P       dict with parameters values from parameters.csv will contain calculated parameters
                 P has at least two entries, the first is the Category and the second is the
                 parameter name or sub-category. Categories is a list of Category names.
@@ -33,9 +32,9 @@ def print_error(error):
     }
     message = switcher.get(error, 'unspecified error')
     
-    print('########################## ERROR ##########################')
+    print('########################## INPUT ERROR ##########################')
     print(message)
-    print('########################## ERROR ##########################')
+    print('########################## INPUT ERROR ##########################')
     
 
 def get_values_df(file):
@@ -164,19 +163,6 @@ def time_param():
     
     return Periods, Time_steps, dt, Days, Time, dt_end
 
-    
-def initialize_model():
-    """ Return a blank Gurobi model and set solver timelimit """
-    # Create a new model
-    m = gp.Model("MIP_SFF_v0.31")
-    # Remove previous model parameters and data
-    m.resetParams()
-    m.reset()
-    # Set solver time limit
-    m.setParam("TimeLimit", S['Solver_time_limit'])
-    
-    return m
-        
 
 # Parameter categories
 Categories = ['AD', 'PV', 'BAT', 'SOFC', 'BOI', 'CGT', 'Eco', 'CO2', 'build', 'General', 'Time', 
@@ -198,4 +184,4 @@ V_bounds = {}
 # Dictionnary describing each constraint and its source if applicable
 C_meta = {}
 
-m = initialize_model()
+
