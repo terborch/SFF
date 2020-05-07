@@ -120,7 +120,8 @@ def resource(resource, var_result, var_name, Dates, daily=False):
     name = []
     for n in var_name:
         if resource in n:
-            name.append(n)
+            if max(var_result[n]) > 1e-5:
+                name.append(n)
     
     nbr_fig = len(name) + 1 if resource == 'Elec' else len(name)
     
