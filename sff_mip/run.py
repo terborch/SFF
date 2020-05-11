@@ -24,7 +24,7 @@ start = time.time()
 
 # Internal modules
 import results
-from param_input import V_meta, V_bounds, P, P_meta
+from param_input import V_meta, V_bounds, P, P_meta, Days, Hours, Periods
 from param_calc import Periods, Irradiance, Ext_T, Dates
 import model
 import plot
@@ -49,12 +49,19 @@ def run_single(objective, relax=False, save_df=True, save_fig=True, big_vars=Fal
     print('solve time model: ', end - start, 's')
     
     # Dicts of all variables and their results
-    var_result_time_indep, var_result_time_dep = results.all_dic(m, Periods, V_bounds)
+    
+    var_results, var_bounds = results.get_all(m, Days, Hours, Periods)
+    var_names = {'time_indep': None, 'time_dep': None}
+    for t in ['time_indep', 'time_dep']:
+        var_names[t] = list(var_results[t].keys())
+        var_names[t].sort()
+    
+    var_result_time_indep, var_result_time_dep = var_results['time_indep'], var_results['time_dep']
     var_name_time_indep = list(var_result_time_indep.keys())
     var_name_time_dep = list(var_result_time_dep.keys())
         
     df_time_indep = results.var_time_indep_summary(m, var_result_time_indep, V_meta)
-    df_time_dep = results.var_time_dep_summary(m, var_result_time_dep, V_meta, V_bounds)
+    df_time_dep = results.var_time_dep_summary(m, var_result_time_dep, V_meta, var_bounds['time_dep'])
     df_parameters = results.parameters(P, P_meta)
     
     # display result summary
@@ -148,9 +155,9 @@ def run_single(objective, relax=False, save_df=True, save_fig=True, big_vars=Fal
         return m.getVarByName('emissions').x
 
 # Execute single run
-###run_single('emissions', save_fig=True)
+#run_single('emissions', discard_fig=True)
 
-# run_single('totex', save_fig=True, discard_fig=False)
+#run_single('totex', save_fig=True, discard_fig=False)
 
 
 # # Dicts of all variables and their results
@@ -160,26 +167,7 @@ def run_single(objective, relax=False, save_df=True, save_fig=True, big_vars=Fal
 
 
 
-# Execute Pareto optimization
-def run_pareto(objective, Limit=None):
-    
-    # Multiobjective relaxation
-    Relaxation = 1+1e-5
-    
-    # Build and run the MIP optimization model
-    if Limit:
-        m = model.run(objective, Limit=Limit*Relaxation)
-        print('-----------------{}--------------------'.format(Limit*Relaxation))
-    else:
-        m = model.run(objective)
-    
-    var_result_time_indep, var_result_time_dep = results.all_dic(m, Periods, V_bounds)
-    var_name_time_indep = list(var_result_time_indep.keys())
-    Results[objective] = var_result_time_indep
-    
-    plot.unit_results(var_result_time_indep, var_name_time_indep, 
-                      title=Objective_description[objective])
-    plt.show()
+
 
 Results = {}
 
@@ -207,7 +195,7 @@ solve_time = []
 
 objective = 'emissions'
 min_emissions = run_single(objective, relax=False, save_df=True, save_fig=True, big_vars=False, 
-                discard_fig=False, Pareto=True, Limit=None)
+                discard_fig=True, Pareto=True, Limit=None)
 
 solve_time.append(time.time() - start)
 
@@ -215,12 +203,12 @@ for i in range(1, len(Relaxation)):
     objective = 'pareto_emissions'
     Limit = Relaxation[i]*min_emissions
     run_single(objective, relax=False, save_df=True, save_fig=True, big_vars=False, 
-                    discard_fig=False, Pareto=True, Limit=Limit)
+                    discard_fig=True, Pareto=True, Limit=Limit)
     solve_time.append(time.time() - start)
     
 objective = 'totex'
 run_single(objective, relax=False, save_df=True, save_fig=True, big_vars=False, 
-                discard_fig=False, Pareto=True, Limit=None)
+                discard_fig=True, Pareto=True, Limit=None)
 
 solve_time.append([time.time() - solve_time[i]])
 end = time.time()

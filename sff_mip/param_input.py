@@ -10,7 +10,7 @@
     #   C_meta  dict tracking the metadata of model constraints
     #   Bound       the upped bound of most variables
     #   Periods     list of time period indexes
-    #   Time_steps  the number of timesteps
+    #   Nbr_of_time_steps  the number of timesteps
     #   dt          the duration of a time step in hours
     #   Days        list of days in a date format '2019-01-01'
     #   Time        list of hours in a day in a time format '12:00:00'
@@ -18,7 +18,6 @@
 """
 
 # External modules
-import gurobipy as gp
 import numpy as np
 from datetime import datetime, timedelta
 # Internal modules
@@ -114,7 +113,7 @@ def make_param(category, name, value, meta, *subcategory):
         
 
 def time_param():
-    """ Return the list of Periods, the number of Time_steps and the duration of the each
+    """ Return the list of Periods, the number of Nbr_of_time_steps and the duration of the each
         time step dt, based on the given Time informations in the settings.csv file. The 
         units are in hours. Adds their value and metadata to P and P_meta.
     """
@@ -134,34 +133,38 @@ def time_param():
     end = S['Period_end'] + ' ' + S['Period_start_time']
     dt_end = datetime.strptime(end, Datetime_format)
     
-    # Time_steps
+    # Nbr_of_time_steps
     Description = 'Number of timesteps'
-    Time_steps = ((dt_end - dt_start).days * 24) / dt
-    Time_steps_per_day = 24 / dt
-    make_param('Time', 'Time_steps', Time_steps, ['integer', Description, 'calc'])
+    Nbr_of_time_steps = ((dt_end - dt_start).days * 24) / dt
+    Nbr_of_time_steps_per_day = 24 / dt
+    make_param('Time', 'Nbr_of_time_steps', Nbr_of_time_steps, ['integer', Description, 'calc'])
     
-    # Periods
+    # Period index
     Description = 'List of timestep index'
-    if int(Time_steps) == Time_steps and int(Time_steps_per_day) == Time_steps_per_day:
-        Periods = list(range(0, int(Time_steps)))
+    if int(Nbr_of_time_steps) == Nbr_of_time_steps and int(Nbr_of_time_steps_per_day) == Nbr_of_time_steps_per_day:
+        Periods = list(range(0, int(Nbr_of_time_steps)))
     else:
         print_error('time_step_int')
     make_param('Timedep', 'Periods', Periods, ['integer', Description, 'calc'])
     
-    Days = []
-    Description = 'List of days in a date format'
-    Day_one = datetime.strptime(start, Datetime_format)
-    for d in range(0, (dt_end - dt_start).days):
-        Days.append(datetime.strftime(Day_one + timedelta(days=d), S['Date_format']))
-    make_param('Time', 'Days', Days, ['-', Description, 'calc'])
+    # Day index
+    Days = list(range((dt_end - dt_start).days))
+    
+    # Hour index
+    Hours = list(range(0,24))
+    
+    # Date of each day
+    Description = 'List of days as datetime objects'
+    Day_dates = [dt_end - timedelta(days=i) for i in range(len(Days))]
+    make_param('Time', 'Day_dates', Day_dates, ['-', Description, 'calc'])
 
     Time = []
     Description = 'hour:min:sec for each timestep in a day'
-    for t in range(0, int(Time_steps_per_day)):
-        Time.append(datetime.strftime(Day_one + timedelta(hours=t*dt), S['Time_format']))
+    for t in range(0, int(Nbr_of_time_steps_per_day)):
+        Time.append(datetime.strftime(Day_dates[0] + timedelta(hours=t*dt), S['Time_format']))
     make_param('Timedep', 'Time', Time, ['-', Description, 'calc'])
     
-    return Periods, Time_steps, dt, Days, Time, dt_end
+    return Periods, Nbr_of_time_steps, dt, Day_dates, Time, dt_end, Days, Hours
 
 
 # Parameter categories
@@ -174,7 +177,8 @@ P, P_meta, Categories = get_param('parameters.csv', Categories)
 S, S_meta = get_settings('settings.csv')
 # List of periods, number of time steps and delta t (duration of a time step) in hours
 Datetime_format = S['Date_format'] + ' ' + S['Time_format']
-Periods, Time_steps, dt, Days, Time, dt_end = time_param()
+Periods, Nbr_of_time_steps, dt, Day_dates, Time, dt_end, Days, Hours = time_param()
+Time_steps = {'Days': Days, 'Hours': Hours, 'Periods': Periods}
 # Default upper bound for most variables
 Bound = S['Var_bound']
 # Dictionnary of variable metadata
@@ -184,4 +188,11 @@ V_bounds = {}
 # Dictionnary describing each constraint and its source if applicable
 C_meta = {}
 
-
+# Map each time period p to a corresponding day-hour pair
+Time_period_map = {}
+for d in Days:
+    for h in Hours:
+        Time_period_map[d*24 + h] = (d,h)
+        
+# Map each day-hour pair to a corresponding hour in any day
+Time_period_map_d2d = {}  

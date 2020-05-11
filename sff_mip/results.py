@@ -9,35 +9,41 @@
 # External modules
 import pandas as pd
 import numpy as np
+import re
 
-def all_dic(m, Periods, V_bounds):
-    """ Given the model and periods, returns two dicts.
-        1. time independent variable name value pairs
-        2. time depenendent variable name value pairs
+
+def get_all(m, Days, Hours, Periods):
+    """ Get all results from the gurobi model m into a dictionnary split in time dependent and
+        time independent variables. Get the upper and lower bounds of each variable in a dict.
+        Return both dictionnarairies.
     """
-    var_result_time_indep, var_result_time_dep = {}, {}
-
-    number = np.arange(0, 10).tolist()
-    number = [str(n) for n in number]
-    
+    var_names_cut = set()
     for v in m.getVars():
+        name = re.split('\d', v.VarName)[0]
+        var_names_cut.add(name)
+    
+    var_results, var_bounds = ({'time_indep': {}, 'time_dep':{}} for i in range(2))
+    x = lambda v: [v.lb, v.ub]
+    for n in var_names_cut:
         results = []
-        if ',0' in v.varName:
-            name = v.varName.split(',0')[0]
-            V_bounds[name + ']'] = [m.getVarByName(name + ',0]').lb, m.getVarByName(name + ',0]').ub]
-            for p in Periods:
-                results.append(m.getVarByName(name + ',{}]'.format(p)).x)
-            var_result_time_dep[name + ']'] = results
-        elif '[0' in v.varName:
-            name = v.varName.split('[0')[0]
-            V_bounds[name] = [m.getVarByName(name + '[0]').lb, m.getVarByName(name + '[0]').ub]
-            for p in Periods:
-                results.append(m.getVarByName(name + '[{}]'.format(p)).x)
-            var_result_time_dep[name] = results
-        elif all(n not in v.varName for n in number):
-            var_result_time_indep[v.varName] = v.x
+        Time_steps = 'Daily' if 'CGT' not in n else 'Annual'
+        if n[-1] == ',' or n[-1] == '[':
+            key = 'time_dep'
+            if Time_steps == 'Daily':
+                results = [[m.getVarByName(n + f'{d},{h}]').x for h in Hours] for d in Days]
+                bounds = x(m.getVarByName(n + '0,0]'))
+            elif Time_steps == 'Annual':
+                results = [m.getVarByName(n + f'{p}]').x for p in Periods]
+                bounds = x(m.getVarByName(n + '0]'))
+            n = n[:-1] + ']' if n[-1] == ',' else n[:-1]
+        else:
+            key = 'time_indep'
+            results = m.getVarByName(n).x
+            bounds = x(m.getVarByName(n))
             
-    return var_result_time_indep, var_result_time_dep
+        var_bounds[key][n] = bounds
+        var_results[key][n] = results
+    return var_results, var_bounds
 
 
 def var_time_indep_summary(m, var_result_time_indep, V_meta):
@@ -62,7 +68,7 @@ def var_time_indep_summary(m, var_result_time_indep, V_meta):
     return df
 
 
-def var_time_dep_summary(m, var_result_time_dep, V_meta, V_bounds):
+def var_time_dep_summary(m, var_result_time_dep, V_meta, var_bounds):
     """ Given a dict of time dependent variable results, returns a summary
         dataframe containing its name, minimum value, maximum value, average
         and length.
@@ -71,7 +77,7 @@ def var_time_dep_summary(m, var_result_time_dep, V_meta, V_bounds):
     for v in var_result_time_dep:
         value = var_result_time_dep[v]
         dic[v] = [min(value), np.mean(value), max(value), len(value)]
-        dic[v] += V_bounds[v]
+        dic[v] += var_bounds[v]
         if v in V_meta.keys():
             dic[v] += V_meta[v]
     columns = ['Minimum', 'Average', 'Maximum', 'Length'] + V_meta['Header'][2:]

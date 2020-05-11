@@ -64,7 +64,13 @@ for r in Resources:
         U_res['cons'][r] = tuple(u for u in U_cons if r in U_cons[u])
 
 # Units that store energy
-Units_storage = ['BAT', 'CGT']
+Units_storage = ('BAT', 'CGT')
+# Group units to two possible time discretisation daily or annual
+U_time_resolution = {'CGT': 'Annual'}
+for u in Units:
+    if u != 'CGT':
+        U_time_resolution[u] = 'Daily'
+
 
 # The buildings and units consuming and producing heat
 Heat_cons = tuple(['build'] + list(U_res['cons']['Heat']))

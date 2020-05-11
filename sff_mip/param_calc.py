@@ -15,12 +15,12 @@ import datetime
 import numpy as np
 import pandas as pd
 # Internal modules
-from param_input import make_param, P, P_meta, S, C_meta, Periods, Days
+from param_input import make_param, P, P_meta, S, C_meta, Periods, Day_dates, Days, Hours
 from global_set import Units
 import data
 
     
-def annual_to_instant(Annual, Profile_norm):
+def annual_to_daily(Annual, Profile_norm):
     """ Take an annual total and a corresponding daily profile normalized from 1 to 0. Calculate 
         the average instant, then the average of the normalized profile, then the corresponding
         peak value. It returns the product of the peak and normalized profile, i.e. the
@@ -30,7 +30,7 @@ def annual_to_instant(Annual, Profile_norm):
     Average_profile_norm = float(np.mean(Profile_norm))
     Peak = Average / Average_profile_norm
 
-    return list(Peak * Profile_norm)
+    return np.array(Peak * Profile_norm)
 
 
 def biomass_prod(Pigs, Cows):
@@ -139,17 +139,24 @@ def resource_economics(file):
     
     return df
 
+
+def reshape_day_hour(hourly_indexed_list, Days, Hours):
+    """ Reshape a list with hourly index to a list of list with daily and hour in day index """
+    return (np.reshape(hourly_indexed_list, (len(Days), len(Hours))))
+
+
+
 # Weather parameters for a summer day at Liebensberg
 file = 'meteo_Liebensberg_10min.csv'
 df_weather = data.weather_data_to_df(file, S['Period_start'], S['Period_end'], S['Time_step'])
 df_weather.drop(df_weather.tail(1).index,inplace=True)
 
-# External temperature
-Ext_T = list(df_weather['Temperature'].values)
+# External temperature - format Ext_T[Day_index,Hour_index]
+Ext_T = reshape_day_hour((df_weather['Temperature'].values), Days, Hours)
 P_meta['Timedep']['Ext_T'] = ['°C', 'Exterior temperature', 'agrometeo.ch']
 
 # Global irradiance
-Irradiance = list(df_weather['Irradiance'].values)
+Irradiance = reshape_day_hour((df_weather['Irradiance'].values), Days, Hours)
 P_meta['Timedep']['Irradiance'] = ['kW/m^2', 'Global irradiance', 'agrometeo.ch']
 
 # List of dates modelled
@@ -157,12 +164,11 @@ Dates, Dates_pd = [], df_weather.index
 for d in Dates_pd: 
     Dates.append(datetime.datetime(d.year, d.month, d.day, d.hour, d.minute))
 
-# Electricity consumption profile
+# Daily building electricity consumption profile
 meta = ['kW', 'Building electricity consumption', 'calc']
 file = 'consumption_profile_dummy.csv'
 df_cons = data.default_data_to_df(file, 'internal', df_weather.index)
-Build_cons_Elec = len(Days)*annual_to_instant(P['build']['cons_Elec_annual'], 
-                                              df_cons['Electricity'].values)
+Build_cons_Elec = annual_to_daily(P['build']['cons_Elec_annual'], df_cons['Electricity'].values)
 make_param('Timedep', 'Build_cons_Elec', Build_cons_Elec, meta)
 
 # Biomass potential
