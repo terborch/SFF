@@ -141,7 +141,8 @@ def resource_economics(file):
 
 
 def reshape_day_hour(hourly_indexed_list, Days, Hours):
-    """ Reshape a list with hourly index to a list of list with daily and hour in day index """
+    """ Reshape a list with hourly index to a list of list with daily and hour 
+    in day index """
     return (np.reshape(hourly_indexed_list, (len(Days), len(Hours))))
 
 
