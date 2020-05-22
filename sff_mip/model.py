@@ -15,7 +15,7 @@ import gurobipy as gp
 
 # Variables
 from param_input import (P, P_meta, S, V_meta, C_meta, Bound, Periods, Days, 
-                         Hours, Time_period_map)
+                         Hours, Time_period_map, Frequence)
 from global_set import Units, U_res, G_res, Heat_cons, Heat_prod
 from param_calc import (Irradiance, Build_cons_Elec, Biomass_prod, Costs_u, 
                         Costs_res, df_cons, Heated_area, Ext_T)
@@ -287,38 +287,35 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod):
                   unit_cons['SOFC'][r,d,h] + unit_cons['BOI'][r,d,h] 
                   for d in Days for h in Hours), n);
     
-    # Total annual import / export
-    n = 'Electricity_grid_import'
-    C_meta[n] = ['Annual Elec import relative to instant Elec imports', 0]
-    m.addConstr(grid_import_a['Elec'] == sum(grid_import['Elec',d,h]/1000 
-                                             for d in Days for h in Hours), n);
-    n = 'Electricity_grid_export'
-    C_meta[n] = ['Annual Elec export relative to instant Elec exports', 0]
-    m.addConstr(grid_export_a['Elec'] == sum(grid_export['Elec',d,h]/1000 
-                                             for d in Days for h in Hours), n);
-    n = 'Gas_grid_import'
-    C_meta[n] = ['Annual Gas import relative to instant Gas imports', 0]
-    m.addConstr(grid_import_a['Gas'] == sum(grid_import['Gas',d,h]/1000 
-                                            for d in Days for h in Hours), n);
-    n = 'Gas_grid_export'
-    C_meta[n] = ['Annual Gas export relative to instant Gas exports', 0]
-    m.addConstr(grid_export_a['Gas'] == sum(grid_export['Gas',d,h]/1000 
-                                            for d in Days for h in Hours), n);
+    for r in ['Elec', 'Gas']:
+        # Total annual import / export
+        n = f'{r}_grid_import'
+        C_meta[n] = [f'Annual {r} import relative to instant {r} imports', 0]
+        m.addConstr(grid_import_a[r] == 1/1000*sum(sum(
+            grid_import[r,d,h] for h in Hours)*Frequence[d] for d in Days), n);
+        
+        n = f'{r}_grid_export'
+        C_meta[n] = [f'Annual {r} export relative to instant {r} exports', 0]
+        m.addConstr(grid_export_a[r] == 1/1000*sum(sum(
+            grid_export[r,d,h] for h in Hours)*Frequence[d] for d in Days), n);
+    
     n = 'Unused_resources'
     C_meta[n] = ['Annual unused resource relative to instant unused resources', 0]
-    m.addConstrs((unused_a[r] == sum(unused[r,d,h]/1000 for d in Days for h in Hours) 
-                  for r in Unused_res), n);
+    m.addConstrs((unused_a[r] == 1/1000*sum(sum(
+        unused[r,d,h] for h in Hours)*Frequence[d] 
+        for d in Days) for r in Unused_res), n);
     
     return grid_import_a, grid_export_a
 
-##################################################################################################
+###############################################################################
 ### Economic performance indicators
     #   CAPEX 
     #   OPEX 
     #   TOTEX 
-##################################################################################################
+###############################################################################
 
-def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size, unit_install, unit_capex):
+def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size, 
+                     unit_install, unit_capex):
     # Variable
     n = 'capex'
     V_meta[n] = ['MCHF', 'total CAPEX', 'unique']

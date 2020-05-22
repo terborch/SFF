@@ -186,6 +186,14 @@ Clustered_days = data.reorder(Closest, Clusters_order)
 Frequence = data.get_frequence(Labels)
 Frequence = data.reorder(Frequence, Clusters_order)
 Days = list(range(len(Clustered_days)))
+
+
+# Labels = list(range(365))
+# Closest = list(range(365))
+# Clustered_days = list(range(365))
+# Days = list(range(365))
+# Frequence = [1]*365
+
 # List of periods, number of time steps and delta t (duration of a time step) in hours
 Datetime_format = S['Date_format'] + ' ' + S['Time_format']
 Periods, Nbr_of_time_steps, dt, Day_dates, Time, dt_end, Days_all, Hours = time_param()

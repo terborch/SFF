@@ -19,16 +19,23 @@ def get_hdf(file_path, *args):
             result_dic = hdf[args[0]]
     return result_dic
 
+def get_pareto_nbr(file_name):
+    if 'totex' in file_name:
+        return len(list_of_files)
+    elif 'emissions_CO2Limit_None' in file_name:
+        return 1
+    else:
+        return int(file_name.split('_')[1]) - 1
 
 date = '2020-05-22'
 file = 'results.h5' 
 Pareto_totex, Perto_emissions = [], []
-path = os.path.join('results', date, 'Pareto_3')
+path = os.path.join('results', date, 'Pareto_2')
 list_of_files = [f for f in os.listdir(path)]
 Pareto_totex = np.zeros(len(list_of_files))
 Perto_emissions = np.zeros(len(list_of_files))
 for file_name in list_of_files:
-    run_nbr = int(file_name.split('_')[1])
+    run_nbr = get_pareto_nbr(file_name)
     print('\n ------------------------------------------------- \n')
     df = get_hdf(os.path.join(path, file_name, file), 'single')
     df.set_index('Var_name', inplace=True)
@@ -44,8 +51,9 @@ plt.xlabel('TOTEX in [MCHF/year]')
 plt.ylabel('emissions in [t-CO2/year]')
 plt.ylim(min(Perto_emissions)*0.95, max(Perto_emissions)*1.05)
 
-for i, file_name in enumerate(list_of_files):
-    plt.text(Pareto_totex[i] + 0.03, Perto_emissions[i] + 0.1, f'{i + 1}')
+for file_name in (list_of_files):
+    i = get_pareto_nbr(file_name)
+    plt.text(Pareto_totex[i - 1] + 0.03, Perto_emissions[i - 1] + 0.1, f'{i}')
     
 plt.scatter(Pareto_totex, Perto_emissions, label='emissions', marker='o')
 

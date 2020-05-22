@@ -66,7 +66,7 @@ def run(objective, relax=False, Pareto=False, Limit=None, Save_txt=False):
     # Save all results to a hdf5 file
     file_name = 'results.h5'
     cd = results.make_path(objective=objective, Limit=Limit, make=True, 
-                           Pareto=Pareto, run_nbr=3)
+                           Pareto=Pareto, run_nbr=2)
     path = os.path.join(cd, file_name)
     results.save_df_to_hdf5(var_results, var_meta, path, Days, Hours, Periods)
     
@@ -88,7 +88,7 @@ def display_results(date=today, run_nbr='last', save_df=True, save_fig=True,
 """
 
 # Execute single run
-#run_single('emissions', discard_fig=True)
+# run('emissions')
 
 #run_single('totex', save_fig=True, discard_fig=False)
 
@@ -132,6 +132,7 @@ for i in range(1, len(Relaxation)):
     Limit = Relaxation[i]
     run(objective, Pareto=True, Limit=Limit)
     solve_time.append(time.time() - start)
+    plt.close('all')
   
 
 
