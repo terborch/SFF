@@ -16,7 +16,8 @@
 # External modules
 from gurobipy import GRB
 # Internal modules
-from global_set import Units, U_prod, U_cons, Units_storage, Heat_cons, Heat_prod, U_time_resolution
+from global_set import (Units, U_prod, U_cons, Units_storage, Heat_cons, 
+                        Heat_prod, U_time_resolution)
 
         
 def time_steps(*args):
@@ -110,8 +111,8 @@ def declare_vars(m, Bound, V_meta, Days, Hours, Periods):
         v[u] = m.addVars(Heat_cons, Days, Hours, lb=0, ub=Bound, name=n)
     
                     
-    return (unit_prod, unit_cons, unit_install, unit_size, unit_capex, unit_T, build_cons_Heat, 
-            unit_SOC, unit_charge, unit_discharge, v)
+    return (unit_prod, unit_cons, unit_install, unit_size, unit_capex, unit_T, 
+            build_cons_Heat, unit_SOC, unit_charge, unit_discharge, v)
 
 
 # PV_prod = m.addVars(['Elec'], Days, Hours, lb=0, ub=Bound, name='PV_prod');

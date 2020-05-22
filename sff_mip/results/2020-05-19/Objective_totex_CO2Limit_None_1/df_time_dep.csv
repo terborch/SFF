@@ -1,0 +1,42 @@
+,Minimum,Average,Maximum,Shape,Lower Bound,Upper Bound,Units,Decription,Type
+v[BOI][AD],0.0,0.01672264909131016,0.6143641016884832,"(12, 24)",0.0,10000.0,m^3/h,Volume flow of heating water,time
+penalty,0.0,5.1060662751689e-05,0.00022618377529091762,"(12, 24)",0.0,10000.0,MCHF,Isntant Penalty for deviating from the comfort temperature,time
+unit_cons[SOFC][Gas],0.0,0.0,0.0,"(12, 24)",0.0,10000.0,kW,Gas consumed by SOFC,time
+unused[Gas],-7.673861546209082e-13,4.69994413757983e-15,8.810729923425242e-13,"(12, 24)",0.0,10000.0,,,
+v[SOFC][AD],0.0,0.0,0.0,"(12, 24)",0.0,10000.0,m^3/h,Volume flow of heating water,time
+heat_loss_biomass,0.0,0.0,0.0,"(12, 24)",0.0,10000.0,kW,Heat loss from biomass input,time
+unit_cons[BOI][Biogas],0.0,0.0,0.0,"(12, 24)",0.0,10000.0,kW,Biogas consumed by BOI,time
+v[SOFC][build],0.0,0.0,0.0,"(12, 24)",0.0,10000.0,m^3/h,Volume flow of heating water,time
+grid_export[Elec],-9.78364056436476e-11,-2.475979914922593e-11,0.0,"(12, 24)",0.0,10000.0,,,
+unit_cons[AD][Heat],0.0,0.19435434388344885,7.140276115179469,"(12, 24)",0.0,10000.0,kW,Heat consumed by AD,time
+unit_prod[BOI][Heat],0.0,51.57289993564913,607.3535641369634,"(12, 24)",0.0,10000.0,kW,Heat produced by BOI,time
+unit_prod[SOFC][Heat],0.0,0.0,0.0,"(12, 24)",0.0,10000.0,kW,Heat produced by SOFC,time
+unit_cons[BAT][Elec],0.0,0.0,0.0,"(12, 24)",0.0,10000.0,kW,Elec consumed by BAT,time
+grid_export[Gas],0.0,136.36675272048222,9859.032685169037,"(12, 24)",0.0,10000.0,,,
+unused[Biomass],103.94473378379166,103.94473378379166,103.94473378379166,"(12, 24)",0.0,10000.0,,,
+unit_discharge[CGT],0.0,0.9910958904109589,1.0,"(8760,)",0.0,1.0,kWh,Wheter CGT is discharging or not,bool
+unit_cons[AD][Elec],0.0,0.0,0.0,"(12, 24)",0.0,10000.0,kW,Elec consumed by AD,time
+unit_T[AD],34.480291832808646,35.082666808879054,35.94104362144041,"(12, 24)",-10000.0,10000.0,°C,Temperature in the AD,time
+build_T,18.0,20.4875262993804,26.85128623052433,"(12, 24)",-10000.0,10000.0,°C,Interior temperature of the building,time
+unit_cons[AD][Biomass],0.0,0.0,0.0,"(12, 24)",0.0,10000.0,kW,Biomass consumed by AD,time
+unit_SOC[CGT],0.0,0.0,0.0,"(8760,)",0.0,10000.0,kWh,State of charge of CGT,time
+unit_charge[BAT],0.0,0.08333333333333333,1.0,"(12, 24)",0.0,1.0,kWh,Wheter BAT is charging or not,bool
+build_cons_Heat,0.0,51.37854559176569,607.3535641369672,"(12, 24)",0.0,10000.0,kW,Heat consumed by the building,time
+grid_import[Gas],0.0,193.6699748712035,10000.0,"(12, 24)",0.0,10000.0,,,
+unit_cons[BOI][Gas],0.0,57.303222150721254,674.8372934855149,"(12, 24)",0.0,10000.0,kW,Gas consumed by BOI,time
+unit_prod[AD][Biogas],0.0,0.0,0.0,"(12, 24)",0.0,10000.0,kW,Biogas produced by AD,time
+unit_discharge[BAT],0.0,0.9166666666666666,1.0,"(12, 24)",0.0,1.0,kWh,Wheter BAT is discharging or not,bool
+grid_import[Elec],11.348233597595026,89.84018264837707,226.96467195385725,"(12, 24)",0.0,10000.0,,,
+comfort_delta_T_abs,0.0,1.5466680365651357,6.85128623052433,"(12, 24)",0.0,10000.0,°C,Absolute Temerature difference between comfort and actual building temperature,time
+unit_prod[PV][Elec],0.0,0.0,0.0,"(12, 24)",0.0,10000.0,kW,Elec produced by PV,time
+unit_cons[SOFC][Biogas],0.0,0.0,0.0,"(12, 24)",0.0,10000.0,kW,Biogas consumed by SOFC,time
+comfort_delta_T,-6.85128623052433,-0.48752629938039616,2.0,"(12, 24)",-10000.0,10000.0,°C,Temerature difference between comfort and actual building temperature,time
+unit_SOC[BAT],0.0,0.0,0.0,"(12, 24)",0.0,10000.0,kWh,State of charge of BAT,time
+v[BOI][build],0.0,2.9471441066022432,34.838636566173875,"(12, 24)",0.0,10000.0,m^3/h,Volume flow of heating water,time
+unused[Biogas],0.0,0.0,0.0,"(12, 24)",0.0,10000.0,,,
+unit_prod[BAT][Elec],0.0,0.0,0.0,"(12, 24)",0.0,10000.0,kW,Elec produced by BAT,time
+unit_charge[CGT],0.0,0.008904109589041096,1.0,"(8760,)",0.0,1.0,kWh,Wheter CGT is charging or not,bool
+unit_cons[CGT][Biogas],0.0,0.0,0.0,"(8760,)",0.0,10000.0,kW,Biogas consumed by CGT,time
+unit_prod[SOFC][Elec],0.0,0.0,0.0,"(12, 24)",0.0,10000.0,kW,Elec produced by SOFC,time
+unit_prod[CGT][Biogas],0.0,0.0,0.0,"(8760,)",0.0,10000.0,kW,Biogas produced by CGT,time
+unit_cons[CGT][Elec],0.0,0.0,0.0,"(8760,)",0.0,10000.0,kW,Elec consumed by CGT,time

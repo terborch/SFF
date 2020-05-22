@@ -1,0 +1,33 @@
+,Value,Lower Bound,Upper Bound,Units,Decription,Type
+unit_install[SOFC],-0.0,0.0,1.0,-,SOFC decision variable,bool
+unit_size[CGT],0.0,0.0,10000.0,kWh,Installed capacity of CGT,unique
+unit_capex[BOI],121.62982362188609,0.0,10000.0,kCHF,Investment cost of BOI,unique
+min_T_AD,30.0,-10000.0,10000.0,,,
+unused_a[Biogas],0.0,0.0,10000.0,,,
+grid_export_a[Gas],39.27362478349888,0.0,10000.0,,,
+capex,0.1306298236218861,-10000.0,10000.0,MCHF,total CAPEX,unique
+opex,0.008315492158678989,0.0,10000.0,MCHF/year,total annual opex,unique
+grid_import_a[Elec],25.873972602732596,0.0,10000.0,,,
+unit_install[BOI],1.0,0.0,1.0,-,BOI decision variable,bool
+unit_capex[CGT],0.0,0.0,10000.0,kCHF,Investment cost of CGT,unique
+unit_size[AD],0.0,0.0,10000.0,kW,Installed capacity of AD,unique
+unit_install[PV],-0.0,0.0,1.0,-,PV decision variable,bool
+unit_size[SOFC],0.0,0.0,10000.0,kW,Installed capacity of SOFC,unique
+unit_install[AD],1.0,0.0,1.0,-,AD decision variable,bool
+unit_size[BAT],0.0,0.0,10000.0,kWh,Installed capacity of BAT,unique
+unit_capex[PV],0.0,0.0,10000.0,kCHF,Investment cost of PV,unique
+unit_size[PV],0.0,0.0,10000.0,kW,Installed capacity of PV,unique
+unused_a[Biomass],29.936083329732018,0.0,10000.0,,,
+unit_install[CGT],-0.0,0.0,1.0,-,CGT decision variable,bool
+unit_capex[BAT],0.0,0.0,10000.0,kCHF,Investment cost of BAT,unique
+totex,0.016695020271113834,0.0,10000.0,MCHF/year,total annualized expenses,unique
+max_T_AD,40.0,-10000.0,10000.0,,,
+unused_a[Gas],1.3535839116229909e-15,0.0,10000.0,,,
+unit_install[BAT],-0.0,0.0,1.0,-,BAT decision variable,bool
+penalty_a,0.014705470872486432,0.0,10000.0,MCHF,Sum of Penalty for deviating from the comfort temperature,unique
+emissions,13.46388389134545,-10000.0,10000.0,t-CO2,Annual total CO2 emissions,unique
+unit_size[BOI],607.3535641369634,0.0,10000.0,kW,Installed capacity of BOI,unique
+unit_capex[AD],9.0,0.0,10000.0,kCHF,Investment cost of AD,unique
+grid_import_a[Gas],55.7769527629066,0.0,10000.0,,,
+unit_capex[SOFC],0.0,0.0,10000.0,kCHF,Investment cost of SOFC,unique
+grid_export_a[Elec],-7.130822154977068e-12,0.0,10000.0,,,

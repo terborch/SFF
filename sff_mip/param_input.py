@@ -22,7 +22,7 @@ import numpy as np
 from datetime import datetime, timedelta
 # Internal modules
 import data
-
+import os
 
 def print_error(error):
     switcher = { 
@@ -175,10 +175,21 @@ Categories = ['AD', 'PV', 'BAT', 'SOFC', 'BOI', 'CGT', 'Eco', 'CO2', 'build', 'G
 P, P_meta, Categories = get_param('parameters.csv', Categories)
 # Dictionnaries of values and metadata from the file 'Settings.csv'
 S, S_meta = get_settings('settings.csv')
+# Time discretization
+Identifier = 6
+Number_of_clusters = 12
+path = os.path.join('jupyter_notebooks', 'jsons', 
+                    f'clusters_{Identifier}_{Number_of_clusters}.json')
+Labels, Closest = [r[f'{Number_of_clusters}'] for r in data.read_json(path)]
+Clusters_order = data.arrange_clusters(Labels)
+Clustered_days = data.reorder(Closest, Clusters_order)
+Frequence = data.get_frequence(Labels)
+Frequence = data.reorder(Frequence, Clusters_order)
+Days = list(range(len(Clustered_days)))
 # List of periods, number of time steps and delta t (duration of a time step) in hours
 Datetime_format = S['Date_format'] + ' ' + S['Time_format']
-Periods, Nbr_of_time_steps, dt, Day_dates, Time, dt_end, Days, Hours = time_param()
-Time_steps = {'Days': Days, 'Hours': Hours, 'Periods': Periods}
+Periods, Nbr_of_time_steps, dt, Day_dates, Time, dt_end, Days_all, Hours = time_param()
+Time_steps = {'Days': Days_all, 'Hours': Hours, 'Periods': Periods}
 # Default upper bound for most variables
 Bound = S['Var_bound']
 # Dictionnary of variable metadata
@@ -190,9 +201,25 @@ C_meta = {}
 
 # Map each time period p to a corresponding day-hour pair
 Time_period_map = {}
+p = 0
 for d in Days:
-    for h in Hours:
-        Time_period_map[d*24 + h] = (d,h)
+    for f in range(int(Frequence[d])):
+        for h in Hours:
+            Time_period_map[p] = (d,h)
+            p += 1
         
 # Map each day-hour pair to a corresponding hour in any day
 Time_period_map_d2d = {}  
+
+
+##################################################################################################
+### END
+##################################################################################################
+
+
+"""
+# Quickly 'removes' the clustering
+Clustered_days = list(range(365))
+Frequence = [1]*365
+
+"""

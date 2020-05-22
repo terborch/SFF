@@ -77,14 +77,11 @@ def bat(m, Days, Hours, unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, 
     m.addConstrs((unit_discharge[d,h]*Bound >= unit_prod[r,d,h] for d in Days for h in Hours), n);
     
     n = f'{u}_daily_cycle'
-    C_meta[n] = ['Cycling constraint to carry over SOC from one day to the next', 0]
-    m.addConstrs((unit_SOC[d,0] == unit_SOC[d,Hours[-1] + 1] for d in Days[:-1]), n);
-    n = f'{u}_yearly_cycle'
-    C_meta[n] = ['Cycling constraint to carry over SOC from one modelling period to the next', 0]
-    m.addConstr((unit_SOC[0,0] == unit_SOC[Days[-1],Hours[-1] + 1]), n);
-    n = f'{u}_daily_initial'
-    C_meta[n] = ['Set the initial State of Charge at 0', 0]
-    m.addConstr((unit_SOC[0,0] == 0), n);
+    C_meta[n] = ['Cycling constraint on the battery SOC', 0]
+    m.addConstrs((unit_SOC[d, Hours[-1]] == unit_SOC[d,Hours[-1] + 1] for d in Days), n);
+    n = f'{u}_cycle_init'
+    C_meta[n] = ['Cycling constraint to reset the battery SOC every day', 0]
+    m.addConstrs((unit_SOC[d,0] == 0 for d in Days), n);
     
     n = f'{u}_size_SOC'
     C_meta[n] = ['Upper limit on the State of Charge relative to the Installed Capacity', 0]
@@ -145,16 +142,16 @@ def ad(m, Days, Hours, unit_prod, unit_cons, unit_size, unit_T, unit_install, Ex
     
     n = 'AD_temperature'
     C_meta[n] = ['AD Temperature change relative to External Temperature, Gains and Losses', 0]
-    m.addConstrs((P[c]['C']*(unit_T[(d,h+1)] - unit_T[(d,h)])/dt == P[c]['U']*(Ext_T[d,h] - unit_T[(d,h)]) +
+    m.addConstrs((P[c]['C']*(unit_T[d,h+1] - unit_T[d,h])/dt == P[c]['U']*(Ext_T[d,h] - unit_T[(d,h)]) +
                   Gains_solar_AD[d,h] + unit_cons['Elec',d,h] - heat_loss_biomass[d,h] + 
                   unit_cons['Heat',d,h] for d in Days for h in Hours), n);
     
     n = 'AD_T_daily_cycle'
-    C_meta[n] = ['Cycling constraint to carry over the temperature from one day to the next', 0]
-    m.addConstrs((unit_T[d,0] == unit_T[d,Hours[-1] + 1] for d in Days[:-1]), n);
-    n = 'AD_T_yearly_cycle'
-    C_meta[n] = ['Carry over the temperature from one modelling period to the next', 0]
-    m.addConstr((unit_T[0,0] == unit_T[Days[-1],Hours[-1] + 1]), n);
+    C_meta[n] = ['Cycling constraint for the AD temperature', 0]
+    m.addConstrs((unit_T[d,Hours[-1]] == unit_T[d,Hours[-1] + 1] for d in Days), n);
+    n = 'AD_T_daily_init'
+    C_meta[n] = ['Fix the initial AD temperature every day', 0]
+    m.addConstrs((unit_T[d,0] == P[c]['T_mean'] for d in Days), n);
     
     # Add temperature constraints only if the the unit is installed
     V_meta[n] = ['°C', 'Minimum sludge temperature', 'unique']

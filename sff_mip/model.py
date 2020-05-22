@@ -14,10 +14,11 @@ import gurobipy as gp
 # Internal modules
 
 # Variables
-from param_input import P, P_meta, S, V_meta, C_meta, Bound, Periods, Days, Hours, Time_steps, Time_period_map
+from param_input import (P, P_meta, S, V_meta, C_meta, Bound, Periods, Days, 
+                         Hours, Time_period_map)
 from global_set import Units, U_res, G_res, Heat_cons, Heat_prod
-from param_calc import (Irradiance, Build_cons_Elec, Biomass_prod, Costs_u, Costs_res, df_cons, 
-                          Heated_area, Ext_T)
+from param_calc import (Irradiance, Build_cons_Elec, Biomass_prod, Costs_u, 
+                        Costs_res, df_cons, Heated_area, Ext_T)
 # Functions
 from param_calc import annual_to_daily
 import variables
@@ -66,6 +67,12 @@ def t(*args):
     
 def t_daily(p):
     return p%len(Hours)
+
+def next_day(d):
+    if not d == Days[-1]:
+        return d+1
+    else:
+        return 0
 
 def cstr_unit_size(m, S, unit_size):
     """ Size constraints for each units """
@@ -136,17 +143,18 @@ def model_farm_temperature(m, Days, Hours, Ext_T, Irradiance, build_cons_Heat):
     
     n = 'Building_temperature'
     C_meta[n] = ['Building Temperature change relative to External Temperature, Gains and Losses', 2]
-    m.addConstrs((P[c]['C_b']*(build_T[d,h+1] - build_T[d,h]) == 
-                  P[c]['U_b']*(Ext_T[d,h] - build_T[d,h]) + Gains[d,h] + build_cons_Heat[d,h]/Heated_area
-                  for d in Days for h in Hours), n);
-    
+    m.addConstrs((
+        P[c]['C_b']*(build_T[d,h+1] - build_T[d,h]) == 
+        P[c]['U_b']*(Ext_T[d,h] - build_T[d,h]) + Gains[d,h] + 
+        build_cons_Heat[d,h]/Heated_area for d in Days for h in Hours), n);
+
     n = 'Building_T_daily_cycle'
-    C_meta[n] = ['Cycling constraint to carry over the temperature from one day to the next', 0]
-    m.addConstrs((build_T[d,0] == build_T[d,Hours[-1] + 1] for d in Days[:-1]), n);
-    n = 'Building_T_yearly_cycle'
-    C_meta[n] = ['Carry over the temperature from one modelling period to the next', 0]
-    m.addConstr((build_T[0,0] == build_T[Days[-1],Hours[-1] + 1]), n);
- 
+    C_meta[n] = ['Cycling constraint for building temperature', 0]
+    m.addConstrs((build_T[d,Hours[-1] + 1] == build_T[next_day(d), 0] for d in Days), n);
+    n = 'Building_T_daily_init'
+    C_meta[n] = ['Fix the initial building temperature every day', 0]
+    m.addConstrs((build_T[d,0] ==  build_T[d,0] for d in Days), n);
+    
     n = 'Building_temperature_min'
     C_meta[n] = ['Lower limit on Building Temperature', 0]
     m.addConstrs((build_T[d,h] >= P[c]['T_min'] for d in Days for h in Hours), n);
@@ -253,17 +261,18 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod):
     r = 'Elec'
     n = 'Balance_' + r
     C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
-    m.addConstrs((grid_import[t(r,p)] + sum(unit_prod[up][t(r,p)] for up in U_res['prod'][r]) == 
-                  grid_export[t(r,p)] + sum(unit_cons[uc][t(r,p)] if uc != 'CGT' else 
-                                            unit_cons[uc][r,p] for uc in U_res['cons'][r]) +
-                  Build_cons_Elec[t_daily(p)] for p in Periods), n);
+    m.addConstrs((
+        grid_import[t(r,p)] + sum(unit_prod[up][t(r,p)] for up in U_res['prod'][r]) == 
+        grid_export[t(r,p)] + sum(unit_cons[uc][t(r,p)] if uc != 'CGT' else 
+        unit_cons[uc][r,p] for uc in U_res['cons'][r]) + Build_cons_Elec[t_daily(p)] 
+        for p in Periods), n);
     
     r = 'Biogas'
     n = 'Balance_' + r
     C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
     m.addConstrs((unit_prod['AD'][t(r,p)] + unit_prod['CGT'][r,p] - unused[t(r,p)] == 
-                  unit_cons['SOFC'][t(r,p)] + unit_cons['BOI'][t(r,p)] + unit_cons['CGT'][r,p] 
-                  for p in Periods), n);
+                  unit_cons['SOFC'][t(r,p)] + unit_cons['BOI'][t(r,p)] + 
+                  unit_cons['CGT'][r,p] for p in Periods), n);
     
     r = 'Biomass'
     n = 'Balance_' + r
@@ -275,24 +284,30 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod):
     n = 'Balance_' + r
     C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
     m.addConstrs((grid_import[r,d,h] - grid_export[r,d,h] - unused[r,d,h] == 
-                  unit_cons['SOFC'][r,d,h] + unit_cons['BOI'][r,d,h] for d in Days for h in Hours), n);
+                  unit_cons['SOFC'][r,d,h] + unit_cons['BOI'][r,d,h] 
+                  for d in Days for h in Hours), n);
     
     # Total annual import / export
     n = 'Electricity_grid_import'
     C_meta[n] = ['Annual Elec import relative to instant Elec imports', 0]
-    m.addConstr(grid_import_a['Elec'] == sum(grid_import['Elec',d,h]/1000 for d in Days for h in Hours), n);
+    m.addConstr(grid_import_a['Elec'] == sum(grid_import['Elec',d,h]/1000 
+                                             for d in Days for h in Hours), n);
     n = 'Electricity_grid_export'
     C_meta[n] = ['Annual Elec export relative to instant Elec exports', 0]
-    m.addConstr(grid_export_a['Elec'] == sum(grid_export['Elec',d,h]/1000 for d in Days for h in Hours), n);
+    m.addConstr(grid_export_a['Elec'] == sum(grid_export['Elec',d,h]/1000 
+                                             for d in Days for h in Hours), n);
     n = 'Gas_grid_import'
     C_meta[n] = ['Annual Gas import relative to instant Gas imports', 0]
-    m.addConstr(grid_import_a['Gas'] == sum(grid_import['Gas',d,h]/1000 for d in Days for h in Hours), n);
+    m.addConstr(grid_import_a['Gas'] == sum(grid_import['Gas',d,h]/1000 
+                                            for d in Days for h in Hours), n);
     n = 'Gas_grid_export'
     C_meta[n] = ['Annual Gas export relative to instant Gas exports', 0]
-    m.addConstr(grid_export_a['Gas'] == sum(grid_export['Gas',d,h]/1000 for d in Days for h in Hours), n);
+    m.addConstr(grid_export_a['Gas'] == sum(grid_export['Gas',d,h]/1000 
+                                            for d in Days for h in Hours), n);
     n = 'Unused_resources'
     C_meta[n] = ['Annual unused resource relative to instant unused resources', 0]
-    m.addConstrs((unused_a[r] == sum(unused[r,d,h]/1000 for d in Days for h in Hours) for r in Unused_res), n);
+    m.addConstrs((unused_a[r] == sum(unused[r,d,h]/1000 for d in Days for h in Hours) 
+                  for r in Unused_res), n);
     
     return grid_import_a, grid_export_a
 
@@ -393,8 +408,9 @@ def run(objective, Limit=None, relax=False):
     # Reset old model and creat a new model
     m = initialize_model()
     # Create most variables
-    (unit_prod, unit_cons, unit_install, unit_size, unit_capex, unit_T, build_cons_Heat, unit_SOC, 
-     unit_charge, unit_discharge, v) = variables.declare_vars(m, Bound, V_meta, **Time_steps)
+    (unit_prod, unit_cons, unit_install, unit_size, unit_capex, unit_T, 
+     build_cons_Heat, unit_SOC, unit_charge, unit_discharge, v
+     ) = variables.declare_vars(m, Bound, V_meta, Days, Hours, Periods)
     # Constrain unit sizes accoring to settings.csv
     cstr_unit_size(m, S, unit_size)
     # Model each unit
@@ -456,3 +472,12 @@ def run(objective, Limit=None, relax=False):
 ### END
 ##################################################################################################
 
+"""
+    # l - 145
+    n = 'Building_T_daily_cycle'
+    C_meta[n] = ['Cycling constraint to carry over the temperature from one day to the next', 0]
+    m.addConstrs((build_T[d,0] == build_T[d,Hours[-1] + 1] for d in Days[:-1]), n);
+    n = 'Building_T_yearly_cycle'
+    C_meta[n] = ['Carry over the temperature from one modelling period to the next', 0]
+    m.addConstr((build_T[0,0] == build_T[Days[-1],Hours[-1] + 1]), n);
+"""

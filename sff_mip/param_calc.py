@@ -15,7 +15,8 @@ import datetime
 import numpy as np
 import pandas as pd
 # Internal modules
-from param_input import make_param, P, P_meta, S, C_meta, Periods, Day_dates, Days, Hours
+from param_input import (make_param, P, P_meta, S, C_meta, Days_all, Hours, 
+                         Clustered_days)
 from global_set import Units
 import data
 
@@ -140,11 +141,17 @@ def resource_economics(file):
     return df
 
 
-def reshape_day_hour(hourly_indexed_list, Days, Hours):
+def reshape_day_hour(hourly_indexed_list, Days_all, Hours):
     """ Reshape a list with hourly index to a list of list with daily and hour 
     in day index """
-    return (np.reshape(hourly_indexed_list, (len(Days), len(Hours))))
+    return (np.reshape(hourly_indexed_list, (len(Days_all), len(Hours))))
 
+
+def cluster(a, Clustered_days):
+    clustered_a = np.zeros((len(Clustered_days), len(Hours)))
+    for i, c in enumerate(Clustered_days):
+        clustered_a[i] = a[int(c)]
+    return clustered_a
 
 
 # Weather parameters for a summer day at Liebensberg
@@ -153,11 +160,16 @@ df_weather = data.weather_data_to_df(file, S['Period_start'], S['Period_end'], S
 df_weather.drop(df_weather.tail(1).index,inplace=True)
 
 # External temperature - format Ext_T[Day_index,Hour_index]
-Ext_T = reshape_day_hour((df_weather['Temperature'].values), Days, Hours)
+epsilon = 1e-6
+Ext_T = reshape_day_hour((df_weather['Temperature'].values), Days_all, Hours)
+Ext_T = cluster(Ext_T, Clustered_days)
+Ext_T[np.abs(Ext_T) < epsilon] = 0
 P_meta['Timedep']['Ext_T'] = ['°C', 'Exterior temperature', 'agrometeo.ch']
 
 # Global irradiance
-Irradiance = reshape_day_hour((df_weather['Irradiance'].values), Days, Hours)
+Irradiance = reshape_day_hour((df_weather['Irradiance'].values), Days_all, Hours)
+Irradiance = cluster(Irradiance, Clustered_days)
+Irradiance[np.abs(Irradiance) < epsilon] = 0
 P_meta['Timedep']['Irradiance'] = ['kW/m^2', 'Global irradiance', 'agrometeo.ch']
 
 # List of dates modelled

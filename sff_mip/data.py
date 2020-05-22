@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 import numpy as np
 import os.path
+import json
 
 
 ##################################################################################################
@@ -90,9 +91,134 @@ def default_data_to_df(file, folder, df_index=None):
 
 
 ##################################################################################################
-### Display input data
+### Load weather clustering results and sorting algorythm
 ##################################################################################################
     
+
+def read_json(file_path):
+    """ Import 'labels' and 'closest' values from a json file """
+    with open(file_path, 'r') as json_file:
+        data = json.load(json_file)
+    return data['labels'], data['closest']
+
+def unique(l):
+    """ Return a list of unique elements from a given list and change them into 
+        ints 
+    """
+    return list(set([int(i) for i in l]))
+
+def reorder(a, order):
+    """ Reorder the array a according to the order array """
+    ordered = np.zeros(len(order))
+    for i in range(len(order)):
+        ordered[i] = a[order[i]]
+    return ordered
+    
+def get_frequence(Labels):
+    """ Returns the number of occurances for each cluster """
+    frequence = np.zeros(len(unique(Labels)))
+    for i in unique(Labels):
+        frequence[i] = Labels.count(i)
+    if sum(frequence) == len(Labels):
+        return frequence
+    else:
+        print('The sum of clusters of days is not 365')
+
+def get_nearby(start, stop, Labels):
+    """ Cycle through a list representing a year. Returns a splice between a
+        start and a stop index. 
+    """
+    if start >= 0 and stop <= len(Labels):
+        return Labels[start:stop]
+    else:
+        if start <= 0:
+            return Labels[len(Labels) + start:-1] + Labels[0:stop]
+        else:
+            return Labels[start:-1] + Labels[0:stop - len(Labels)]
+
+def filter_labels(Labels, initial_distance):
+    """ Runs a simple nearest neighboors type filter on the 1D array Labels.
+        Finds the largest filtering distance such that at least one of each
+        cluster appeary in a year, by iteration. Returns the filtered labels.
+    """
+    Filtered_labels = [0]
+    distance = initial_distance
+    while len(unique(Filtered_labels)) != len(unique(Labels)):
+        count_near_day = {}
+        for d in range(len(Labels)):
+            count_near_day[d] = {}
+            nearby = get_nearby(d - distance, d + distance, Labels)
+            for p in unique(nearby):
+                c = nearby.count(p)
+                count_near_day[d][p] = c
+                
+        Filtered_labels = np.zeros(len(Labels))
+        for d in range(len(Labels)):
+            index = np.argmax(list(count_near_day[d].values()))
+            Filtered_labels[d] = list(count_near_day[d].keys())[index]
+        
+        distance -= 1
+
+    return Filtered_labels
+
+def reduce_reorder(Labels, cluster):
+    """ Given a list of labels and a specific cluster to place and cut it looks
+        for the longest uninterupted occurence of that cluster and replace it
+        by a signle int of the cluster. 
+        All other occurences of the cluster are cut. 
+        The reduced list of labels is returned. 
+    """
+    period_occure = np.where(np.array(Labels) == cluster)[0]
+    length = {}
+    i, j = 0, period_occure[0]
+    for n, _ in enumerate(period_occure):
+        try:
+            if period_occure[n + 1] == period_occure[n] + 1:
+                i += 1
+            else:
+                length[j] = i + 1
+                i, j = 0, period_occure[n+1]
+        except:
+            length[j] = i + 1
+            
+    key_max = max(length, key=length.get)
+    for k in list(length.keys())[::-1]:
+        l = length[k]
+        if k == key_max:
+            Labels[k:k+l] = [cluster]
+        else:
+            Labels[k:k+l] = []
+    return Labels
+
+def arrange_clusters(Labels, display=False):
+    """ Orders clusters of typical days accurding to a liste of cluster labels.
+        Starting by the least frequently appearing cluster, this cluster value
+        is cut from Labels list. 
+        The longest uninterupted chain of days in that cluster is replaced by a 
+        signle value.
+        Once each clsuter has been cut a list of ordered clusters is returned.
+    """
+    Filtered_labels = filter_labels(Labels, len(unique(Labels)))
+    
+    frequency = []
+    for i in unique(Filtered_labels):
+        frequency.append(np.count_nonzero(Filtered_labels == i))
+    frequency = [unique(Filtered_labels), frequency]
+    
+    Ordered_labels = list(Filtered_labels)
+    for i in unique(Ordered_labels):
+        smallest = frequency[0].pop(np.argmin(frequency[1]))
+        frequency[1].pop(np.argmin(frequency[1]))
+        if display:
+            print('---------- Least frequent cluster: ', smallest, '--------')
+            print('Remaining elements of the least frequent cluster to be cut', 
+                  np.count_nonzero(np.array(Ordered_labels) == smallest))
+            print(Ordered_labels)
+        Ordered_labels = reduce_reorder(list(Ordered_labels), smallest)
+        if display:
+            print('Remaining elements of the least frequent cluster after cut', 
+                  np.count_nonzero(np.array(Ordered_labels) == smallest))
+    return Ordered_labels
 
 
 
