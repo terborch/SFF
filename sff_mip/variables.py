@@ -101,18 +101,10 @@ def declare_vars(m, Bound, V_meta, Days, Hours, Periods):
     n='build_cons_Heat'
     V_meta[n] = ['kW', 'Heat consumed by the building', 'time']
     build_cons_Heat = m.addVars(Days, Hours, lb=0, ub=Bound, name=n)
-    
-    # Volum flows of water transporting heat in m^3
-    v = {}
-    for u in Heat_prod:
-        n = f'v[{u}]'
-        for b in Heat_cons:
-            V_meta[n + f'[{b}]'] = ['m^3/h', 'Volume flow of heating water', 'time']
-        v[u] = m.addVars(Heat_cons, Days, Hours, lb=0, ub=Bound, name=n)
-    
+
                     
     return (unit_prod, unit_cons, unit_install, unit_size, unit_capex, unit_T, 
-            build_cons_Heat, unit_SOC, unit_charge, unit_discharge, v)
+            build_cons_Heat, unit_SOC, unit_charge, unit_discharge)
 
 
 # PV_prod = m.addVars(['Elec'], Days, Hours, lb=0, ub=Bound, name='PV_prod');

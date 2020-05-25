@@ -202,7 +202,7 @@ def model_farm_temperature(m, Days, Hours, Ext_T, Irradiance, build_cons_Heat):
 ### Heat cascade
 ##################################################################################################
 
-def model_heating(m, Days, Hours, unit_cons, unit_prod, build_cons_Heat, v, unit_install):
+def model_heating(m, Days, Hours, unit_cons, unit_prod, build_cons_Heat, unit_install):
     r = 'Heat'
     n = 'Balance_' + r
     C_meta[n] = ['Heat sinks equal to heat sources', 0]
@@ -215,7 +215,6 @@ def model_heating(m, Days, Hours, unit_cons, unit_prod, build_cons_Heat, v, unit
     m.addConstrs((unit_install[u]*Bound >= unit_cons[u]['Heat',d,h] 
                   for u in Heat_cons[1:] for d in Days for h in Hours), n)
 
-    
 
 ##################################################################################################
 ### Mass and energy balance
@@ -411,7 +410,7 @@ def run(objective, Limit=None, relax=False):
     m = initialize_model()
     # Create most variables
     (unit_prod, unit_cons, unit_install, unit_size, unit_capex, unit_T, 
-     build_cons_Heat, unit_SOC, unit_charge, unit_discharge, v
+     build_cons_Heat, unit_SOC, unit_charge, unit_discharge
      ) = variables.declare_vars(m, Bound, V_meta, Days, Hours, Periods)
     # Constrain unit sizes accoring to settings.csv
     cstr_unit_size(m, S, unit_size)
@@ -421,7 +420,7 @@ def run(objective, Limit=None, relax=False):
     # Model the farm building temperature
     penalty = model_farm_temperature(m, Days, Hours, Ext_T, Irradiance, build_cons_Heat)
     # Model a heat cascade
-    model_heating(m, Days, Hours, unit_cons, unit_prod, build_cons_Heat, v, unit_install)
+    model_heating(m, Days, Hours, unit_cons, unit_prod, build_cons_Heat, unit_install)
     # Model mass and energy balance
     grid_import_a, grid_export_a = model_energy_balance(m, Days, Hours, unit_cons, unit_prod)
     # Calculate objective variables
