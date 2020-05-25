@@ -359,7 +359,9 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
     C_meta[n] = ['Sum of the OPEX of all resources', 0]
     m.addConstr(opex == sum(grid_import_a[r]*Costs_res['Import_cost'][r] - 
                             grid_export_a[r]*Costs_res['Export_cost'][r] 
-                            for r in G_res), n);
+                            for r in G_res) 
+                        + sum(unit_capex[u]*Costs_u['Maintenance'][u]/1000 
+                              for u in Units), n);
     
     n = 'totex_sum'
     C_meta[n] = ['TOTEX relative to the OPEX, the CAPEX and the annualization factor', 0]
