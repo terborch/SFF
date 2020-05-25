@@ -43,9 +43,9 @@ def unit_size(path):
     """
     # Only time independent results are used, set names as index
     df_result = results.get_hdf(path, 'single')
-    var_names = list(df_result.Var_name)
     df_result.set_index('Var_name', inplace=True)
-    
+    var_names = [f'unit_size[{u}]' for u in Units]   
+
     # Figure options
     fig, ax1 = plt.subplots()
     plt.title('Installed capacity for each unit')
@@ -53,24 +53,20 @@ def unit_size(path):
     ax1.set_ylabel('Installed production capacity in kW')
     ax2.set_ylabel('Installed storage capacity in kWh')
     
-    # Only get the 'size' value for each unit and plot if
-    names = {}
-    i, j = 0, len(Units) - len(Units_storage)
-    for n in var_names:
-        if 'size' in n:
-            name = get_unit_name(n)
-            value = df_result.loc[n, 'Value']
-            if name not in Units_storage:
-                ax1.bar(i, value, color='darkgrey')
-                names[i] = name
-                i += 1
-            else:
-                ax2.bar(j, value, color='lightgrey')
-                names[j] = name
-                j += 1
+    # Split into torage and non storage units
+    Units_non_storage = list(set(Units) - set(Units_storage))
+    Units_non_storage.sort()
+    i = 0
+    for n in [f'unit_size[{u}]' for u in Units_non_storage]:
+        ax1.bar(i, df_result.loc[n, 'Value'], color='darkgrey')
+        i += 1
+    for n in [f'unit_size[{u}]' for u in Units_storage]:
+        ax2.bar(i, df_result.loc[n, 'Value'], color='lightgrey')
+        i += 1
                 
     # Store the figure in aplt object accessible anywhere
-    plt.xticks(range(len(Units)), [names[i] for i in range(len(Units))])
+    Names_order = Units_non_storage + list(Units_storage)
+    plt.xticks(range(len(Units)), [Names_order[i] for i in range(len(Units))])
     
 
 def unit_temperature(path):
@@ -303,7 +299,7 @@ def all_fig(path, save_fig=True):
 def get_resource_name(var_name):
     """ Get the abbreviated name of a resoucre from a variable name string """
     name = []
-    for r in Color_code.keys():
+    for r in Resources:
         if r in var_name:
             name.append(r)
     if not name:
@@ -313,8 +309,8 @@ def get_resource_name(var_name):
 def get_unit_name(var_name):
     """ Get the abbreviated name of a unit from a variable name string """
     name = []
-    for u in Linestyle_code.keys():
-        if u in var_name:
+    for u in Units:
+        if f'[{u}]' in var_name:
             name.append(u)
     if not name:
         name.append('default')

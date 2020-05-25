@@ -15,6 +15,8 @@ Units,AD_max,1000,kW,Maximum AD installed capacity
 Units,AD_min,0,kW,Minimum AD installed capacity
 Units,SOFC_max,1000,kW,Maximum SOFC installed capacity
 Units,SOFC_min,0,kW,Minimum SOFC installed capacity
+Units,GCSOFC_max,1000,kW,Maximum GC_SOFC installed capacity
+Units,GCSOFC_min,0,kW,Minimum GC_SOFC installed capacity
 Units,BOI_max,1000,kW,Maximum BOI installed capacity
 Units,BOI_min,0,kW,Minimum BOI installed capacity
 Units,CGT_max,10000,kW,Minimum CGT installed capacity

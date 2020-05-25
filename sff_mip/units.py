@@ -167,12 +167,39 @@ def ad(m, Days, Hours, unit_prod, unit_cons, unit_size, unit_T, unit_install, Ex
     m.addConstrs((unit_T[d,h] >= min_T_AD for d in Days for h in Hours), n);
     m.addConstrs((unit_T[d,h] <= max_T_AD for d in Days for h in Hours), n);
 
-##################################################################################################
+
+###############################################################################
+### Biogas cleaning for SOFC
+###############################################################################
+
+def gcsofc(m, Days, Hours, unit_prod, unit_cons, unit_size):
+    """ MILP model of a Gas Cleaning installation for SOFC applications. The
+        installation is a stack of filters to be replaced regularly, losses
+        represent the electricity consumed by the fan and the chiller (drying).
+    """
+    losses = 0.6*0.03
+    
+    c = 'GCSOFC'
+    n = 'GCSOFC_production'
+    C_meta[n] = ['Biogas prod relative to Biogas cons and Losses', 0]
+    m.addConstrs((unit_prod['Biogas',d,h] == 
+                  unit_cons['Biogas',d,h]*(1 - losses)
+                  for d in Days for h in Hours), n);
+    
+    n = 'GCSOFC_size'
+    C_meta[n] = ['Upper limit on prod relative to installed capacity', 0]
+    m.addConstrs((unit_prod['Biogas',d,h] <= unit_size for d in Days for h in Hours), n);
+
+###############################################################################
 ### Solid Oxide Fuel Cell  
-##################################################################################################
+###############################################################################
 
 
 def sofc(m, Days, Hours, unit_prod, unit_cons, unit_size):
+    """ MILP model of a Solid Oxyde Fuel Cell (SOFC) with constant efficiency
+        and operating point. 
+    """
+    
     c = 'SOFC'
     n = 'SOFC_Elec_production'
     C_meta[n] = ['Elec produced relative to Biogas and gas consumed and Elec Efficiency', 6]
@@ -190,10 +217,10 @@ def sofc(m, Days, Hours, unit_prod, unit_cons, unit_size):
 
 
 
-##################################################################################################
+###############################################################################
 ### Compressed Gas Tank
-##################################################################################################
-
+###############################################################################
+    
 
 def cgt(m, Periods, unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge):
     """ MILP model of Compressed Gas Tank for storing Natural Gas. No losses are modeled.

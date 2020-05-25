@@ -1,9 +1,10 @@
 Technology,Cost_per_size,Cost_per_unit,Cost_multiplier,Life,Maintenance,Size_units,Source
 BAT,970,620,1.33,10,0.02,kWh,Paul regression
-BOI,105,3800,1.8,20,0.02,kW,Paul
+BOI,105,3800,1.8,20,0.05,kW,Paul
 AHP,1240,5680,1.8,20,0.02,kW,Paul
-SOFC,2100,15542,1.8,10,0.02,kW,Paul regression
+SOFC,2100,15542,1.8,10,0.05,kW,Paul regression
 PV,2656,2495,1.33,20,0.02,kW,Paul regression
-AD,1500,5000,1.8,20,0.02,kW,semester project
+AD,1500,5000,1.8,20,0.05,kW,semester project
 GC,2800,3000,1.8,20,0.02,kW,W2W work group 2
 CGT,0.923,71600,1.8,25,0.02,kWh,DOI: 10.2172/1156975
+GCSOFC,23.4,467,1.8,10,0.03,kWh,semester project nils

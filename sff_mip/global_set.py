@@ -18,7 +18,8 @@
 # Abbreviations
 Abbrev = {'BOI':    'Gas Boiler', 
           'PV':     'Photovoltaic Panels', 
-          'BAT':    'Battery', 
+          'BAT':    'Battery',
+          'GCSOFC':'Gas Cleaning for SOFC',
           'SOFC':   'Solid Oxide Fuel cell', 
           'AD':     'Anaerobic Digester',
           'CGT':    'Compressed Gas Tank',
@@ -30,28 +31,30 @@ Abbrev = {'BOI':    'Gas Boiler',
           }
 
 # Eneregy conversion units
-Units = ('BOI', 'PV', 'BAT', 'SOFC', 'AD', 'CGT')
+Units = ('BOI', 'PV', 'BAT', 'GCSOFC', 'SOFC', 'AD', 'CGT')
 
 # Resources and energy carriers
 Resources = ('Elec', 'Gas', 'Biogas', 'Biomass', 'Heat')
 
 # The resources each unit produce
 U_prod = {
-    'BOI':  ('Heat',),
-    'PV':   ('Elec',),
-    'BAT':  ('Elec',), 
-    'SOFC': ('Elec', 'Heat'), 
-    'AD':   ('Biogas',),
-    'CGT':  ('Biogas',) 
+    'BOI':      ('Heat',),
+    'PV':       ('Elec',),
+    'BAT':      ('Elec',),
+    'GCSOFC':  ('Biogas',),
+    'SOFC':     ('Elec', 'Heat'), 
+    'AD':       ('Biogas',),
+    'CGT':      ('Biogas',) 
     }
 
 # The resources each unit consumes
 U_cons = {
-    'BOI':  ('Gas', 'Biogas'),
-    'BAT':  ('Elec',), 
-    'SOFC': ('Gas', 'Biogas'), 
-    'AD':   ('Biomass', 'Elec', 'Heat'),
-    'CGT':  ('Biogas', 'Elec')
+    'BOI':      ('Gas', 'Biogas'),
+    'BAT':      ('Elec',),
+    'GCSOFC':  ('Biogas',),
+    'SOFC':     ('Gas', 'Biogas'), 
+    'AD':       ('Biomass', 'Elec', 'Heat'),
+    'CGT':      ('Biogas', 'Elec')
     }
 
 # The units producing and consuming a given resource
@@ -90,7 +93,8 @@ Linestyles = {'loosely dotted': (0, (1, 10)),
 Linestyle_code = {'PV':     'dotted', 
                   'BAT':    'dashdot', 
                   'grid':   'solid', 
-                  'SOFC':   'dashed', 
+                  'SOFC':   'dashed',
+                  'GCSOFC': 'solid',
                   'AD':     'dashdotted', 
                   'build':  'densely dashdotted', 
                   'BOI':    'loosely dashed',

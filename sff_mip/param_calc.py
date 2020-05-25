@@ -1,4 +1,7 @@
 """
+### Methods
+    #   annualize       takes the number of years and interest rate as parameters
+                        and returns the annualization factor
 ### Parameter declaration
     #   Ext_T           list of external temperature values averaged for each period
     #   Irradiance      list of global Irradiance values summed over each period
@@ -107,11 +110,19 @@ def unit_economics(file):
     for p in Parameters:
         if p != 'Life':
             for u in Units:
-                physical_units = ('Years' if p == 'Life' else 'kCHF/{}'.format(df['Size_units']))
+                physical_units = ('Years' if p == 'Life' 
+                                  else 'kCHF/{}'.format(df['Size_units']))
                 meta = [physical_units, Descriptions[p], df['Source'][u]]
                 make_param('Eco', p, df[p][u], meta, u)
     
     return df
+
+
+def annualize(n, i):
+    """ Takes the number of years and interest rate as parameters and returns 
+        the annualization factor Tau
+    """
+    return (i*(1 + i)**n) / ((1 + i)**n - 1)
 
 
 def resource_economics(file):
@@ -204,10 +215,7 @@ make_param('build', 'Ground_area', Ground_area, meta)
 Costs_u = unit_economics('unit_costs.csv')
 Costs_res = resource_economics('resource_costs.csv')
 
-# Annualization factor Tau
-c = 'Eco'
-P_meta[c]['Tau'] = ['-', 'Annualization factor', 'calc']
-P[c]['Tau'] = (P[c]['i']*(1 + P[c]['i'])**P[c]['n']) / ((1 + P[c]['i'])**P[c]['n'] - 1)
+
 
 
 AD_dimentions(P, P_meta)

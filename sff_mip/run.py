@@ -88,7 +88,7 @@ def display_results(date=today, run_nbr='last', save_df=True, save_fig=True,
 """
 
 # Execute single run
-# run('emissions')
+run('totex')
 
 #run_single('totex', save_fig=True, discard_fig=False)
 
@@ -98,7 +98,7 @@ def display_results(date=today, run_nbr='last', save_df=True, save_fig=True,
 # var_name_time_indep = list(var_result_time_indep.keys())
 # var_name_time_dep = list(var_result_time_dep.keys())
 
-
+"""
 Results = {}
 
 Objective_description = {
@@ -142,6 +142,10 @@ end = time.time()
 print('global runtime: ', end - start, 's')
 # for i in range(10):
 #     print(f'Pareto_{i}_solve_time', solve_time[i] )
+"""
+
+
+
 
 """
 date=today
