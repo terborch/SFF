@@ -21,8 +21,7 @@ def boi(m, Days, Hours, unit_prod, unit_cons, unit_size):
     n = 'BOI_size'
     C_meta[n] = ['Upper limit on Heat produced relative to installed capacity', 0]
     m.addConstrs((unit_prod['Heat',d,h] <= unit_size for d in Days for h in Hours), n);
-
-
+    
 
 ##################################################################################################
 ### Photovoltaïc

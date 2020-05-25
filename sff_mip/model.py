@@ -203,23 +203,12 @@ def model_farm_temperature(m, Days, Hours, Ext_T, Irradiance, build_cons_Heat):
 ##################################################################################################
 
 def model_heating(m, Days, Hours, unit_cons, unit_prod, build_cons_Heat, v, unit_install):
-    g = 'General'
-    n = 'Heat_load_balance_AD'
-    C_meta[n] = ['Heat consumed by the AD relative to hot water supply and temperature delta', 0]
-    m.addConstrs((unit_cons['AD']['Heat',d,h] == P[g]['Cp_water']*(P['AD']['Th'] - P['AD']['Tc'])*
-                  (v['BOI']['AD',d,h] + v['SOFC']['AD',d,h]) for d in Days for h in Hours), n);
-    
-    n = 'Heat_load_balance_build'
-    C_meta[n] = ['Heat consumed by the Building relative to hot water supply and temperature delta', 0]
-    m.addConstrs((build_cons_Heat[d,h] == P[g]['Cp_water']*(P['build']['Th'] - P['build']['Tc'])*
-                  (v['BOI']['build',d,h] + v['SOFC']['build',d,h]) for d in Days for h in Hours), n);
-    
-    n = 'Heat_load_balance_heat_prod'
-    C_meta[n] = ['Heat produced by each unit relative to hot water supplied and temperature delta', 0]
-    m.addConstrs((unit_prod[u]['Heat',d,h] == 
-                  P[g]['Cp_water']*(v[u]['build',d,h]*(P['build']['Th'] - P['build']['Tc']) + 
-                                 v[u]['AD',d,h]*(P['AD']['Th'] - P['AD']['Tc'])) 
-                  for u in Heat_prod for d in Days for h in Hours), n);
+    r = 'Heat'
+    n = 'Balance_' + r
+    C_meta[n] = ['Heat sinks equal to heat sources', 0]
+    m.addConstrs((unit_cons['AD']['Heat',d,h] + build_cons_Heat[d,h] ==
+                  sum(unit_prod[up][r,d,h] for up in U_res['prod']['Heat'])
+                  for d in Days for h in Hours), n);
     
     n = 'AD_is_installed_heat'
     C_meta[n] = ['Prevent the AD from consuming heat if it is not installed', 0]
@@ -493,4 +482,27 @@ def run(objective, Limit=None, relax=False):
     n = 'Building_T_yearly_cycle'
     C_meta[n] = ['Carry over the temperature from one modelling period to the next', 0]
     m.addConstr((build_T[0,0] == build_T[Days[-1],Hours[-1] + 1]), n);
+"""
+
+""" Old heat cascade
+
+def model_heating(m, Days, Hours, unit_cons, unit_prod, build_cons_Heat, v, unit_install):
+    g = 'General'
+    n = 'Heat_load_balance_AD'
+    C_meta[n] = ['Heat consumed by the AD relative to hot water supply and temperature delta', 0]
+    m.addConstrs((unit_cons['AD']['Heat',d,h] == P[g]['Cp_water']*(P['AD']['Th'] - P['AD']['Tc'])*
+                  (v['BOI']['AD',d,h] + v['SOFC']['AD',d,h]) for d in Days for h in Hours), n);
+    
+    n = 'Heat_load_balance_build'
+    C_meta[n] = ['Heat consumed by the Building relative to hot water supply and temperature delta', 0]
+    m.addConstrs((build_cons_Heat[d,h] == P[g]['Cp_water']*(P['build']['Th'] - P['build']['Tc'])*
+                  (v['BOI']['build',d,h] + v['SOFC']['build',d,h]) for d in Days for h in Hours), n);
+    
+    n = 'Heat_load_balance_heat_prod'
+    C_meta[n] = ['Heat produced by each unit relative to hot water supplied and temperature delta', 0]
+    m.addConstrs((unit_prod[u]['Heat',d,h] == 
+                  P[g]['Cp_water']*(v[u]['build',d,h]*(P['build']['Th'] - P['build']['Tc']) + 
+                                 v[u]['AD',d,h]*(P['AD']['Th'] - P['AD']['Tc'])) 
+                  for u in Heat_prod for d in Days for h in Hours), n);
+    
 """
