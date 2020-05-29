@@ -17,6 +17,7 @@
 
 # Abbreviations
 Abbrev = {'BOI':    'Gas Boiler', 
+          'EH':     'Electric Heater', 
           'PV':     'Photovoltaic Panels', 
           'BAT':    'Battery',
           'GCSOFC':'Gas Cleaning for SOFC',
@@ -25,13 +26,13 @@ Abbrev = {'BOI':    'Gas Boiler',
           'CGT':    'Compressed Gas Tank',
           'build':  'building',
           'Elec':   'Electricity',
-          'Gas':    '(Synthetic) Natural Gas',
+          'Gas':    'Natural Gas or Syntetic NG',
           'Biogas': '60% CH4, 40% CO2',
           'Heat':   'Heat'
           }
 
 # Eneregy conversion units
-Units = ('BOI', 'PV', 'BAT', 'GCSOFC', 'SOFC', 'AD', 'CGT')
+Units = ('BOI', 'EH', 'PV', 'BAT', 'GCSOFC', 'SOFC', 'AD', 'CGT')
 
 # Resources and energy carriers
 Resources = ('Elec', 'Gas', 'Biogas', 'Biomass', 'Heat')
@@ -39,9 +40,10 @@ Resources = ('Elec', 'Gas', 'Biogas', 'Biomass', 'Heat')
 # The resources each unit produce
 U_prod = {
     'BOI':      ('Heat',),
+    'EH':       ('Heat',),
     'PV':       ('Elec',),
     'BAT':      ('Elec',),
-    'GCSOFC':  ('Biogas',),
+    'GCSOFC':   ('Biogas',),
     'SOFC':     ('Elec', 'Heat'), 
     'AD':       ('Biogas',),
     'CGT':      ('Biogas',) 
@@ -50,8 +52,9 @@ U_prod = {
 # The resources each unit consumes
 U_cons = {
     'BOI':      ('Gas', 'Biogas'),
+    'EH':       ('Elec',),
     'BAT':      ('Elec',),
-    'GCSOFC':  ('Biogas',),
+    'GCSOFC':   ('Elec', 'Biogas',),
     'SOFC':     ('Gas', 'Biogas'), 
     'AD':       ('Biomass', 'Elec', 'Heat'),
     'CGT':      ('Biogas', 'Elec')
@@ -98,6 +101,7 @@ Linestyle_code = {'PV':     'dotted',
                   'AD':     'dashdotted', 
                   'build':  'densely dashdotted', 
                   'BOI':    'loosely dashed',
+                  'EH':    'loosely dashed',
                   'CGT':    'densely dashdotdotted',
                   'default':'solid'
                   }

@@ -40,16 +40,23 @@ end_construct = time.time()
 print('model construct time: ', end_construct - start_construct, 's')
 
 
-def run(objective, relax=False, Pareto=False, Limit=None, Save_txt=False):
+def run(objective, Reload=True, relax=False, Pareto=False, Limit=None, Save_txt=False):
     """ Solve the optimization model once then store the result in hdf5 format.
+        # TODO save inputs into the resut folder
     """
+    
+    # Option to generate a new input.h5 file 
+    if Reload:
+        pass
+    
     
     start_solve = time.time()
     # Select objective and solve the model
     if Pareto:
+        #objective, objective_cstr = objective
         if Limit:
             m = model.run(objective, Limit=Limit)
-            print('----------------- Limit on emissions: {} --------------------'.format(Limit))
+            print('----------------- Limit on capex: {} --------------------'.format(Limit))
         else:
             m = model.run(objective)
     else:
@@ -80,7 +87,7 @@ def run(objective, relax=False, Pareto=False, Limit=None, Save_txt=False):
     results.summary(path, save=True)
     
     if Pareto:
-        return m.getVarByName('emissions').x
+        return m.getVarByName('capex').x
     
 """
 def display_results(date=today, run_nbr='last', save_df=True, save_fig=True, 
@@ -98,7 +105,7 @@ run('totex')
 # var_name_time_indep = list(var_result_time_indep.keys())
 # var_name_time_dep = list(var_result_time_dep.keys())
 
-"""
+
 Results = {}
 
 Objective_description = {
@@ -108,33 +115,33 @@ Objective_description = {
     'pareto_emissions': 'TOTEX minimization with constrained emissions at the minimum',
     }
 
-
-solve_time = []
-
-objective = 'emissions'
-min_emissions = run(objective, Pareto=True, Limit=None)
-solve_time.append(time.time() - start)
-
-objective = 'totex'
-max_emissions = run(objective, Pareto=True, Limit=None)
-solve_time.append(time.time() - start)
-
-nsteps = 10
-epsilon = 1e-6
-step = (max_emissions - min_emissions)/nsteps
-
-Relaxation = np.arange(min_emissions*(1 + epsilon), 
-                       max_emissions*(1 - epsilon), 
-                       step)
-
-for i in range(1, len(Relaxation)):
-    objective = 'pareto_emissions'
-    Limit = Relaxation[i]
-    run(objective, Pareto=True, Limit=Limit)
+def pareto(objective_cstr, objective_free):
+    solve_time = []
+    
+    objective = 'capex'
+    min_obj_cstr = run(objective, Pareto=True, Limit=None)
     solve_time.append(time.time() - start)
-    plt.close('all')
+    
+    objective = 'opex'
+    max_obj_cstr = run(objective, Pareto=True, Limit=None)
+    solve_time.append(time.time() - start)
+    
+    nsteps = 10
+    epsilon = 1e-2
+    step = (max_obj_cstr - min_obj_cstr)/nsteps
+    
+    Limits = np.arange(min_obj_cstr*(1 + epsilon), 
+                        max_obj_cstr*(1 - epsilon), 
+                        step)
+    
+    for i in range(1, len(Limits)):
+        objective = 'pareto_' + objective_cstr
+        run(objective, Pareto=True, Limit=Limits[i])
+        solve_time.append(time.time() - start)
+        plt.close('all')
   
-
+#pareto('capex', 'opex')
+#pareto('emissions', 'totex')
 
 #solve_time.append([time.time() - solve_time[i]])
 end = time.time()
@@ -142,7 +149,7 @@ end = time.time()
 print('global runtime: ', end - start, 's')
 # for i in range(10):
 #     print(f'Pareto_{i}_solve_time', solve_time[i] )
-"""
+
 
 
 

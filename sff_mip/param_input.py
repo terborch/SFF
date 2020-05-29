@@ -20,9 +20,11 @@
 # External modules
 import numpy as np
 from datetime import datetime, timedelta
+import os
 # Internal modules
 import data
-import os
+from global_set import Units
+
 
 def print_error(error):
     switcher = { 
@@ -72,8 +74,8 @@ def get_settings(file):
 
 
 def get_param(file, Categories):
-    """ Get values and metadata from csv parameter files in this directory and store them 
-        into separate dictionaries 
+    """ Get values and metadata from csv parameter files in this directory and 
+        store them into separate dictionaries.
     """
     df = get_values_df(file)
     dic, dic_meta = {}, {}
@@ -91,8 +93,8 @@ def get_param(file, Categories):
     
 
 def make_param(category, name, value, meta, *subcategory):
-    """ Passes the value and metadata of a given parameter into P and P_meta, given a Category
-        and a name.
+    """ Passes the value and metadata of a given parameter into P and P_meta, 
+        given a Category and a name.
     """
     if category not in Categories:
         print('Error: {} was passed and is not in Categories'.format(category))
@@ -168,8 +170,7 @@ def time_param():
 
 
 # Parameter categories
-Categories = ['AD', 'PV', 'BAT', 'SOFC', 'BOI', 'CGT', 'Eco', 'CO2', 'build', 'General', 'Time', 
-              'Timedep']
+Categories = list(Units) + ['Eco', 'CO2', 'build', 'General', 'Time', 'Timedep']
 # Dictionnaries of values and metadata from the file 'parameters.csv'
 # example: P['AD']['eff'] = 0.3 and P_meta['AD']['eff'] = ['-', 'AD efficiency', 'energyscope']
 P, P_meta, Categories = get_param('parameters.csv', Categories)

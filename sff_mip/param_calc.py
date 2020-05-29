@@ -17,12 +17,13 @@
 import datetime
 import numpy as np
 import pandas as pd
+import os
 # Internal modules
 from param_input import (make_param, P, P_meta, S, C_meta, Days_all, Hours, 
                          Clustered_days)
 from global_set import Units
 import data
-
+import results
     
 def annual_to_daily(Annual, Profile_norm):
     """ Take an annual total and a corresponding daily profile normalized from 1 to 0. Calculate 
@@ -165,35 +166,48 @@ def cluster(a, Clustered_days):
     return clustered_a
 
 
-# Weather parameters for a summer day at Liebensberg
-file = 'meteo_Liebensberg_10min.csv'
-df_weather = data.weather_data_to_df(file, S['Period_start'], S['Period_end'], S['Time_step'])
-df_weather.drop(df_weather.tail(1).index,inplace=True)
+def weather_param(file, epsilon, clustering=True):
+    """ Returns Ext_T and Irradiance where values within epsilon around zero
+        will be replaced by zero.
+    """
+    df_weather = data.weather_data_to_df(file, S['Period_start'], S['Period_end'], S['Time_step'])
+    df_weather.drop(df_weather.tail(1).index, inplace=True)
+    
+    # External temperature - format Ext_T[Day_index,Hour_index]
+    Ext_T = reshape_day_hour((df_weather['Temperature'].values), Days_all, Hours)
+    Ext_T[np.abs(Ext_T) < epsilon] = 0
+    P_meta['Timedep']['Ext_T'] = ['°C', 'Exterior temperature', 'agrometeo.ch']
+    
+    # Global irradiance
+    Irradiance = reshape_day_hour((df_weather['Irradiance'].values), Days_all, Hours)
+    Irradiance[np.abs(Irradiance) < epsilon] = 0
+    P_meta['Timedep']['Irradiance'] = ['kW/m^2', 'Global irradiance', 'agrometeo.ch']
+    
+    # Clustering
+    if clustering:
+        Ext_T = cluster(Ext_T, Clustered_days)
+        Irradiance = cluster(Irradiance, Clustered_days)
+    
+    return Ext_T, Irradiance, df_weather.index
 
-# External temperature - format Ext_T[Day_index,Hour_index]
+
+# Hoourly weather parameters for a year at Liebensberg
+filename = 'meteo_Liebensberg_10min.csv'
 epsilon = 1e-6
-Ext_T = reshape_day_hour((df_weather['Temperature'].values), Days_all, Hours)
-Ext_T = cluster(Ext_T, Clustered_days)
-Ext_T[np.abs(Ext_T) < epsilon] = 0
-P_meta['Timedep']['Ext_T'] = ['°C', 'Exterior temperature', 'agrometeo.ch']
-
-# Global irradiance
-Irradiance = reshape_day_hour((df_weather['Irradiance'].values), Days_all, Hours)
-Irradiance = cluster(Irradiance, Clustered_days)
-Irradiance[np.abs(Irradiance) < epsilon] = 0
-P_meta['Timedep']['Irradiance'] = ['kW/m^2', 'Global irradiance', 'agrometeo.ch']
+Ext_T, Irradiance, Index = weather_param(filename, epsilon, clustering=True)
 
 # List of dates modelled
-Dates, Dates_pd = [], df_weather.index
+Dates, Dates_pd = [], Index
 for d in Dates_pd: 
     Dates.append(datetime.datetime(d.year, d.month, d.day, d.hour, d.minute))
 
 # Daily building electricity consumption profile
+Build_cons = {}
 meta = ['kW', 'Building electricity consumption', 'calc']
 file = 'consumption_profile_dummy.csv'
-df_cons = data.default_data_to_df(file, 'internal', df_weather.index)
-Build_cons_Elec = annual_to_daily(P['build']['cons_Elec_annual'], df_cons['Electricity'].values)
-make_param('Timedep', 'Build_cons_Elec', Build_cons_Elec, meta)
+df_cons = data.default_data_to_df(file, 'internal', Index)
+Build_cons['Elec'] = annual_to_daily(P['build']['cons_Elec_annual'], df_cons['Electricity'].values)
+make_param('Timedep', 'Build_cons[Elec]', Build_cons['Elec'], meta)
 
 # Biomass potential
 Biomass_prod = biomass_prod(P['AD']['Pigs'], P['AD']['Cows'])
@@ -216,6 +230,17 @@ Costs_u = unit_economics('unit_costs.csv')
 Costs_res = resource_economics('resource_costs.csv')
 
 
+path = os.path.join('inputs', 'precalc.h5')
+dic = results.get_hdf(path)
+Build_cons['Heat'] = np.array(dic['build_Q'])
+AD_cons_Heat = np.array(dic['AD_Q'])
+Build_T = np.array(dic['build_T'])
+AD_T = np.array(dic['AD_T'])
 
 
-AD_dimentions(P, P_meta)
+#AD_dimentions(P, P_meta)
+
+c = 'AD'
+name = 'Capacity'
+P_meta[c][name] = ['kW', 'Rated Biogas production capacity', 'calc']
+P[c][name] = np.round( P[c]['Manure_prod']*P[c]['Eff'] , 2)

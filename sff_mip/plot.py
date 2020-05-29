@@ -11,7 +11,7 @@ import numpy as np
 import os.path
 # Internal modules
 from param_input import Periods, dt_end, Days, Hours
-from param_calc import Dates, Ext_T, Irradiance, Build_cons_Elec
+from param_calc import Dates, Ext_T, Irradiance, Build_cons, Build_T, AD_T
 from global_set import (Units, Units_storage, Resources, Color_code, 
                         Linestyle_code, Linestyles, Abbrev)
 import results
@@ -81,9 +81,8 @@ def unit_temperature(path):
     # Items to plot
     Time_steps = list(range(len(Hours)*len(Days)))
     items = {}
-    items['name'] = ['build_T', 'unit_T[AD]', 'Ext_T', 'Irradiance']
-    items['value'] = [np.reshape(df[n].values, shape) for n in items['name'][:2]]
-    items['value'] += [Ext_T, Irradiance]
+    items['name'] = ['Build_T', 'AD_T', 'Ext_T', 'Irradiance']
+    items['value'] = [Build_T, AD_T, Ext_T, Irradiance]
     items['label'] = ['Building Temperature', 'AD Temperature', 
                       'External Temperature', 'Irradiance']
     
@@ -172,7 +171,7 @@ def resource(Resource, Threshold, path):
         i += 1        
     
     if Resource == 'Elec':
-        axs[i].plot(Time_steps, np.repeat(Build_cons_Elec, len(Days)),
+        axs[i].plot(Time_steps, np.repeat(Build_cons['Elec'], len(Days)),
                     label='Building consumption', 
                     c=col('Elec'), ls=ls('build'))
         axs[i].legend(loc='upper right')
@@ -285,9 +284,6 @@ def all_fig(path, save_fig=True):
     
     #flows('Heat', 'heat flows', 'kW', var_result_time_dep, var_name_time_dep, sort=True, daily=True)
     #print_fig(save_fig, os.path.join(cd, 'Heat_flows.png'))
-
-
-
 
 
 

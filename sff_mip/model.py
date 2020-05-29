@@ -17,10 +17,10 @@ import gurobipy as gp
 from param_input import (P, P_meta, S, V_meta, C_meta, Bound, Periods, Days, 
                          Hours, Time_period_map, Frequence)
 from global_set import Units, U_res, G_res, Heat_cons, Heat_prod
-from param_calc import (Irradiance, Build_cons_Elec, Biomass_prod, Costs_u, 
-                        Costs_res, df_cons, Heated_area, Ext_T, annualize)
+from param_calc import (Irradiance, Build_cons, Biomass_prod, Costs_u, 
+                        Costs_res, df_cons, Heated_area, Ext_T, AD_cons_Heat)
 # Functions
-from param_calc import annual_to_daily
+from param_calc import annual_to_daily, annualize
 import variables
 
 """
@@ -51,9 +51,9 @@ def initialize_model():
     return m
 
 
-##################################################################################################
+###############################################################################
 ### Units model
-##################################################################################################
+###############################################################################
 
 
 import units
@@ -96,6 +96,9 @@ def model_units(m, Days, Hours, Periods, unit_prod, unit_cons, unit_size,
     u = 'BOI'
     units.boi(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
     
+    u='EH'
+    units.eh(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
+    
     u = 'PV'
     units.pv(m, Days, Hours, unit_prod[u], unit_size[u], Irradiance)
     
@@ -104,8 +107,7 @@ def model_units(m, Days, Hours, Periods, unit_prod, unit_cons, unit_size,
               unit_SOC[u], unit_charge[u], unit_discharge[u])
     
     u = 'AD'
-    units.ad(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u],
-             unit_T[u], unit_install[u], Ext_T, Irradiance)
+    units.ad(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], AD_cons_Heat)
     
     u = 'GCSOFC'
     units.gcsofc(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
@@ -118,103 +120,19 @@ def model_units(m, Days, Hours, Periods, unit_prod, unit_cons, unit_size,
               unit_charge[u], unit_discharge[u])
     
 
-##################################################################################################
-### Farm thermodynamic model
-##################################################################################################
-
-def model_farm_temperature(m, Days, Hours, Ext_T, Irradiance, build_cons_Heat):
-    c = 'build'
-    n = 'build_T'
-    V_meta[n] = ['°C', 'Interior temperature of the building', 'time']
-    build_T = m.addVars(Days, Hours + [Hours[-1] + 1], lb=-Bound, ub=Bound, name=n)
-    
-    P_meta[c]['Gains_ppl'] = ['kW/m^2', 'Heat gains from people', 'calc']
-    C_meta['Gains_ppl'] = ['Building people gains', 4, 'P']
-    Gains_ppl = annual_to_daily(P[c]['Gains_ppl'], df_cons['Gains'].values)
-
-    P_meta[c]['Gains_elec'] = ['kW/m^2', 'Heat gains from appliances', 'calc']
-    C_meta['Gains_elec'] = ['Building electric gains', 3, 'P']
-    Gains_elec = P[c]['Elec_heat_frac'] * Build_cons_Elec / Heated_area
-
-    P_meta[c]['Gains_solar'] = ['kW/m^2', 'Heat gains from irradiation', 'calc']
-    C_meta['Gains_solar'] = ['Building solar gains', 3, 'P']
-    Gains_solar = P[c]['Building_absorptance'] * Irradiance
-    
-    P_meta[c]['Gains'] = ['kW/m^2', 'Sum of all heat gains', 'calc']
-    C_meta['Gains'] = ['Sum of all building heating gains', 3, 'P']
-    Gains = Gains_ppl + Gains_elec + Gains_solar
-    
-    n = 'Building_temperature'
-    C_meta[n] = ['Building Temperature change relative to External Temperature, Gains and Losses', 2]
-    m.addConstrs((
-        P[c]['C_b']*(build_T[d,h+1] - build_T[d,h]) == 
-        P[c]['U_b']*(Ext_T[d,h] - build_T[d,h]) + Gains[d,h] + 
-        build_cons_Heat[d,h]/Heated_area for d in Days for h in Hours), n);
-
-    n = 'Building_T_daily_cycle'
-    C_meta[n] = ['Cycling constraint for building temperature', 0]
-    m.addConstrs((build_T[d,Hours[-1] + 1] == build_T[next_day(d), 0] for d in Days), n);
-    n = 'Building_T_daily_init'
-    C_meta[n] = ['Fix the initial building temperature every day', 0]
-    m.addConstrs((build_T[d,0] ==  build_T[d,0] for d in Days), n);
-    
-    n = 'Building_temperature_min'
-    C_meta[n] = ['Lower limit on Building Temperature', 0]
-    m.addConstrs((build_T[d,h] >= P[c]['T_min'] for d in Days for h in Hours), n);
-    C_meta[n] = ['Upper limit on Building Temperature', 0]
-    n = 'Building_temperature_max'
-    m.addConstrs((build_T[d,h] <= P[c]['T_max'] for d in Days for h in Hours), n);
-    
-    n = 'penalty'
-    V_meta[n] = ['MCHF', 'Isntant Penalty for deviating from the comfort temperature', 'time']
-    penalty = m.addVars(Days, Hours, lb=0, ub=Bound, name=n)
-    n = 'penalty_a'
-    V_meta[n] = ['MCHF', 'Sum of Penalty for deviating from the comfort temperature', 'unique']
-    penalty_a = m.addVar(lb=0, ub=Bound, name=n)
-    
-    n = 'comfort_delta_T'
-    V_meta[n] = ['°C', 'Temerature difference between comfort and actual building temperature', 'time']
-    delta_T_1 = m.addVars(Days, Hours, lb=-Bound, ub=Bound, name=n)
-    n = 'Comfort_delta_T'
-    C_meta[n] = ['Temerature difference between comfort and actual building temperature', 0]
-    m.addConstrs((delta_T_1[d,h] == P[c]['T_amb'] - build_T[d,h] for d in Days for h in Hours), n);
-    
-    n = 'comfort_delta_T_abs'
-    V_meta[n] = ['°C', 'Absolute Temerature difference between comfort and actual building temperature',
-                 'time']
-    delta_T_abs = m.addVars(Days, Hours, lb=0, ub=Bound, name=n)
-    n = 'Comfort_delta_T_abs'
-    C_meta[n] = ['Absolute Temerature difference between comfort and actual building temperature', 'time', 0]
-    m.addConstrs((delta_T_abs[d,h] == gp.abs_(delta_T_1[d,h]) for d in Days for h in Hours), n);
-    
-    n = 'comfort_T_penalty'
-    C_meta[n] = ['Instant penalty value relative to temperature difference and penalty factor', 0]
-    m.addConstrs((penalty[d,h] == delta_T_abs[d,h]*3.3013330297486014e-05 for d in Days for h in Hours), n);
-    
-    n = 'comfort_T_penalty_tot'
-    C_meta[n] = ['Sum of penalty value relative to instant penalty', 0]
-    m.addConstr(penalty_a == penalty.sum('*'), n);
-    
-    return penalty
-
 
 ##################################################################################################
 ### Heat cascade
 ##################################################################################################
 
-def model_heating(m, Days, Hours, unit_cons, unit_prod, build_cons_Heat, unit_install):
+def model_heating(m, Days, Hours, unit_cons, unit_prod, build_cons, unit_install):
     r = 'Heat'
     n = 'Balance_' + r
     C_meta[n] = ['Heat sinks equal to heat sources', 0]
-    m.addConstrs((unit_cons['AD']['Heat',d,h] + build_cons_Heat[d,h] ==
+    m.addConstrs((unit_cons['AD']['Heat',d,h] + Build_cons['Heat'][d,h] ==
                   sum(unit_prod[up][r,d,h] for up in U_res['prod']['Heat'])
                   for d in Days for h in Hours), n);
     
-    n = 'AD_is_installed_heat'
-    C_meta[n] = ['Prevent the AD from consuming heat if it is not installed', 0]
-    m.addConstrs((unit_install[u]*Bound >= unit_cons[u]['Heat',d,h] 
-                  for u in Heat_cons[1:] for d in Days for h in Hours), n)
-
 
 ##################################################################################################
 ### Mass and energy balance
@@ -255,7 +173,7 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod):
     m.addConstrs((
         grid_import[t(r,p)] + sum(unit_prod[up][t(r,p)] for up in U_res['prod'][r]) == 
         grid_export[t(r,p)] + sum(unit_cons[uc][t(r,p)] if uc != 'CGT' else 
-        unit_cons[uc][r,p] for uc in U_res['cons'][r]) + Build_cons_Elec[t_daily(p)] 
+        unit_cons[uc][r,p] for uc in U_res['cons'][r]) + Build_cons['Elec'][t_daily(p)] 
         for p in Periods), n);
     
     r = 'Biogas'
@@ -410,17 +328,15 @@ def run(objective, Limit=None, relax=False):
     m = initialize_model()
     # Create most variables
     (unit_prod, unit_cons, unit_install, unit_size, unit_capex, unit_T, 
-     build_cons_Heat, unit_SOC, unit_charge, unit_discharge
+     build_cons, unit_SOC, unit_charge, unit_discharge
      ) = variables.declare_vars(m, Bound, V_meta, Days, Hours, Periods)
     # Constrain unit sizes accoring to settings.csv
     cstr_unit_size(m, S, unit_size)
     # Model each unit
     model_units(m, Days, Hours, Periods, unit_prod, unit_cons, unit_size, unit_install, unit_T, unit_SOC, 
                 unit_charge, unit_discharge)
-    # Model the farm building temperature
-    penalty = model_farm_temperature(m, Days, Hours, Ext_T, Irradiance, build_cons_Heat)
     # Model a heat cascade
-    model_heating(m, Days, Hours, unit_cons, unit_prod, build_cons_Heat, unit_install)
+    model_heating(m, Days, Hours, unit_cons, unit_prod, build_cons, unit_install)
     # Model mass and energy balance
     grid_import_a, grid_export_a = model_energy_balance(m, Days, Hours, unit_cons, unit_prod)
     # Calculate objective variables
@@ -431,13 +347,13 @@ def run(objective, Limit=None, relax=False):
     def minimize_totex():
         m.setObjective(totex, GRB.MINIMIZE)
     def minimize_opex():
-        m.setObjective(opex + penalty, GRB.MINIMIZE)
+        m.setObjective(opex, GRB.MINIMIZE)
     def minimize_capex():
-        m.setObjective(capex + penalty, GRB.MINIMIZE)
+        m.setObjective(capex, GRB.MINIMIZE)
     def minimize_emissions():
         m.setObjective(emissions, GRB.MINIMIZE)
     def minimize_totex_tax_co2():
-        m.setObjective(totex + penalty + emissions*P['CO2']['Tax'], GRB.MINIMIZE)
+        m.setObjective(totex + emissions*P['CO2']['Tax'], GRB.MINIMIZE)
     def pareto_constrained_totex(Limit_totex):
         m.addConstr(totex <= Limit_totex, 'Limit_totex')
         m.setObjective(emissions, GRB.MINIMIZE)
@@ -445,6 +361,10 @@ def run(objective, Limit=None, relax=False):
         print('-----------------{}--------------------'.format(Limit_emissions))
         m.addConstr(emissions <= Limit_emissions, 'Limit_emissions');
         m.setObjective(totex, GRB.MINIMIZE)
+    def pareto_constrained_capex(Limit_capex):
+        print('-----------------{}--------------------'.format(Limit_capex))
+        m.addConstr(capex <= Limit_capex, 'Limit_capex');
+        m.setObjective(opex, GRB.MINIMIZE)
         
     switcher = {'totex': minimize_totex,
             'opex': minimize_opex,
@@ -452,20 +372,22 @@ def run(objective, Limit=None, relax=False):
             'emissions': minimize_emissions,
             'totex_tax_co2': minimize_totex_tax_co2,
             'pareto_totex': pareto_constrained_totex,
-            'pareto_emissions': pareto_constrained_emissions
+            'pareto_emissions': pareto_constrained_emissions,
+            'pareto_capex': pareto_constrained_capex
         }
     
     set_objective(m, switcher, objective, Limit=Limit, relax=False)
     m.optimize()
     
-    # Relaxion in case of infeasible model
-    if m.status == GRB.INFEASIBLE:
-        print_highlight('Model INFEASIBLE!!!')
-        
-    if m.status == GRB.INFEASIBLE and relax:
-        m.feasRelaxS(1, False, False, True)
-        m.optimize()
-        print_highlight('Model INFEASIBLE!!!')  
+    if relax:
+        # Relaxion in case of infeasible model
+        if m.status == GRB.INFEASIBLE:
+            print_highlight('Model INFEASIBLE!!!')
+            
+        if m.status == GRB.INFEASIBLE and relax:
+            m.feasRelaxS(1, False, False, True)
+            m.optimize()
+            print_highlight('Model INFEASIBLE!!!')  
     
     return m
 
@@ -483,8 +405,11 @@ def run(objective, Limit=None, relax=False):
     m.addConstr((build_T[0,0] == build_T[Days[-1],Hours[-1] + 1]), n);
 """
 
-""" Old heat cascade
+###############################################################################
+### OLD - Heat cascade with water volume flows
+###############################################################################
 
+""" 
 def model_heating(m, Days, Hours, unit_cons, unit_prod, build_cons_Heat, v, unit_install):
     g = 'General'
     n = 'Heat_load_balance_AD'
@@ -504,4 +429,91 @@ def model_heating(m, Days, Hours, unit_cons, unit_prod, build_cons_Heat, v, unit
                                  v[u]['AD',d,h]*(P['AD']['Th'] - P['AD']['Tc'])) 
                   for u in Heat_prod for d in Days for h in Hours), n);
     
+"""
+
+
+###############################################################################
+### OLD - Farm thermodynamic model
+###############################################################################
+
+"""
+# Farm temperature
+penalty = model_farm_temperature(m, Days, Hours, Ext_T, Irradiance, build_cons_Heat)
+
+def model_farm_temperature(m, Days, Hours, Ext_T, Irradiance, build_cons_Heat):
+    c = 'build'
+    n = 'build_T'
+    V_meta[n] = ['°C', 'Interior temperature of the building', 'time']
+    build_T = m.addVars(Days, Hours + [Hours[-1] + 1], lb=-Bound, ub=Bound, name=n)
+    
+    P_meta[c]['Gains_ppl'] = ['kW/m^2', 'Heat gains from people', 'calc']
+    C_meta['Gains_ppl'] = ['Building people gains', 4, 'P']
+    Gains_ppl = annual_to_daily(P[c]['Gains_ppl'], df_cons['Gains'].values)
+
+    P_meta[c]['Gains_elec'] = ['kW/m^2', 'Heat gains from appliances', 'calc']
+    C_meta['Gains_elec'] = ['Building electric gains', 3, 'P']
+    Gains_elec = P[c]['Elec_heat_frac'] * Build_cons_Elec / Heated_area
+
+    P_meta[c]['Gains_solar'] = ['kW/m^2', 'Heat gains from irradiation', 'calc']
+    C_meta['Gains_solar'] = ['Building solar gains', 3, 'P']
+    Gains_solar = P[c]['Building_absorptance'] * Irradiance
+    
+    P_meta[c]['Gains'] = ['kW/m^2', 'Sum of all heat gains', 'calc']
+    C_meta['Gains'] = ['Sum of all building heating gains', 3, 'P']
+    Gains = Gains_ppl + Gains_elec + Gains_solar
+    
+    n = 'Building_temperature'
+    C_meta[n] = ['Building Temperature change relative to External Temperature, Gains and Losses', 2]
+    m.addConstrs((
+        P[c]['C_b']*(build_T[d,h+1] - build_T[d,h]) == 
+        P[c]['U_b']*(Ext_T[d,h] - build_T[d,h]) + Gains[d,h] + 
+        build_cons_Heat[d,h]/Heated_area for d in Days for h in Hours), n);
+
+    n = 'Building_T_daily_cycle'
+    C_meta[n] = ['Cycling constraint for building temperature', 0]
+    m.addConstrs((build_T[d,Hours[-1] + 1] == build_T[next_day(d), 0] for d in Days), n);
+    n = 'Building_T_daily_init'
+    C_meta[n] = ['Fix the initial building temperature every day', 0]
+    m.addConstrs((build_T[d,0] ==  build_T[d,0] for d in Days), n);
+    
+    n = 'Building_temperature_min'
+    C_meta[n] = ['Lower limit on Building Temperature', 0]
+    m.addConstrs((build_T[d,h] >= P[c]['T_min'] for d in Days for h in Hours), n);
+    C_meta[n] = ['Upper limit on Building Temperature', 0]
+    n = 'Building_temperature_max'
+    m.addConstrs((build_T[d,h] <= P[c]['T_max'] for d in Days for h in Hours), n);
+    
+    n = 'penalty'
+    V_meta[n] = ['MCHF', 'Isntant Penalty for deviating from the comfort temperature', 'time']
+    penalty = m.addVars(Days, Hours, lb=0, ub=Bound, name=n)
+    n = 'penalty_a'
+    V_meta[n] = ['MCHF', 'Sum of Penalty for deviating from the comfort temperature', 'unique']
+    penalty_a = m.addVar(lb=0, ub=Bound, name=n)
+    
+    n = 'comfort_delta_T'
+    V_meta[n] = ['°C', 'Temerature difference between comfort and actual building temperature', 'time']
+    delta_T_1 = m.addVars(Days, Hours, lb=-Bound, ub=Bound, name=n)
+    n = 'Comfort_delta_T'
+    C_meta[n] = ['Temerature difference between comfort and actual building temperature', 0]
+    m.addConstrs((delta_T_1[d,h] == P[c]['T_amb'] - build_T[d,h] for d in Days for h in Hours), n);
+    
+    n = 'comfort_delta_T_abs'
+    V_meta[n] = ['°C', 'Absolute Temerature difference between comfort and actual building temperature',
+                 'time']
+    delta_T_abs = m.addVars(Days, Hours, lb=0, ub=Bound, name=n)
+    n = 'Comfort_delta_T_abs'
+    C_meta[n] = ['Absolute Temerature difference between comfort and actual building temperature', 'time', 0]
+    m.addConstrs((delta_T_abs[d,h] == gp.abs_(delta_T_1[d,h]) for d in Days for h in Hours), n);
+    
+    n = 'comfort_T_penalty'
+    C_meta[n] = ['Instant penalty value relative to temperature difference and penalty factor', 0]
+    m.addConstrs((penalty[d,h] == delta_T_abs[d,h]*3.3013330297486014e-05 for d in Days for h in Hours), n);
+    
+    n = 'comfort_T_penalty_tot'
+    C_meta[n] = ['Sum of penalty value relative to instant penalty', 0]
+    m.addConstr(penalty_a == penalty.sum('*'), n);
+    
+    return penalty
+
+
 """

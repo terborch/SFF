@@ -22,6 +22,23 @@ def boi(m, Days, Hours, unit_prod, unit_cons, unit_size):
     C_meta[n] = ['Upper limit on Heat produced relative to installed capacity', 0]
     m.addConstrs((unit_prod['Heat',d,h] <= unit_size for d in Days for h in Hours), n);
     
+    
+##################################################################################################
+### Electric Heater
+##################################################################################################
+
+
+def eh(m, Days, Hours, unit_prod, unit_cons, unit_size):
+    c = 'EH'
+    n = 'EH_production'
+    C_meta[n] = ['Heat produced relative to Electricity consumed and Efficiency', 0]
+    m.addConstrs((unit_cons['Elec',d,h]*P[c]['Eff'] == 
+                  unit_prod['Heat',d,h] for d in Days for h in Hours), n);
+    
+    n = 'EH_size'
+    C_meta[n] = ['Upper limit on Heat produced relative to installed capacity', 0]
+    m.addConstrs((unit_prod['Heat',d,h] <= unit_size for d in Days for h in Hours), n);
+    
 
 ##################################################################################################
 ### Photovoltaïc
@@ -99,7 +116,7 @@ def bat(m, Days, Hours, unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, 
 ##################################################################################################
 
 
-def ad(m, Days, Hours, unit_prod, unit_cons, unit_size, unit_T, unit_install, Ext_T, Irradiance):
+def ad(m, Days, Hours, unit_prod, unit_cons, unit_size, AD_cons_Heat):
     
     c, g = 'AD', 'General'
     n = 'AD_production'
@@ -116,56 +133,11 @@ def ad(m, Days, Hours, unit_prod, unit_cons, unit_size, unit_T, unit_install, Ex
     C_meta[n] = ['Upper limit on Biogas produced relative to Installed capacity', 0]
     m.addConstrs((unit_prod['Biogas',d,h] <= unit_size for d in Days for h in Hours), n);
 
-    # Thermodynamics parameters
-    n = 'U'
-    P_meta[c][n] = ['kW/°C', 'AD heat conductance', 'calc']
-    P[c][n] = P[c]['Cap_area']*P[c]['U_cap']*(1 + P[c]['U_wall'])
-    
-    n = 'C'
-    P_meta[c][n] = ['kWh/°C', 'Heat capacity of the AD', 'calc']
-    P[c][n] = P['General']['Cp_water']*P[c]['Sludge_volume'] + P['build']['C_b']*P[c]['Ground_area']
-    
-    P_meta[c]['Gains_solar'] = ['kW', 'Heat gains from irradiation', 'calc']
-    Gains_solar_AD = P[c]['Cap_abs']*P[c]['Ground_area']*Irradiance
-    
-    # Thermodynamic variables   
-    n = 'heat_loss_biomass'
-    V_meta[n] = ['kW', 'Heat loss from biomass input', 'time']
-    heat_loss_biomass = m.addVars(Days, Hours, lb=0, ub=Bound, name= n)
-
-    # Thermodynamic constraints 
-    C_meta[n] = ['Heat losses relative to Biomass consumption and mean external temperature', 0]
-    m.addConstrs((heat_loss_biomass[d,h] == ((unit_cons['Biomass',d,h]/P[c]['Manure_HHV_dry'])/
-                  (1 - P[c]['Biomass_water'])/1000)*P[g]['Cp_water']*(P[c]['T_mean'] - P[g]['Temp_ext_mean']) 
-                  for d in Days for h in Hours), n);
-    
-    n = 'AD_temperature'
-    C_meta[n] = ['AD Temperature change relative to External Temperature, Gains and Losses', 0]
-    m.addConstrs((P[c]['C']*(unit_T[d,h+1] - unit_T[d,h])/dt == P[c]['U']*(Ext_T[d,h] - unit_T[(d,h)]) +
-                  Gains_solar_AD[d,h] + unit_cons['Elec',d,h] - heat_loss_biomass[d,h] + 
-                  unit_cons['Heat',d,h] for d in Days for h in Hours), n);
-    
-    n = 'AD_T_daily_cycle'
-    C_meta[n] = ['Cycling constraint for the AD temperature', 0]
-    m.addConstrs((unit_T[d,Hours[-1]] == unit_T[d,Hours[-1] + 1] for d in Days), n);
-    n = 'AD_T_daily_init'
-    C_meta[n] = ['Fix the initial AD temperature every day', 0]
-    m.addConstrs((unit_T[d,0] == P[c]['T_mean'] for d in Days), n);
-    
-    # Add temperature constraints only if the the unit is installed
-    V_meta[n] = ['°C', 'Minimum sludge temperature', 'unique']
-    min_T_AD = m.addVar(lb=-Bound, ub=Bound, name='min_T_AD')
-    V_meta[n] = ['°C', 'Maximum sludge temperature', 'unique']
-    max_T_AD = m.addVar(lb=-Bound, ub=Bound, name='max_T_AD')
-    
-    n = 'AD_temperature_constraint'
-    C_meta[n] = ['Limit AD Temperature only if AD is installed', 0]
-    m.addGenConstrIndicator(unit_install, True, min_T_AD == P[c]['T_min'])
-    m.addGenConstrIndicator(unit_install, True, max_T_AD == P[c]['T_max'])
-    
-    m.addConstrs((unit_T[d,h] >= min_T_AD for d in Days for h in Hours), n);
-    m.addConstrs((unit_T[d,h] <= max_T_AD for d in Days for h in Hours), n);
-
+    n = 'AD_heat_cons'
+    C_meta[n] = ['Heat consumed relative to AD size', 0]
+    m.addConstrs((unit_cons['Heat',d,h] == (unit_size/P[c]['Capacity'])*
+                  AD_cons_Heat[d,h] for d in Days for h in Hours), n);
+        
 
 ###############################################################################
 ### Biogas cleaning for SOFC
@@ -176,13 +148,16 @@ def gcsofc(m, Days, Hours, unit_prod, unit_cons, unit_size):
         installation is a stack of filters to be replaced regularly, losses
         represent the electricity consumed by the fan and the chiller (drying).
     """
-    losses = 0.6*0.03
+    Elec_cons = P['GCSOFC']['Elec_cons']*P['SOFC']['Eff_elec']
     
-    c = 'GCSOFC'
     n = 'GCSOFC_production'
-    C_meta[n] = ['Biogas prod relative to Biogas cons and Losses', 0]
-    m.addConstrs((unit_prod['Biogas',d,h] == 
-                  unit_cons['Biogas',d,h]*(1 - losses)
+    C_meta[n] = ['Biogas prod relative to Biogas cons', 0]
+    m.addConstrs((unit_prod['Biogas',d,h] == unit_cons['Biogas',d,h] 
+                  for d in Days for h in Hours), n);
+    
+    n = 'GCSOFC_Elec_cons'
+    C_meta[n] = ['Electricity consumption relative to Biogas production', 0]
+    m.addConstrs((unit_prod['Biogas',d,h] == unit_cons['Elec',d,h]*Elec_cons
                   for d in Days for h in Hours), n);
     
     n = 'GCSOFC_size'
@@ -271,3 +246,82 @@ def cgt(m, Periods, unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit
 ##################################################################################################
 ### END
 ##################################################################################################
+
+
+
+
+
+
+
+##################################################################################################
+### Anaerobic Digester
+##################################################################################################
+
+"""
+def ad(m, Days, Hours, unit_prod, unit_cons, unit_size, unit_T, unit_install, Ext_T, Irradiance):
+    
+    c, g = 'AD', 'General'
+    n = 'AD_production'
+    C_meta[n] = ['Biogas produced relative to Biomass consumed and Efficiency', 0]
+    m.addConstrs((unit_prod['Biogas',d,h] == 
+                  unit_cons['Biomass',d,h]*P[c]['Eff'] for d in Days for h in Hours), n);
+    
+    n = 'AD_elec_cons'
+    C_meta[n] = ['Elec consumed relative to Biogas produced and Elec consumption factor', 0]
+    m.addConstrs((unit_cons['Elec',d,h] == 
+                  unit_prod['Biogas',d,h]*P[c]['Elec_cons'] for d in Days for h in Hours), n);
+    
+    n = 'AD_size'
+    C_meta[n] = ['Upper limit on Biogas produced relative to Installed capacity', 0]
+    m.addConstrs((unit_prod['Biogas',d,h] <= unit_size for d in Days for h in Hours), n);
+
+    # Thermodynamics parameters
+    n = 'U'
+    P_meta[c][n] = ['kW/°C', 'AD heat conductance', 'calc']
+    P[c][n] = P[c]['Cap_area']*P[c]['U_cap']*(1 + P[c]['U_wall'])
+    
+    n = 'C'
+    P_meta[c][n] = ['kWh/°C', 'Heat capacity of the AD', 'calc']
+    P[c][n] = P['General']['Cp_water']*P[c]['Sludge_volume'] + P['build']['C_b']*P[c]['Ground_area']
+    
+    P_meta[c]['Gains_solar'] = ['kW', 'Heat gains from irradiation', 'calc']
+    Gains_solar_AD = P[c]['Cap_abs']*P[c]['Ground_area']*Irradiance
+    
+    # Thermodynamic variables   
+    n = 'heat_loss_biomass'
+    V_meta[n] = ['kW', 'Heat loss from biomass input', 'time']
+    heat_loss_biomass = m.addVars(Days, Hours, lb=0, ub=Bound, name= n)
+
+    # Thermodynamic constraints 
+    C_meta[n] = ['Heat losses relative to Biomass consumption and mean external temperature', 0]
+    m.addConstrs((heat_loss_biomass[d,h] == ((unit_cons['Biomass',d,h]/P[c]['Manure_HHV_dry'])/
+                  (1 - P[c]['Biomass_water'])/1000)*P[g]['Cp_water']*(P[c]['T_mean'] - P[g]['Temp_ext_mean']) 
+                  for d in Days for h in Hours), n);
+    
+    n = 'AD_temperature'
+    C_meta[n] = ['AD Temperature change relative to External Temperature, Gains and Losses', 0]
+    m.addConstrs((P[c]['C']*(unit_T[d,h+1] - unit_T[d,h])/dt == P[c]['U']*(Ext_T[d,h] - unit_T[(d,h)]) +
+                  Gains_solar_AD[d,h] + unit_cons['Elec',d,h] - heat_loss_biomass[d,h] + 
+                  unit_cons['Heat',d,h] for d in Days for h in Hours), n);
+    
+    n = 'AD_T_daily_cycle'
+    C_meta[n] = ['Cycling constraint for the AD temperature', 0]
+    m.addConstrs((unit_T[d,Hours[-1]] == unit_T[d,Hours[-1] + 1] for d in Days), n);
+    n = 'AD_T_daily_init'
+    C_meta[n] = ['Fix the initial AD temperature every day', 0]
+    m.addConstrs((unit_T[d,0] == P[c]['T_mean'] for d in Days), n);
+    
+    # Add temperature constraints only if the the unit is installed
+    V_meta[n] = ['°C', 'Minimum sludge temperature', 'unique']
+    min_T_AD = m.addVar(lb=-Bound, ub=Bound, name='min_T_AD')
+    V_meta[n] = ['°C', 'Maximum sludge temperature', 'unique']
+    max_T_AD = m.addVar(lb=-Bound, ub=Bound, name='max_T_AD')
+    
+    n = 'AD_temperature_constraint'
+    C_meta[n] = ['Limit AD Temperature only if AD is installed', 0]
+    m.addGenConstrIndicator(unit_install, True, min_T_AD == P[c]['T_min'])
+    m.addGenConstrIndicator(unit_install, True, max_T_AD == P[c]['T_max'])
+    
+    m.addConstrs((unit_T[d,h] >= min_T_AD for d in Days for h in Hours), n);
+    m.addConstrs((unit_T[d,h] <= max_T_AD for d in Days for h in Hours), n);
+"""
