@@ -33,41 +33,43 @@ today = datetime.now().strftime("%Y-%m-%d")
 ###############################################################################
 
 
-def make_path(objective=None, Limit=None, make=True, Pareto=False, run_nbr=0):
+
+def make_path(objective=None, Limit=None, Pareto=False):
     """ Creates and return a path to a new result folder according to the model
     objective. 
     """
-
-    if Pareto:         
-        # Todays date
-        cd = os.path.join('results', '{}'.format(today))
-        os.makedirs(os.path.dirname(os.path.join(cd, '')), exist_ok=True)
-        # List of files present in the current result dirrectory
-        cd = os.path.join('results', f'{today}', f'Pareto_{run_nbr}')
-        os.makedirs(os.path.dirname(os.path.join(cd, '')), exist_ok=True)
-        
-        n = len([f for f in sorted(os.listdir(cd))]) + 1
-        name_str = 'Pareto_{}_Objective_{}_CO2Limit_{}'
-        result_name = name_str.format(n, objective, None)
+    # Make todays date folder if it doesn't exist
+    cd = os.path.join('results', '{}'.format(today))
+    os.makedirs(os.path.dirname(os.path.join(cd, '')), exist_ok=True)
+    
+    result_name = 'run_nbr' if not Pareto else 'Pareto'
+    last_run = get_last_run_nbr(cd, result_name)
+    
+    # Make result sub-folders for Pareto results
+    if Pareto:
         if Limit:
-            name_str = 'Pareto_{}_Objective_{}_CO2Limit_{:.5f}'
-            result_name = name_str.format(n, objective, Limit)
-            
-        cd = os.path.join(cd, result_name, '')
-        os.makedirs(os.path.dirname(os.path.join(cd, '')), exist_ok=True)
+            name = '{}_Limit_{:.4f}'.format(objective, Limit)
+        else:
+            name = '{}_Limit_{}'.format(objective, Limit)
         
+        # Check if subfolder already exist and if so create a new pareto forlder
+        last_cd = os.path.join(cd, f'{result_name}_{last_run}', '')
+        os.makedirs(os.path.dirname(cd), exist_ok=True)
+        run_nbr = last_run
+        for f in os.listdir(last_cd):
+            if name in f:
+                run_nbr = last_run + 1
+                break
+        cd = os.path.join(cd, f'{result_name}_{run_nbr}', '')
+        os.makedirs(os.path.dirname(cd), exist_ok=True)                  
+        n = len([f for f in os.listdir(cd)]) + 1
+        cd = os.path.join(cd, f'{n}_{name}', '')
+
     else:
-        result_name = 'run_nbr'
-        
-        # Todays date
-        cd = os.path.join('results', '{}'.format(today))
-        os.makedirs(os.path.dirname(os.path.join(cd, '')), exist_ok=True)
-        # List of files present in the current result dirrectory
-        run_nbr = get_last_run_nbr(cd, result_name) + 1
+        run_nbr = last_run + 1
         cd = os.path.join(cd, result_name + '_{}'.format(run_nbr), '')
         
     os.makedirs(os.path.dirname(cd), exist_ok=True)
-
     return cd
 
 

@@ -1,11 +1,7 @@
 """ This module contains all functions necessary to build the Mixed Interger Linear Programming
     Model (MILP) of SFF using Gurobipy and given inputs (parameter.csv, setting.csv, data folder)
 
-    #   TODO: add C_meta constrain description and source
-    #   TODO: storage of metadata 
-    #   TODO: storage of inputs
-    #   TODO: add heat cascade
-    #   TODO: add farm thermal model
+    #   TODO: remove the variables named 'unused'
 """
 
 # External modules
@@ -14,13 +10,13 @@ import gurobipy as gp
 # Internal modules
 
 # Variables
-from param_input import (P, P_meta, S, V_meta, C_meta, Bound, Periods, Days, 
+from param_input import (P, S, V_meta, C_meta, Bound, Periods, Days, 
                          Hours, Time_period_map, Frequence)
-from global_set import Units, U_res, G_res, Heat_cons, Heat_prod
-from param_calc import (Irradiance, Build_cons, Biomass_prod, Costs_u, 
-                        Costs_res, df_cons, Heated_area, Ext_T, AD_cons_Heat)
+from global_set import Units, U_res, G_res
+from param_calc import (Irradiance, Ext_T, Build_cons, Biomass_prod, Costs_u, 
+                        Costs_res, AD_cons_Heat)
 # Functions
-from param_calc import annual_to_daily, annualize
+from param_calc import annualize
 import variables
 
 """
@@ -91,7 +87,7 @@ def cstr_unit_size(m, S, unit_size):
 
 
 def model_units(m, Days, Hours, Periods, unit_prod, unit_cons, unit_size, 
-                unit_install, unit_T, unit_SOC, unit_charge, unit_discharge):
+                unit_SOC, unit_charge, unit_discharge):
     
     u = 'BOI'
     units.boi(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
@@ -311,7 +307,7 @@ def set_objective(m, switcher, objective, Limit=None, relax=False):
     
     print_highlight('Objective: ' + objective)
     set_objective = switcher.get(objective)
-    if 'pareto' in objective:
+    if 'limit' in objective:
         set_objective(Limit)
     else:
         set_objective()
@@ -333,8 +329,8 @@ def run(objective, Limit=None, relax=False):
     # Constrain unit sizes accoring to settings.csv
     cstr_unit_size(m, S, unit_size)
     # Model each unit
-    model_units(m, Days, Hours, Periods, unit_prod, unit_cons, unit_size, unit_install, unit_T, unit_SOC, 
-                unit_charge, unit_discharge)
+    model_units(m, Days, Hours, Periods, unit_prod, unit_cons, unit_size, 
+                unit_SOC, unit_charge, unit_discharge)
     # Model a heat cascade
     model_heating(m, Days, Hours, unit_cons, unit_prod, build_cons, unit_install)
     # Model mass and energy balance
@@ -372,8 +368,8 @@ def run(objective, Limit=None, relax=False):
             'emissions': minimize_emissions,
             'totex_tax_co2': minimize_totex_tax_co2,
             'pareto_totex': pareto_constrained_totex,
-            'pareto_emissions': pareto_constrained_emissions,
-            'pareto_capex': pareto_constrained_capex
+            'limit_emissions': pareto_constrained_emissions,
+            'limit_capex': pareto_constrained_capex
         }
     
     set_objective(m, switcher, objective, Limit=Limit, relax=False)

@@ -1,0 +1,13 @@
+Category,Name,Value,Units,Description,Source,
+AD,U_wall,0.1,-,Fraction of heat lost through walls other than the cap,doi: 10.12911/22998993/89660,unused
+AD,Cap_loss,0.9,-,Fraction of heat losses through the top cap,doi: 10.12911/22998993/89660,unused
+BOI,Tc,50,°C,Temperature at the boiler inlet,guess,unused
+BOI,Th,90,°C,Temperature at the boiler outlet,guess,unused
+build,Tc,50,°C,Return heating temperature of the Building,Marechal project,unused
+build,Th,65,°C,Supply heating temperature of the Building,Marechal project,unused
+AD,Tc,40,°C,Return heating temperature of the AD,guess,unused
+AD,Th,50,°C,Supply heating temperature of the AD,guess,unused
+build,T_amb,20,°C,Comfort indoor temperature,guess,unused
+build,Building_absorptance,0.08,-,Fraction of solar radiation absorbed relative to ground surface,guess,unused
+Eco,n,20,years,years of exploitation,unused/unit dependent,unused
+AD,T_mean,39,°C,Mean AD Temperature,guess,unused

@@ -48,19 +48,11 @@ def run(objective, Reload=True, relax=False, Pareto=False, Limit=None, Save_txt=
     # Option to generate a new input.h5 file 
     if Reload:
         pass
-    
+           
     
     start_solve = time.time()
     # Select objective and solve the model
-    if Pareto:
-        #objective, objective_cstr = objective
-        if Limit:
-            m = model.run(objective, Limit=Limit)
-            print('----------------- Limit on capex: {} --------------------'.format(Limit))
-        else:
-            m = model.run(objective)
-    else:
-        m = model.run(objective, relax=relax)
+    m = model.run(objective, relax=relax, Limit=Limit)
     
     end_solve = time.time()
     print('model solve time: ', end_solve - start_solve, 's')
@@ -72,8 +64,7 @@ def run(objective, Reload=True, relax=False, Pareto=False, Limit=None, Save_txt=
     
     # Save all results to a hdf5 file
     file_name = 'results.h5'
-    cd = results.make_path(objective=objective, Limit=Limit, make=True, 
-                           Pareto=Pareto, run_nbr=2)
+    cd = results.make_path(objective=objective, Limit=Limit, Pareto=Pareto)
     path = os.path.join(cd, file_name)
     results.save_df_to_hdf5(var_results, var_meta, path, Days, Hours, Periods)
     
@@ -85,9 +76,9 @@ def run(objective, Reload=True, relax=False, Pareto=False, Limit=None, Save_txt=
     
     plot.all_fig(path, save_fig=True)
     results.summary(path, save=True)
-    
+
     if Pareto:
-        return m.getVarByName('capex').x
+        return path
     
 """
 def display_results(date=today, run_nbr='last', save_df=True, save_fig=True, 
@@ -95,7 +86,7 @@ def display_results(date=today, run_nbr='last', save_df=True, save_fig=True,
 """
 
 # Execute single run
-run('totex')
+# run('totex')
 
 #run_single('totex', save_fig=True, discard_fig=False)
 
@@ -115,19 +106,25 @@ Objective_description = {
     'pareto_emissions': 'TOTEX minimization with constrained emissions at the minimum',
     }
 
+def get_objective_value(objective, path):
+    df = results.get_hdf(path, 'single')
+    df.set_index('Var_name', drop=True, inplace=True)
+    return df['Value'][objective]
+
+
 def pareto(objective_cstr, objective_free):
     solve_time = []
     
-    objective = 'capex'
-    min_obj_cstr = run(objective, Pareto=True, Limit=None)
+    path = run(objective_cstr, Pareto=True, Limit=None)
+    min_obj_cstr = get_objective_value(objective_cstr, path)
     solve_time.append(time.time() - start)
     
-    objective = 'opex'
-    max_obj_cstr = run(objective, Pareto=True, Limit=None)
+    path = run(objective_free, Pareto=True, Limit=None)
+    max_obj_cstr = get_objective_value(objective_cstr, path)
     solve_time.append(time.time() - start)
     
     nsteps = 10
-    epsilon = 1e-2
+    epsilon = 1e-6
     step = (max_obj_cstr - min_obj_cstr)/nsteps
     
     Limits = np.arange(min_obj_cstr*(1 + epsilon), 
@@ -135,12 +132,12 @@ def pareto(objective_cstr, objective_free):
                         step)
     
     for i in range(1, len(Limits)):
-        objective = 'pareto_' + objective_cstr
+        objective = 'limit_' + objective_cstr
         run(objective, Pareto=True, Limit=Limits[i])
         solve_time.append(time.time() - start)
         plt.close('all')
   
-#pareto('capex', 'opex')
+pareto('capex', 'opex')
 #pareto('emissions', 'totex')
 
 #solve_time.append([time.time() - solve_time[i]])
@@ -150,9 +147,12 @@ print('global runtime: ', end - start, 's')
 # for i in range(10):
 #     print(f'Pareto_{i}_solve_time', solve_time[i] )
 
-
-
-
+"""
+path = run('opex', Pareto=True, Limit=None)
+df = results.get_hdf(path, 'single')
+df.set_index('Var_name', drop=True, inplace=True)
+df['Value']['capex']
+"""
 
 """
 date=today
