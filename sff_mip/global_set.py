@@ -16,12 +16,15 @@
 """
 
 # Abbreviations
-Abbrev = {'BOI':    'Gas Boiler', 
-          'EH':     'Electric Heater', 
+Abbrev = {'GBOI':   'Gas Boiler',
+          'WBOI':   'Wood Boiler', 
+          'EH':     'Electric Heater',
+          'AHP':    'Air-Air Heat Pump',
           'PV':     'Photovoltaic Panels', 
           'BAT':    'Battery',
-          'GCSOFC':'Gas Cleaning for SOFC',
-          'SOFC':   'Solid Oxide Fuel cell', 
+          'GCSOFC': 'Gas Cleaning for SOFC',
+          'SOFC':   'Solid Oxide Fuel cell',
+          'ICE':    'Internal Combustion Engine',
           'AD':     'Anaerobic Digester',
           'CGT':    'Compressed Gas Tank',
           'build':  'building',
@@ -32,30 +35,36 @@ Abbrev = {'BOI':    'Gas Boiler',
           }
 
 # Eneregy conversion units
-Units = ('BOI', 'EH', 'PV', 'BAT', 'GCSOFC', 'SOFC', 'AD', 'CGT')
+Units = ('GBOI', 'WBOI', 'EH', 'AHP', 'PV', 'BAT', 'GCSOFC', 'SOFC', 'ICE', 'AD', 'CGT')
 
 # Resources and energy carriers
-Resources = ('Elec', 'Gas', 'Biogas', 'Biomass', 'Heat')
+Resources = ('Elec', 'Gas', 'Wood', 'Biogas', 'Biomass', 'Heat')
 
 # The resources each unit produce
 U_prod = {
-    'BOI':      ('Heat',),
+    'GBOI':     ('Heat',),
+    'WBOI':     ('Heat',),
     'EH':       ('Heat',),
+    'AHP':      ('Heat',),
     'PV':       ('Elec',),
     'BAT':      ('Elec',),
     'GCSOFC':   ('Biogas',),
-    'SOFC':     ('Elec', 'Heat'), 
+    'SOFC':     ('Elec', 'Heat'),
+    'ICE':      ('Elec', 'Heat'),
     'AD':       ('Biogas',),
     'CGT':      ('Biogas',) 
     }
 
 # The resources each unit consumes
 U_cons = {
-    'BOI':      ('Gas', 'Biogas'),
+    'GBOI':     ('Gas', 'Biogas'),
+    'WBOI':     ('Wood',),
     'EH':       ('Elec',),
+    'AHP':      ('Elec',),
     'BAT':      ('Elec',),
     'GCSOFC':   ('Elec', 'Biogas',),
-    'SOFC':     ('Gas', 'Biogas'), 
+    'SOFC':     ('Gas', 'Biogas'),
+    'ICE':      ('Gas', 'Biogas'),
     'AD':       ('Biomass', 'Elec', 'Heat'),
     'CGT':      ('Biogas', 'Elec')
     }
@@ -83,7 +92,7 @@ Heat_cons = tuple(['build'] + list(U_res['cons']['Heat']))
 Heat_prod = U_res['prod']['Heat']
 
 # Resources that can be exchanged with the grids
-G_res = ('Elec', 'Gas')
+G_res = ('Elec', 'Gas', 'Wood')
 
 # Linestyles for differentiating units
 Linestyles = {'loosely dotted': (0, (1, 10)),
@@ -97,11 +106,14 @@ Linestyle_code = {'PV':     'dotted',
                   'BAT':    'dashdot', 
                   'grid':   'solid', 
                   'SOFC':   'dashed',
+                  'ICE':    'dashed',
                   'GCSOFC': 'solid',
                   'AD':     'dashdotted', 
                   'build':  'densely dashdotted', 
-                  'BOI':    'loosely dashed',
-                  'EH':    'loosely dashed',
+                  'GBOI':   'loosely dashed',
+                  'WBOI':   'loosely dashed',
+                  'EH':     'loosely dashed',
+                  'AHP':    'loosely dashed',
                   'CGT':    'densely dashdotdotted',
                   'default':'solid'
                   }
@@ -110,7 +122,8 @@ Linestyle_code = {'PV':     'dotted',
 Color_code = {'Elec':       'royalblue', 
               'Biogas':     'limegreen', 
               'Biomass':    'khaki', 
-              'Gas':        'gray', 
+              'Gas':        'gray',
+              'Wood':       'brown',
               'Heat':       'firebrick', 
               'Ext_T':      'navy', 
               'Irradiance': 'red', 

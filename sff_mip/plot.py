@@ -49,6 +49,7 @@ def unit_size(path):
     # Figure options
     fig, ax1 = plt.subplots()
     plt.title('Installed capacity for each unit')
+    fig.set_size_inches(8, 3)
     ax2 = ax1.twinx()
     ax1.set_ylabel('Installed production capacity in kW')
     ax2.set_ylabel('Installed storage capacity in kWh')

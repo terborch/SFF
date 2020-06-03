@@ -209,12 +209,12 @@ V_bounds = {}
 C_meta = {}
 
 # Map each time period p to a corresponding day-hour pair
-Time_period_map = {}
+Time_period_map = np.zeros((len(Periods), 2))
 p = 0
 for d in Days:
     for f in range(int(Frequence[d])):
         for h in Hours:
-            Time_period_map[p] = (d,h)
+            Time_period_map[p] = [d,h]
             p += 1
         
 # Map each day-hour pair to a corresponding hour in any day

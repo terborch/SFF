@@ -86,7 +86,7 @@ def display_results(date=today, run_nbr='last', save_df=True, save_fig=True,
 """
 
 # Execute single run
-# run('totex')
+#run('emissions')
 
 #run_single('totex', save_fig=True, discard_fig=False)
 
@@ -123,13 +123,22 @@ def pareto(objective_cstr, objective_free):
     max_obj_cstr = get_objective_value(objective_cstr, path)
     solve_time.append(time.time() - start)
     
-    nsteps = 10
+    # Half of the number of steps
+    nsteps = 5
     epsilon = 1e-6
-    step = (max_obj_cstr - min_obj_cstr)/nsteps
+    step = (max_obj_cstr - min_obj_cstr)/(nsteps*2)
+    Limits = np.arange(min_obj_cstr, max_obj_cstr, step)
     
-    Limits = np.arange(min_obj_cstr*(1 + epsilon), 
-                        max_obj_cstr*(1 - epsilon), 
-                        step)
+    # Limits= np.concatenate((
+    #     np.linspace(min_obj_cstr*(1 + epsilon), Limits_lin[2], num=nsteps), 
+    #     np.linspace(Limits_lin[2], max_obj_cstr*(1 - epsilon), num=nsteps)[1:]))
+    
+    # print('\n')
+    # print('min_obj_cstr', min_obj_cstr)
+    # print('max_obj_cstr', max_obj_cstr)
+    # print('Limits_lin', Limits_lin)
+    # print('Limts', Limits)
+    # print('\n')
     
     for i in range(1, len(Limits)):
         objective = 'limit_' + objective_cstr
@@ -137,8 +146,8 @@ def pareto(objective_cstr, objective_free):
         solve_time.append(time.time() - start)
         plt.close('all')
   
-pareto('capex', 'opex')
-#pareto('emissions', 'totex')
+#pareto('capex', 'opex')
+pareto('emissions', 'totex')
 
 #solve_time.append([time.time() - solve_time[i]])
 end = time.time()

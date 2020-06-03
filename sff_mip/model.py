@@ -89,11 +89,17 @@ def cstr_unit_size(m, S, unit_size):
 def model_units(m, Days, Hours, Periods, unit_prod, unit_cons, unit_size, 
                 unit_SOC, unit_charge, unit_discharge):
     
-    u = 'BOI'
-    units.boi(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
+    u = 'GBOI'
+    units.gboi(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
+    
+    u = 'WBOI'
+    units.wboi(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
     
     u='EH'
     units.eh(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
+    
+    u = 'AHP'
+    units.ahp(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
     
     u = 'PV'
     units.pv(m, Days, Hours, unit_prod[u], unit_size[u], Irradiance)
@@ -110,6 +116,9 @@ def model_units(m, Days, Hours, Periods, unit_prod, unit_cons, unit_size,
     
     u = 'SOFC'
     units.sofc(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
+    
+    u = 'ICE'
+    units.ice(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
     
     u = 'CGT'
     units.cgt(m, Periods, unit_prod[u], unit_cons[u], unit_size[u], unit_SOC[u], 
@@ -154,7 +163,7 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod):
     V_meta[n] = ['kW', 'Resources purchased by the farm', 'time']
     grid_import = m.addVars(G_res, Days, Hours, lb=0, ub=Bound, name=n)
     
-    Unused_res = ['Biomass', 'Biogas', 'Gas']
+    Unused_res = ['Biomass', 'Biogas', 'Gas', 'Wood']
     n = 'unused'
     V_meta[n] = ['kW', 'Resources unused or flared by the farm', 'time']
     unused = m.addVars(Unused_res, Days, Hours, lb=0, ub=Bound, name=n)
@@ -176,8 +185,9 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod):
     n = 'Balance_' + r
     C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
     m.addConstrs((unit_prod['AD'][t(r,p)] + unit_prod['CGT'][r,p] - unused[t(r,p)] == 
-                  unit_cons['GCSOFC'][t(r,p)] + unit_cons['BOI'][t(r,p)] + 
-                  unit_cons['CGT'][r,p] for p in Periods), n);
+                  unit_cons['GCSOFC'][t(r,p)] + unit_cons['GBOI'][t(r,p)] + 
+                  unit_cons['ICE'][t(r,p)] + unit_cons['CGT'][r,p] 
+                  for p in Periods), n);
     
     r = 'Biogas_cleaned_for_SOFC'
     n = 'Balance_' + r
@@ -195,8 +205,14 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod):
     n = 'Balance_' + r
     C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
     m.addConstrs((grid_import[r,d,h] - grid_export[r,d,h] - unused[r,d,h] == 
-                  unit_cons['SOFC'][r,d,h] + unit_cons['BOI'][r,d,h] 
+                  sum(unit_cons[uc][r,d,h] for uc in U_res['cons'][r]) 
                   for d in Days for h in Hours), n);
+    
+    r = 'Wood'
+    n = 'Balance_' + r
+    C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
+    m.addConstrs((grid_import[r,d,h] - grid_export[r,d,h] - unused[r,d,h] == 
+                  unit_cons['WBOI'][r,d,h] for d in Days for h in Hours), n);
     
     # Total annual import / export
     n = f'{r}_grid_import'
@@ -277,8 +293,9 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
     c = 'CO2'
     n = 'Emissions'
     C_meta[n] = ['Instant CO2 emissions relative to Elec and Gas imports', 0]
-    m.addConstr(emissions == sum(grid_import_a[r] - grid_export_a[r]*P[c][r]
-                                 for r in G_res), n);
+    m.addConstr(emissions == 
+                sum(grid_import_a[r] - grid_export_a[r]*P[c][r] for r in G_res) + 
+                sum(unit_size[u]*Costs_u['t-CO2'][u]/Costs_u['Life'][u] for u in Units), n);
     
     ###m.addConstr(emissions == (grid_import_a['Elec'] - grid_export_a['Elec'])*P[c]['Elec'] +
     ###                            (grid_import_a['Gas'] - grid_export_a['Gas'])*P[c]['Gas'], n);
@@ -411,12 +428,12 @@ def model_heating(m, Days, Hours, unit_cons, unit_prod, build_cons_Heat, v, unit
     n = 'Heat_load_balance_AD'
     C_meta[n] = ['Heat consumed by the AD relative to hot water supply and temperature delta', 0]
     m.addConstrs((unit_cons['AD']['Heat',d,h] == P[g]['Cp_water']*(P['AD']['Th'] - P['AD']['Tc'])*
-                  (v['BOI']['AD',d,h] + v['SOFC']['AD',d,h]) for d in Days for h in Hours), n);
+                  (v['GBOI']['AD',d,h] + v['SOFC']['AD',d,h]) for d in Days for h in Hours), n);
     
     n = 'Heat_load_balance_build'
     C_meta[n] = ['Heat consumed by the Building relative to hot water supply and temperature delta', 0]
     m.addConstrs((build_cons_Heat[d,h] == P[g]['Cp_water']*(P['build']['Th'] - P['build']['Tc'])*
-                  (v['BOI']['build',d,h] + v['SOFC']['build',d,h]) for d in Days for h in Hours), n);
+                  (v['GBOI']['build',d,h] + v['SOFC']['build',d,h]) for d in Days for h in Hours), n);
     
     n = 'Heat_load_balance_heat_prod'
     C_meta[n] = ['Heat produced by each unit relative to hot water supplied and temperature delta', 0]

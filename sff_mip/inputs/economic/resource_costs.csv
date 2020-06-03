@@ -1,3 +1,4 @@
 Flow,Import_cost,Export_cost,Units,Full_name,Source
-Elec,0.21,0.06,CHF/kwh,Electricity,Paul average
-Gas,0.08,0.06,CHF/kwh,Natural Gas,Paul average
+Elec,0.21,0.06,CHF/kWh,Electricity,Paul average
+Gas,0.08,0.06,CHF/kWh,Natural Gas,Paul average
+Wood,0.08,0,CHF/kWh,Wood Pellets,www.propellets.ch

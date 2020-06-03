@@ -27,7 +27,7 @@ def get_pareto_nbr(file_name):
     else:
         return int(file_name.split('_')[0]) - 1
 
-date = '2020-05-29'
+date = '2020-06-03'
 file = 'results.h5' 
 Pareto_opex, Pareto_capex = [], []
 path = os.path.join('results', date, 'Pareto_3')

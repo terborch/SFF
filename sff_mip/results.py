@@ -53,8 +53,9 @@ def make_path(objective=None, Limit=None, Pareto=False):
             name = '{}_Limit_{}'.format(objective, Limit)
         
         # Check if subfolder already exist and if so create a new pareto forlder
+        last_run = last_run + 1 if last_run == 0 else last_run
         last_cd = os.path.join(cd, f'{result_name}_{last_run}', '')
-        os.makedirs(os.path.dirname(cd), exist_ok=True)
+        os.makedirs(os.path.dirname(last_cd), exist_ok=True)
         run_nbr = last_run
         for f in os.listdir(last_cd):
             if name in f:

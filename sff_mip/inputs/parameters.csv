@@ -9,7 +9,6 @@ AD,Manure_per_cattle,7.3,kg-dry/day/LSU,Cattle manure production dry basis,doi: 
 AD,Manure_HHV_dry,3.694444444,kWh/kg-dry,Fresh cattle manure energy content HHV dry basis,doi: 10.3390/c5020027
 AD,Biomass_water,0.93,-,Water fraction of the digestate,S. Fujishima
 AD,Biomass_prod,117.2309028,kWh/h,Biomass Production,calc
-EH,Eff,0.99,-,Electric Heater efficiency,Paul
 PV,Eff,0.14,-,PV efficiency,Paul
 PV,max_utilisation,0.5,-,Maximum utilisation of available rood area,setting
 BAT,Eff,0.9,-,BAT roundtrip efficiency,guess
@@ -24,9 +23,12 @@ AD,Cap_abs,0.9,-,Solar Irradiance absorption coefficient for a black painted cap
 AD,T_min,39,°C,Minimum allowed temperature for the digester,Hreiz
 AD,T_max,40,°C,Maximum allowed temperature for the digester,Hreiz
 AD,Heating_part_load,0.2,-,Lowest load fraction acceptable before shutting down the heating system,Setting
+AHP,COP,3,-,Coefficient of Performance,calc - aproximate
 SOFC,Eff_elec,0.6,-,SOFC electric efficiency,guess
 SOFC,GC_elec_frac,0.03,-,gas cleaning electric consumption fraction,Projet Semestre nils
 SOFC,Eff_thermal,0.95,-,SOFC thermal efficiency,guess
+ICE,Eff_elec,0.3,-,ICE electric efficiency,Samuel Majerus PdM
+ICE,Eff_thermal,0.75,-,ICE thermal efficiency,Samuel Majerus PdM
 GCSOFC,Elec_cons,0.03,-,GCSOFC Elec cons relative to SOFC output,Projet Semestre nils
 CGT,Elec_comp,0.02,-,Fraction of energy requiered to compress natural gas to 2500 psig,Sinor 1991
 AD,Residence_time,30,day,AD Hydraulic Residence Time,Hreiz
@@ -41,8 +43,10 @@ build,Elec_heat_frac,0.9,-,Fraction of heat produced by electricity consumber,Di
 build,U_b,0.00206,kW/°C/m^2,Building heat transmittance,Paul - SIA 2024
 build,C_b,0.12,kWh/°C/m^2,Building heat capacity,Paul - SIA 2024
 build,T_open_windows,25,°C,If the minimum building temperature in a day is below this windows stay open,Setting
-BOI,Eff,0.9,-,Boiler efficiency,guess
-General,Cp_water,1.16222222222222,kWh/°C/m^3,Heat capacity of water,guess
+GBOI,Eff,0.98,-,Gas Boiler efficiency,energyscope
+WBOI,Eff,0.85,-,Wood Boiler efficiency,energyscope
+EH,Eff,0.99,-,Electric Heater efficiency,Paul
+General,Cp_water,1.16222222222222,kWh/°C/m^3,Heat capacity of water,wikipedia
 build,T_min,18,°C,Minimum indoor temperature,setting
 build,T_max,34,°C,Maximum indoor temperature,setting
 General,Temp_ext_mean,10,°C,Annual average external temperature,calc
@@ -51,3 +55,4 @@ CO2,Gas,0.18108317060496,t-CO2/MWh,Emissions from burning natural gas,EIA
 CO2,Elec,0.13,t-CO2/MWh,Emissions from importing Electricity in Switzerland,Ecovient
 CO2,Biogas,0,t-CO2/MWh,Emissions from burning biogas,guess
 CO2,Tax,9.6E-05,MCHF/t-CO2,Taxe CO2 en suisse,admin.ch
+CO2,Wood,0,t-CO2/MWh,Emissions from burning wood pellets,guess

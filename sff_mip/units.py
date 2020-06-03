@@ -4,23 +4,42 @@
 """
 
 # Internal modules
-from param_input import P, P_meta, V_meta, C_meta, Bound, dt
+from param_input import P, C_meta, Bound
 
 ##################################################################################################
-### Boiler
+### Gas Boiler
 ##################################################################################################
 
 
-def boi(m, Days, Hours, unit_prod, unit_cons, unit_size):
-    c = 'BOI'
-    n = 'BOI_production'
+def gboi(m, Days, Hours, unit_prod, unit_cons, unit_size):
+    c = 'GBOI'
+    n = 'GBOI_production'
     C_meta[n] = ['Heat produced relative to Gas and Biogas consumed and Efficiency', 0]
     m.addConstrs(((unit_cons['Biogas',d,h] + unit_cons['Gas',d,h])*P[c]['Eff'] == 
                   unit_prod['Heat',d,h] for d in Days for h in Hours), n);
     
-    n = 'BOI_size'
+    n = 'GBOI_size'
     C_meta[n] = ['Upper limit on Heat produced relative to installed capacity', 0]
     m.addConstrs((unit_prod['Heat',d,h] <= unit_size for d in Days for h in Hours), n);
+    
+   
+    
+##################################################################################################
+### Wood Boiler
+##################################################################################################
+
+
+def wboi(m, Days, Hours, unit_prod, unit_cons, unit_size):
+    c = 'WBOI'
+    n = 'WBOI_production'
+    C_meta[n] = ['Heat produced relative to Gas and Biogas consumed and Efficiency', 0]
+    m.addConstrs((unit_cons['Wood',d,h]*P[c]['Eff'] == unit_prod['Heat',d,h] 
+                  for d in Days for h in Hours), n);
+    
+    n = 'WBOI_size'
+    C_meta[n] = ['Upper limit on Heat produced relative to installed capacity', 0]
+    m.addConstrs((unit_prod['Heat',d,h] <= unit_size for d in Days for h in Hours), n);
+    
     
     
 ##################################################################################################
@@ -40,6 +59,29 @@ def eh(m, Days, Hours, unit_prod, unit_cons, unit_size):
     m.addConstrs((unit_prod['Heat',d,h] <= unit_size for d in Days for h in Hours), n);
     
 
+
+###############################################################################
+### Air-Air Heat Pump
+###############################################################################
+
+
+def ahp(m, Days, Hours, unit_prod, unit_cons, unit_size):
+    """ MILP model of a Air Heat Pump with constant efficiency
+        and fixed operating point. 
+    """
+    
+    c = 'AHP'
+    n = 'AHP_Heat_production'
+    C_meta[n] = ['Heat produced relative to Elec consumed and COP', 0]
+    m.addConstrs((unit_prod['Heat',d,h] == unit_cons['Elec',d,h]*P[c]['COP']
+                   for d in Days for h in Hours), n);    
+    
+    n = 'AHP_size'
+    C_meta[n] = ['Upper limit on Elec produced relative to installed capacity', 0]
+    m.addConstrs((unit_prod['Heat',d,h] <= unit_size for d in Days for h in Hours), n);
+    
+    
+    
 ##################################################################################################
 ### Photovoltaïc
 ##################################################################################################
@@ -118,7 +160,7 @@ def bat(m, Days, Hours, unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, 
 
 def ad(m, Days, Hours, unit_prod, unit_cons, unit_size, AD_cons_Heat):
     
-    c, g = 'AD', 'General'
+    c = 'AD'
     n = 'AD_production'
     C_meta[n] = ['Biogas produced relative to Biomass consumed and Efficiency', 0]
     m.addConstrs((unit_prod['Biogas',d,h] == 
@@ -171,7 +213,7 @@ def gcsofc(m, Days, Hours, unit_prod, unit_cons, unit_size):
 
 def sofc(m, Days, Hours, unit_prod, unit_cons, unit_size):
     """ MILP model of a Solid Oxyde Fuel Cell (SOFC) with constant efficiency
-        and operating point. 
+        and fixed operating point. 
     """
     
     c = 'SOFC'
@@ -190,7 +232,32 @@ def sofc(m, Days, Hours, unit_prod, unit_cons, unit_size):
     m.addConstrs((unit_prod['Elec',d,h] <= unit_size for d in Days for h in Hours), n);
 
 
+###############################################################################
+### Internal COmbustion Engine
+###############################################################################
 
+
+def ice(m, Days, Hours, unit_prod, unit_cons, unit_size):
+    """ MILP model of a Internal Combustion Engine (ICE) with constant efficiency
+        and fixed operating point. 
+    """
+    
+    c = 'ICE'
+    n = 'ICE_Elec_production'
+    C_meta[n] = ['Elec produced relative to Biogas and gas consumed and Elec Efficiency', 0]
+    m.addConstrs((unit_prod['Elec',d,h] == (unit_cons['Biogas',d,h] + unit_cons['Gas',d,h])*
+                  P[c]['Eff_elec'] for d in Days for h in Hours), n);
+    
+    n = 'ICE_Heat_production'
+    C_meta[n] = ['Heat produced relative to Biogas and gas consumed and Heat Efficiency', 0]
+    m.addConstrs((unit_prod['Heat',d,h] == (unit_cons['Biogas',d,h] + unit_cons['Gas',d,h])*
+                  (1 - P[c]['Eff_elec'])*P[c]['Eff_thermal'] for d in Days for h in Hours), n);    
+    
+    n = 'ICE_size'
+    C_meta[n] = ['Upper limit on Elec produced relative to installed capacity', 0]
+    m.addConstrs((unit_prod['Elec',d,h] <= unit_size for d in Days for h in Hours), n);
+    
+    
 ###############################################################################
 ### Compressed Gas Tank
 ###############################################################################

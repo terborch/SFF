@@ -22,15 +22,15 @@ def get_hdf(file_path, *args):
 def get_pareto_nbr(file_name):
     if 'totex' in file_name:
         return len(list_of_files)
-    elif 'emissions_CO2Limit_None' in file_name:
+    elif 'emissions_Limit_None' in file_name:
         return 1
     else:
-        return int(file_name.split('_')[1]) - 1
+        return int(file_name.split('_')[0]) - 1
 
-date = '2020-05-29'
+date = '2020-06-03'
 file = 'results.h5' 
 Pareto_totex, Perto_emissions = [], []
-path = os.path.join('results', date, 'Pareto_2')
+path = os.path.join('results', date, 'Pareto_4')
 list_of_files = [f for f in os.listdir(path)]
 Pareto_totex = np.zeros(len(list_of_files))
 Perto_emissions = np.zeros(len(list_of_files))
