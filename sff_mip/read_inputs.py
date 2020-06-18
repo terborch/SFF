@@ -60,57 +60,56 @@ Irradiance = dic['Irradiance'].values
 AD_T = dic['AD_T'].values
 Build_T = dic['build_T'].values
 
-
-
-fig_width, fig_height = 11.7*2, 5.8
-from matplotlib import pyplot as plt
-def set_x_ticks(ax1, Time_steps):
-    day_tics = [f'Day {d+1}' for d in Days]
-    ax1.set_xticks(Time_steps[12::24], minor=False)
-    ax1.set_xticklabels(day_tics, fontdict=None, minor=False)  
-
-
-Time_steps = list(range(len(Hours)*len(Days)))
-
-fig, ax1 = plt.subplots()
-fig.set_size_inches(fig_width, fig_height)
-plt.title('Building Electricity Consumption')
-ax1.set_xlabel('Dates')
-ax1.set_ylabel('Building Electricity Consumption in kW')
-set_x_ticks(ax1, Time_steps)
-
-n = 'Building Electricity Consumption'
-ax1.plot(range(24), Build_cons['Elec'].flatten(), label=n)
-
-plt.show()
-
-fig, ax1 = plt.subplots()
-fig.set_size_inches(fig_width, fig_height)
-plt.title('Heat Consumption')
-ax1.set_xlabel('Dates')
-ax1.set_ylabel('Building Heat consumption in kW')
-set_x_ticks(ax1, Time_steps)
-ax2 = ax1.twinx()
-ax2.set_ylabel('AD Heat Consumption in kW')
+if __name__ == "__main__": 
+    fig_width, fig_height = 11.7*2, 5.8
+    from matplotlib import pyplot as plt
+    def set_x_ticks(ax1, Time_steps):
+        day_tics = [f'Day {d+1}' for d in Days]
+        ax1.set_xticks(Time_steps[12::24], minor=False)
+        ax1.set_xticklabels(day_tics, fontdict=None, minor=False)  
     
-n = 'Building Heat Consumption'
-ax1.plot(Time_steps, Build_cons['Heat'].flatten(), label=n, c='black')
-n = 'AD Heat Consumption'
-ax2.plot(Time_steps, AD_cons_Heat.flatten(), label=n, c='green')
-
-plt.show()
-
-
-Time_steps = list(range(len(Hours)*len(Days)))
-
-fig, ax1 = plt.subplots()
-fig.set_size_inches(fig_width, fig_height)
-plt.title('Building Electricity Consumption')
-ax1.set_xlabel('Dates')
-ax1.set_ylabel('Building Electricity Consumption in kW')
-set_x_ticks(ax1, Time_steps)
-
-n = 'Building Electricity Consumption'
-ax1.plot(range(24), Build_cons['Elec'].flatten(), label=n)
-
-plt.show()
+    
+    Time_steps = list(range(len(Hours)*len(Days)))
+    
+    fig, ax1 = plt.subplots()
+    fig.set_size_inches(fig_width, fig_height)
+    plt.title('Building Electricity Consumption')
+    ax1.set_xlabel('Dates')
+    ax1.set_ylabel('Building Electricity Consumption in kW')
+    set_x_ticks(ax1, Time_steps)
+    
+    n = 'Building Electricity Consumption'
+    ax1.plot(range(24), Build_cons['Elec'].flatten(), label=n)
+    
+    plt.show()
+    
+    fig, ax1 = plt.subplots()
+    fig.set_size_inches(fig_width, fig_height)
+    plt.title('Heat Consumption')
+    ax1.set_xlabel('Dates')
+    ax1.set_ylabel('Building Heat consumption in kW')
+    set_x_ticks(ax1, Time_steps)
+    ax2 = ax1.twinx()
+    ax2.set_ylabel('AD Heat Consumption in kW')
+        
+    n = 'Building Heat Consumption'
+    ax1.plot(Time_steps, Build_cons['Heat'].flatten(), label=n, c='black')
+    n = 'AD Heat Consumption'
+    ax2.plot(Time_steps, AD_cons_Heat.flatten(), label=n, c='green')
+    
+    plt.show()
+    
+    
+    Time_steps = list(range(len(Hours)*len(Days)))
+    
+    fig, ax1 = plt.subplots()
+    fig.set_size_inches(fig_width, fig_height)
+    plt.title('Building Electricity Consumption')
+    ax1.set_xlabel('Dates')
+    ax1.set_ylabel('Building Electricity Consumption in kW')
+    set_x_ticks(ax1, Time_steps)
+    
+    n = 'Building Electricity Consumption'
+    ax1.plot(range(24), Build_cons['Elec'].flatten(), label=n)
+    
+    plt.show()
