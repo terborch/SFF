@@ -1,0 +1,25 @@
+Category,Name,Value,Units,Description,Source
+AD,C,347.8144444444438,kWh/°C,Heat capacity of the AD,calc
+AD,Cap_area,108.3,m^2,Surface area of the AD top cap,calc
+AD,Cap_height,2.43,m,Height of the AD top cap,calc
+AD,Capacity,38.46,kW,Rated Biogas production capacity,calc
+AD,Cyl_height,3.6,m,Height of the AD cylindrical body,calc
+AD,Cyl_volume,323.0,m^3,Cylinder volume,calc
+AD,Diameter,10.69,m,Diameter of the AD cylindrical body,calc
+AD,Gains,inputs.h5,kW/m^2,Sum of all heat gains and losses,0
+AD,Gains_elec,0.30768,kW,Heat gains from electricity consumption,calc
+AD,Gains_solar,inputs.h5,kW,Heat gains from irradiation,calc
+AD,Ground_area,89.75,m^2,Ground floor area,calc
+AD,Losses_biomass,inputs.h5,kW,Heat gains from irradiation,calc
+AD,Losses_ground,5.57168,kW,Heat gains from irradiation,calc
+AD,Sludge_volume,290.0,m^3,Sludge volume capacity,calc
+AD,U,0.22526400000000002,kW/°C,AD heat conductance,calc
+Farm,Biomass_prod,103.94473378379166,kW,Biomass portential,calc
+Farm,LSU,92.5,LSU,Number of LSU,calc
+Physical,Nbr_of_time_steps,8760,integer,Number of timesteps,calc
+Physical,dt,1,hour,Length of a timestep in hours,calc
+Profile,Gains,inputs.h5,kW/m^2,Sum of all heat gains,3
+build,Gains,inputs.h5,kW/m^2,Sum of all heat gains,3
+build,Gains_elec,inputs.h5,kW/m^2,Heat gains from appliances,3
+build,Gains_ppl,inputs.h5,kW/m^2,Heat gains from people,4
+build,Gains_solar,inputs.h5,kW/m^2,Heat gains from irradiation,3

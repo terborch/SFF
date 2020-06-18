@@ -35,7 +35,10 @@ Abbrev = {'GBOI':   'Gas Boiler',
           }
 
 # Eneregy conversion units
-Units = ('GBOI', 'WBOI', 'EH', 'AHP', 'PV', 'BAT', 'GCSOFC', 'SOFC', 'ICE', 'AD', 'CGT')
+Units = ('GBOI', 'WBOI', 'EH', 'AHP',   # Heating
+         'ICE', 'SOFC', 'GCSOFC',       # Cogeneration
+         'PV', 'AD',                    # Energy Production
+         'BAT', 'CGT')                  # Energy Storage
 
 # Resources and energy carriers
 Resources = ('Elec', 'Gas', 'Wood', 'Biogas', 'Biomass', 'Heat')

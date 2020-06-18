@@ -17,22 +17,25 @@ start = time.time()
 # External modules
 import os.path
 from datetime import datetime
-import pandas as pd
+#import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib
+#import matplotlib
 import numpy as np
 
 start_construct = time.time()
 
 # Internal modules
 import results
-from param_input import V_meta, V_bounds, P, P_meta, Closest, Hours, Periods, Days
-from param_calc import Irradiance, Ext_T, Dates
+#from param_input import V_meta, V_bounds, P, P_meta, Closest, Hours, Periods, Days
+#from param_calc import Irradiance, Ext_T, Dates
 import model
 import plot
-from plot import fig_width, fig_height
+#from plot import fig_width, fig_height
 
-Days = list(range(len(Closest)))
+
+#Days = list(range(len(Closest)))
+
+from read_inputs import Periods, Days, Hours
 
 today = datetime.now().strftime("%Y-%m-%d")
 
@@ -40,14 +43,15 @@ end_construct = time.time()
 print('model construct time: ', end_construct - start_construct, 's')
 
 
-def run(objective, Reload=True, relax=False, Pareto=False, Limit=None, Save_txt=False):
+def run(objective, Reload=False, relax=False, Pareto=False, Limit=None, Save_txt=False):
     """ Solve the optimization model once then store the result in hdf5 format.
         # TODO save inputs into the resut folder
     """
     
     # Option to generate a new input.h5 file 
     if Reload:
-        pass
+        import write_inputs
+        write_inputs.write_arrays('default', Cluster=True)
            
     
     start_solve = time.time()
@@ -87,7 +91,7 @@ def display_results(date=today, run_nbr='last', save_df=True, save_fig=True,
 
 # Execute single run
 #run('emissions')
-
+run('totex')
 #run_single('totex', save_fig=True, discard_fig=False)
 
 
@@ -124,14 +128,14 @@ def pareto(objective_cstr, objective_free):
     solve_time.append(time.time() - start)
     
     # Half of the number of steps
-    nsteps = 5
+    nsteps = 10
     epsilon = 1e-6
     step = (max_obj_cstr - min_obj_cstr)/(nsteps*2)
-    Limits = np.arange(min_obj_cstr, max_obj_cstr, step)
+    Limits_lin = np.arange(min_obj_cstr, max_obj_cstr, step)
     
-    # Limits= np.concatenate((
-    #     np.linspace(min_obj_cstr*(1 + epsilon), Limits_lin[2], num=nsteps), 
-    #     np.linspace(Limits_lin[2], max_obj_cstr*(1 - epsilon), num=nsteps)[1:]))
+    Limits = np.concatenate((
+        np.linspace(min_obj_cstr*(1 + epsilon), Limits_lin[6], num=nsteps), 
+        np.linspace(Limits_lin[6], max_obj_cstr*(1 - epsilon), num=nsteps)[1:-1]))
     
     # print('\n')
     # print('min_obj_cstr', min_obj_cstr)
@@ -147,7 +151,7 @@ def pareto(objective_cstr, objective_free):
         plt.close('all')
   
 #pareto('capex', 'opex')
-pareto('emissions', 'totex')
+#pareto('emissions', 'totex')
 
 #solve_time.append([time.time() - solve_time[i]])
 end = time.time()

@@ -10,12 +10,11 @@ from matplotlib import pyplot as plt
 import numpy as np
 import os.path
 # Internal modules
-from param_input import Periods, dt_end, Days, Hours
-from param_calc import Dates, Ext_T, Irradiance, Build_cons, Build_T, AD_T
+from read_inputs import (Periods, dt_end, Days, Hours, Ext_T, Irradiance, 
+                         Build_cons, Build_T, AD_T)
 from global_set import (Units, Units_storage, Resources, Color_code, 
                         Linestyle_code, Linestyles, Abbrev)
 import results
-from results import var_index
 
 ###############################################################################
 ### Global variables to be eliminated
@@ -35,16 +34,27 @@ fig_width, fig_height = 11.7*2, 5.8
 ###############################################################################
 ### Primary methods
 ###############################################################################
-   
+def plot_value(axis, x_position, value):
+    if value > 0:
+        ysize = axis.get_ylim()[1] - axis.get_ylim()[0]
+        axis.text(x_position, value + ysize*0.05, '{:.0f}'.format(value))
 
 def unit_size(path):
     """ Plot a bar chart of the installed capacity of each unit given a path to
         the hdf result file.
     """
+    # Split into torage and non storage units
+    Names, Values = {}, {}
+    Units_ns = list(set(Units) - set(Units_storage))
+    Units_ns.sort()
+    Names['non_storage'] = [f'unit_size[{u}]' for u in Units_ns]
+    Names['storage'] = [f'unit_size[{u}]' for u in Units_storage]
+     
     # Only time independent results are used, set names as index
-    df_result = results.get_hdf(path, 'single')
-    df_result.set_index('Var_name', inplace=True)
-    var_names = [f'unit_size[{u}]' for u in Units]   
+    df = results.get_hdf(path, 'single')
+    df.set_index('Var_name', inplace=True)
+    for t in ['non_storage', 'storage']:
+        Values[t] = [df.loc[n, 'Value'] for n in Names[t]]   
 
     # Figure options
     fig, ax1 = plt.subplots()
@@ -53,21 +63,27 @@ def unit_size(path):
     ax2 = ax1.twinx()
     ax1.set_ylabel('Installed production capacity in kW')
     ax2.set_ylabel('Installed storage capacity in kWh')
+    ax1.set_xlim(-1, len(Units))
+    ax1.set_ylim(0, max(Values['non_storage'])*1.25)
+    ax2.set_ylim(0, max(Values['storage'])*1.25)
     
-    # Split into torage and non storage units
-    Units_non_storage = list(set(Units) - set(Units_storage))
-    Units_non_storage.sort()
     i = 0
-    for n in [f'unit_size[{u}]' for u in Units_non_storage]:
-        ax1.bar(i, df_result.loc[n, 'Value'], color='darkgrey')
+    for n in Names['non_storage']:
+        ax1.bar(i, df.loc[n, 'Value'], color='darkgrey')
+        plot_value(ax1, i - 0.25, df.loc[n, 'Value'])
         i += 1
-    for n in [f'unit_size[{u}]' for u in Units_storage]:
-        ax2.bar(i, df_result.loc[n, 'Value'], color='lightgrey')
+    for n in Names['storage']:
+        ax2.bar(i, df.loc[n, 'Value'], color='lightgrey')
+        plot_value(ax2, i - 0.25, df.loc[n, 'Value'])
         i += 1
                 
     # Store the figure in aplt object accessible anywhere
-    Names_order = Units_non_storage + list(Units_storage)
-    plt.xticks(range(len(Units)), [Names_order[i] for i in range(len(Units))])
+    Names_order = Units_ns + list(Units_storage)
+    plt.xticks(range(len(Units)), 
+               [Abbrev[Names_order[i]] for i in range(len(Units))])
+    fig.autofmt_xdate()
+    plt.tight_layout()
+
     
 
 def unit_temperature(path):
@@ -86,6 +102,7 @@ def unit_temperature(path):
     items['value'] = [Build_T, AD_T, Ext_T, Irradiance]
     items['label'] = ['Building Temperature', 'AD Temperature', 
                       'External Temperature', 'Irradiance']
+    items['color'] = ['black', 'green', 'blue', 'red']
     
     # Plot options 
     fig, ax1 = plt.subplots()
@@ -99,10 +116,10 @@ def unit_temperature(path):
     
     # Store plot in plt object
     for i, n in enumerate(items['name'][:-1]):
-        ax1.plot(Time_steps, items['value'][i].flatten(), label=items['label'][i], 
-                 color=col(n), ls=ls(n))
+        ax1.scatter(Time_steps, items['value'][i].flatten(), label=items['label'][i], 
+                 color=items['color'][i])
     n = 'Irradiance'
-    ax2.plot(Time_steps, items['value'][3].flatten(), label=n, color=col(n))
+    ax2.plot(Time_steps, items['value'][3].flatten(), label=n, color=items['color'][3])
     ax1.legend(loc='center left') 
     ax2.legend(loc='center right')
     

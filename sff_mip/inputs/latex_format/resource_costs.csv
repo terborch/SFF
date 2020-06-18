@@ -1,0 +1,5 @@
+Resource,Import $CHF/kWh$,Export $CHF/kWh$,Emissions $tCO2/MWh$,Source
+Electricity,$0.21$,$0.06$,$0.13$,Paul PHD
+Natural Gas,$0.08$,$0.06$,$0.18$,Paul PHD
+Wood Pellets,$0.08$,$0$,$0$,www.propellets.ch
+Biogas,-,$0$,$0$,None

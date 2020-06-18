@@ -1,0 +1,5 @@
+,Symbol,Value,Units,Source,Source
+EH,$\eta_{EH}$,$0.99$,-,Paul PHD thesis,Electric Heater efficiency
+WBOI,$\eta_{WBOI}$,$0.85$,-,energyscope,Wood Boiler efficiency
+GBOI,$\eta_{GBOI}$,$0.98$,-,energyscope,Gas Boiler efficiency
+AHP,$COP$,$3$,-,energyscope,Coefficient of Performance

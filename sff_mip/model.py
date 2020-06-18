@@ -10,13 +10,19 @@ import gurobipy as gp
 # Internal modules
 
 # Variables
-from param_input import (P, S, V_meta, C_meta, Bound, Periods, Days, 
-                         Hours, Time_period_map, Frequence)
+# from param_input import (P, S, V_meta, C_meta, Bound, Periods, Days, 
+#                          Hours, Time_period_map, Frequence)
+
+
+# from param_calc import (Irradiance, Ext_T, Build_cons, Biomass_prod, Costs_u, 
+#                         Costs_res, AD_cons_Heat)
+
 from global_set import Units, U_res, G_res
-from param_calc import (Irradiance, Ext_T, Build_cons, Biomass_prod, Costs_u, 
-                        Costs_res, AD_cons_Heat)
+from read_inputs import (P, S, V_meta, C_meta, Bound, Periods, Days, Hours, 
+                          Time_period_map, Frequence, Irradiance, Ext_T, 
+                          Build_cons, AD_cons_Heat)
 # Functions
-from param_calc import annualize
+from data import annualize
 import variables
 
 """
@@ -42,7 +48,7 @@ def initialize_model():
     m.resetParams()
     m.reset()
     # Set solver time limit
-    m.setParam("TimeLimit", S['Solver_time_limit'])
+    m.setParam("TimeLimit", S['Model','Solver_time_limit'])
     
     return m
 
@@ -72,18 +78,15 @@ def next_day(d):
 
 def cstr_unit_size(m, S, unit_size):
     """ Size constraints for each units """
-    Unit_size_limit = {}
-    for u in Units:
-        Unit_size_limit[u] = [S[u + '_min'], S[u + '_max']]
         
     n = 'unit_max_size'
     for u in Units:
         C_meta[n + f'[{u}]'] = [f'Upper limit on the installed capacity of {u} fixed in settings', 0]
-    m.addConstrs((unit_size[u] <= Unit_size_limit[u][1] for u in Units), n);
+    m.addConstrs((unit_size[u] <= S[u, 'max_capacity'] for u in Units), n);
     n = 'unit_min_size'
     for u in Units:
         C_meta[n + f'[{u}]'] = [f'Lower limit on the installed capacity of {u} fixed in settings', 0]
-    m.addConstrs((unit_size[u] >= Unit_size_limit[u][0] for u in Units), n);
+    m.addConstrs((unit_size[u] >= S[u, 'min_capacity'] for u in Units), n);
 
 
 def model_units(m, Days, Hours, Periods, unit_prod, unit_cons, unit_size, 
@@ -198,7 +201,7 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod):
     r = 'Biomass'
     n = 'Balance_' + r
     C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
-    m.addConstrs((Biomass_prod - unused[r,d,h] == unit_cons['AD'][r,d,h]
+    m.addConstrs((P['Farm','Biomass_prod'] - unused[r,d,h] == unit_cons['AD'][r,d,h]
                   for d in Days for h in Hours), n);
 
     r = 'Gas'
@@ -263,22 +266,22 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
     m.addConstrs((unit_install[u]*Bound >= unit_size[u] for u in Units), n);
     n = 'Capex'
     C_meta[n] = ['Unit CAPEX relative to unit size and cost parameters', 0]
-    m.addConstrs((unit_capex[u] == Costs_u['Cost_multiplier'][u]*
-                  (unit_size[u]*Costs_u['Cost_per_size'][u] + 
-                   unit_install[u]*Costs_u['Cost_per_unit'][u]) 
+    m.addConstrs((unit_capex[u] == P[u,'Cost_multiplier']*
+                  (unit_size[u]*P[u,'Cost_per_size'] + 
+                   unit_install[u]*P[u,'Cost_per_unit']) 
                   for u in Units), n);
     
     n = 'capex_sum'
     C_meta[n] = ['Sum of the CAPEX of all units', 0]
-    m.addConstr(capex == sum([annualize(Costs_u['Life'][u], P['Eco']['i'])*
+    m.addConstr(capex == sum([annualize(P[u,'Life'], P['Farm','i'])*
                               unit_capex[u]/1000 for u in Units]), n);
     
     n = 'opex_sum'
     C_meta[n] = ['Sum of the OPEX of all resources', 0]
-    m.addConstr(opex == sum(grid_import_a[r]*Costs_res['Import_cost'][r] - 
-                            grid_export_a[r]*Costs_res['Export_cost'][r] 
+    m.addConstr(opex == sum(grid_import_a[r]*P[r,'Import_cost'] - 
+                            grid_export_a[r]*P[r,'Export_cost'] 
                             for r in G_res) 
-                        + sum(unit_capex[u]*Costs_u['Maintenance'][u]/1000 
+                        + sum(unit_capex[u]*P[u,'Maintenance']/1000 
                               for u in Units), n);
     
     n = 'totex_sum'
@@ -290,12 +293,12 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
     V_meta[n] = ['t-CO2', 'Annual total CO2 emissions', 'unique']
     emissions = m.addVar(lb=-Bound, ub=Bound, name=n)
     
-    c = 'CO2'
+    c = 'Emissions'
     n = 'Emissions'
     C_meta[n] = ['Instant CO2 emissions relative to Elec and Gas imports', 0]
     m.addConstr(emissions == 
-                sum(grid_import_a[r] - grid_export_a[r]*P[c][r] for r in G_res) + 
-                sum(unit_size[u]*Costs_u['t-CO2'][u]/Costs_u['Life'][u] for u in Units), n);
+                sum(grid_import_a[r] - grid_export_a[r]*P[r,c] for r in G_res) + 
+                sum(unit_size[u]*P[u,'LCA']/P[u,'Life'] for u in Units), n);
     
     ###m.addConstr(emissions == (grid_import_a['Elec'] - grid_export_a['Elec'])*P[c]['Elec'] +
     ###                            (grid_import_a['Gas'] - grid_export_a['Gas'])*P[c]['Gas'], n);

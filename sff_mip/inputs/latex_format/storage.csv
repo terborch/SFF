@@ -1,0 +1,15 @@
+,Symbol,Value,Units,Source,Source
+SOFC,"$\eta_{SOFC, elec}$",$0.6$,-,None,SOFC electric efficiency
+SOFC,"$\eta_{SOFC, thermal}$",$0.95$,-,None,SOFC thermal efficiency
+ICE,"$\eta_{ICE, elec}$",$0.3$,-,Samuel PdM,ICE electric efficiency
+ICE,"$\eta_{ICE, thermal}$",$0.75$,-,Samuel PdM,ICE thermal efficiency
+,,,,,
+,,,,,
+,,,,,
+BAT,$\eta^{self}_{BAT}$,$0.9$,-,Paul PHD,guess
+BAT,$\eta_{BAT}$,$0.003$,-,None,guess
+CGT,"$f_{comp, E^+}$",$0.02$,-,Sinor 1991,Sinor 1991
+General,"$f_{biogas, CH4}$",$0.6$,-,Nils PdS,guess
+,,,,,
+,,,,,
+,"f_{comp, \dot{E}^+}}{f_{biogas, CH4}",,,,

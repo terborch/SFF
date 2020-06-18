@@ -1,0 +1,59 @@
+Category,Name,Value,Units,Description,Source
+AD,Heat_cons,0.32,-,Fraction of heat self consumed relative to the biogas procued,mini biogas book
+AD,Ground_losses,0.06208,kW/m^2,Steady state heat losses to the ground,Hreiz
+AD,Pigs,55,-,Number of Pigs,swissfuturefarm.ch
+AD,Cows,65,-,Number of Pigs,swissfuturefarm.ch
+AD,LSU_pigs,0.5,-,LSU per Pigs,ec.europa.eu
+AD,LSU,92.5,LSU,Number of LSU,calc
+AD,Manure_per_cattle,7.3,kg-dry/day/LSU,Cattle manure production dry basis,doi: 10.3390/c5020027
+AD,Manure_HHV_dry,3.694444444,kWh/kg-dry,Fresh cattle manure energy content HHV dry basis,doi: 10.3390/c5020027
+AD,Biomass_water,0.93,-,Water fraction of the digestate,S. Fujishima
+AD,Biomass_prod,117.2309028,kWh/h,Biomass Production,calc
+PV,Eff,0.14,-,PV efficiency,Paul
+PV,max_utilisation,0.5,-,Maximum utilisation of available rood area,setting
+BAT,Eff,0.9,-,BAT roundtrip efficiency,guess
+BAT,Self_discharge,0.003,-,Constant hourly self discharge,guess
+AD,Eff,0.37,-,AD efficiency,mini biogas book
+AD,Elec_cons,0.008,-,AD faction of electricity consumed,doi: 10.3390/en10081165
+AD,U_cap,0.00208,kW/°C/m^2,AD heat transmittance,doi: 10.12911/22998993/89660
+AD,Cap_V_ratio,0.4,-,Ratio of the cap volume over the digestate volume,doi: 10.1016/j.cherd.2017.01.007
+AD,Cap_h_ratio,2.2,-,Ratio of the cap raius over the cap height,doi: 10.1016/j.cherd.2017.01.007
+AD,Cyl_fill,0.9,-,Ratio of the cylinder volume over the digestate volume,doi: 10.1016/j.cherd.2017.01.007
+AD,Cap_abs,0.9,-,Solar Irradiance absorption coefficient for a black painted cap,Hreiz
+AD,T_min,39,°C,Minimum allowed temperature for the digester,Hreiz
+AD,T_max,40,°C,Maximum allowed temperature for the digester,Hreiz
+AD,Heating_part_load,0.2,-,Lowest load fraction acceptable before shutting down the heating system,Setting
+AHP,COP,3,-,Coefficient of Performance,calc - aproximate
+SOFC,Eff_elec,0.6,-,SOFC electric efficiency,guess
+SOFC,GC_elec_frac,0.03,-,gas cleaning electric consumption fraction,Projet Semestre nils
+SOFC,Eff_thermal,0.95,-,SOFC thermal efficiency,guess
+ICE,Eff_elec,0.3,-,ICE electric efficiency,Samuel Majerus PdM
+ICE,Eff_thermal,0.75,-,ICE thermal efficiency,Samuel Majerus PdM
+GCSOFC,Elec_cons,0.03,-,GCSOFC Elec cons relative to SOFC output,Projet Semestre nils
+CGT,Elec_comp,0.02,-,Fraction of energy requiered to compress natural gas to 2500 psig,Sinor 1991
+AD,Residence_time,30,day,AD Hydraulic Residence Time,Hreiz
+Eco,i,0.025,-,Annual interest rate,Projet Semestre nils
+Eco,tau,0.064147129,-,Annualization factor,calc
+build,Absorptance,0.08,-,Fraction of solar radiation absorbed relative to ground surface,guess
+build,cons_Elec_annual,787000,kWh/year,Annual electric consumption,SFF excel
+build,cons_Heat_annual,1650000,kWh/year,Annual heat consumption,SFF excel
+Time,Hours_per_year,8760,h/year,Hours in a year,fact
+build,Heating_part_load,0.2,-,Lowest load fraction acceptable before shutting down the heating system,Setting
+build,Gains_ppl,26,kWh/m^2/year,Heating Gains from People,Paul - SIA 2024
+build,Elec_heat_frac,0.9,-,Fraction of heat produced by electricity consumber,Dirk MA
+build,U_b,0.00206,kW/°C/m^2,Building heat transmittance,Paul - SIA 2024
+build,C_b,0.12,kWh/°C/m^2,Building heat capacity,Paul - SIA 2024
+build,T_open_windows,25,°C,If the minimum building temperature in a day is below this windows stay open,Setting
+GBOI,Eff,0.98,-,Gas Boiler efficiency,energyscope
+WBOI,Eff,0.85,-,Wood Boiler efficiency,energyscope
+EH,Eff,0.99,-,Electric Heater efficiency,Paul
+General,Cp_water,1.16222222222222,kWh/°C/m^3,Heat capacity of water,wikipedia
+build,T_min,18,°C,Minimum indoor temperature,setting
+build,T_max,34,°C,Maximum indoor temperature,setting
+General,Temp_ext_mean,10,°C,Annual average external temperature,calc
+General,Biogas_CH4,0.6,-,Fraction of CO2 contained in Biogas,guess
+CO2,Gas,0.18108317060496,t-CO2/MWh,Emissions from burning natural gas,EIA
+CO2,Elec,0.13,t-CO2/MWh,Emissions from importing Electricity in Switzerland,Ecovient
+CO2,Biogas,0,t-CO2/MWh,Emissions from burning biogas,guess
+CO2,Tax,9.6E-05,MCHF/t-CO2,Taxe CO2 en suisse,admin.ch
+CO2,Wood,0,t-CO2/MWh,Emissions from burning wood pellets,guess

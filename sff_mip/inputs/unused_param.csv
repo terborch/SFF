@@ -8,6 +8,7 @@ build,Th,65,°C,Supply heating temperature of the Building,Marechal project,unus
 AD,Tc,40,°C,Return heating temperature of the AD,guess,unused
 AD,Th,50,°C,Supply heating temperature of the AD,guess,unused
 build,T_amb,20,°C,Comfort indoor temperature,guess,unused
-build,Building_absorptance,0.08,-,Fraction of solar radiation absorbed relative to ground surface,guess,unused
+Farm,tau,0.064147129,-,Annualization factor,calc,
 Eco,n,20,years,years of exploitation,unused/unit dependent,unused
 AD,T_mean,39,°C,Mean AD Temperature,guess,unused
+CO2,Tax,9.6E-05,MCHF/t-CO2,Taxe CO2 en suisse,admin.ch,

@@ -17,23 +17,35 @@ from matplotlib import pyplot as plt
 import numpy as np
 from gurobipy import GRB
 import gurobipy as gp
-import os
 import pandas as pd
 
-# Internal modules
-from param_input import (P, P_meta, S, C_meta, Bound, Frequence)
-from param_calc import (Build_cons, df_cons, Heated_area, Clustered_days)
-
 # Internal module methods
-from param_calc import annual_to_daily, weather_param
-from results import get_hdf
+from data import (annual_to_daily, weather_param, get_param, get_profile, 
+                  make_param)
+
+P, P_meta = get_param('parameters.csv')
+P_heat_load, _ = get_param('heat_load_param.csv')
+P_calc, _ = get_param('calc_param.csv')
+
+P = P.append(P_heat_load)
+P = P.append(P_calc)
+
+S, S_meta = get_param('settings.csv')
+Bound = S['Model','Var_bound']
+C_meta = {}
+Elec_cons = get_profile(P['Profile', 'Elec_cons'])
+Occupation = get_profile(P['Profile', 'Occupation'])
+
+# Heated_area = P['Heated_area']
+# Manure = P_calc['Manure']
 
 # Non clustered parameters
 filename = 'meteo_Liebensberg_10min.csv'
 epsilon = 1e-6
-Ext_T, Irradiance, Index = weather_param(filename, epsilon, clustering=False)
-Days = list(range(len(Ext_T)))
+Days = list(range(365))
 Hours = list(range(24))
+Ext_T, Irradiance, Index = weather_param(filename, epsilon, (Days, Hours), S['Time'])
+
 
 ###############################################################################
 ### MILP thermodynamic model 
@@ -48,11 +60,11 @@ def initialize_model():
     m.resetParams()
     m.reset()
     # Set solver time limit
-    m.setParam("TimeLimit", S['Solver_time_limit'])
+    m.setParam("TimeLimit", S['Model', 'Solver_time_limit'])
     
     return m
 
-def heat_load_model(Ext_T, Gains, U, C, T_min, T_max, Heated_area, part_load, 
+def heat_load_model(Ext_T, Gains, U, C, T_min, T_max, part_load, 
                     Building=True):
     """ MILP thermodynamic model. The same model is used for the building and
         the AD. Constrain the temperature between a minimum and a maximum, 
@@ -96,7 +108,7 @@ def heat_load_model(Ext_T, Gains, U, C, T_min, T_max, Heated_area, part_load,
     for d in Days:
         for h in Hours:
             temperature[d,h] = T[d,h].x
-            heat_load[d,h] = Heated_area*Q[d,h].x
+            heat_load[d,h] = P['build', 'Heated_area']*Q[d,h].x
     
     return temperature, heat_load
 
@@ -127,7 +139,8 @@ def get_clustered_values(values, Clustered_days):
 
 
 def heat_load_precalc(part_load, measured_heat_load, Gains, U, C, T_min, T_max, 
-                      Heated_area, print_it=False, Building=True):
+                      Clustered_days, Frequence, 
+                      print_it=False, Building=True):
     """ Calculate the heating load profile and temperature profile of the
         buildings and AD. Based on the lowest part-load heating and temperature 
         limits as well as external weather paramerts gains and thermal properties.
@@ -135,11 +148,11 @@ def heat_load_precalc(part_load, measured_heat_load, Gains, U, C, T_min, T_max,
  
     # First resolution without upper temperature limit and part-load limit
     (temperature, heat_load
-     ) = heat_load_model(Ext_T, Gains, U, C, T_min, 100, Heated_area, 0, 
+     ) = heat_load_model(Ext_T, Gains, U, C, T_min, 100, 0, 
                          Building=Building)
     
     # Fix part-load value based on previous highest heat load
-    part_load = 0.2*np.max(heat_load)/Heated_area
+    part_load = 0.2*np.max(heat_load)/P['build', 'Heated_area']
     
     if print_it:
         print('\n Initaial Max heat load: ', np.max(heat_load), '\n')
@@ -147,7 +160,7 @@ def heat_load_precalc(part_load, measured_heat_load, Gains, U, C, T_min, T_max,
     if Building:
         # Modify U to allow the option for natural cooling above a certain T
         open_windows = np.where(
-            np.min(temperature, axis=1) > P['build']['T_open_windows'])[0]
+            np.min(temperature, axis=1) > P['build','T_open_windows'])[0]
         U = np.zeros(len(Ext_T))
         
         # Increse U of open windows periods with until T_max is respected
@@ -155,12 +168,12 @@ def heat_load_precalc(part_load, measured_heat_load, Gains, U, C, T_min, T_max,
         while True:
             for i, _ in enumerate(U):
                 if i not in open_windows:
-                    U[i] = P['build']['U_b']  
+                    U[i] = P['build','U_b']  
                 else:
-                    U[i] = P['build']['U_b']*realxation
+                    U[i] = P['build','U_b']*realxation
             try:
                 (temperature, heat_load) = heat_load_model(Ext_T, Gains, U, C, 
-                T_min, T_max, Heated_area, part_load, Building=Building)
+                T_min, T_max, part_load, Building=Building)
                 break
             except:
                 realxation += 0.5
@@ -169,7 +182,7 @@ def heat_load_precalc(part_load, measured_heat_load, Gains, U, C, T_min, T_max,
      
     # Second resolution with upper temperature limit and part-load limit            
     (temperature, heat_load) = heat_load_model(Ext_T, Gains, U, C, T_min, T_max, 
-    Heated_area, part_load, Building=Building)
+    part_load, Building=Building)
     
     # Clustered days only
     temperature_cls = get_clustered_values(temperature, Clustered_days)
@@ -217,21 +230,30 @@ def heat_load_precalc(part_load, measured_heat_load, Gains, U, C, T_min, T_max,
 def building_gains():
     """ Building gains based on building parameters and weather """
     c = 'build'
-    P_meta[c]['Gains_ppl'] = ['kW/m^2', 'Heat gains from people', 'calc']
+    meta = ['kW/m^2', 'Heat gains from people', 4]
     C_meta['Gains_ppl'] = ['Building people gains', 4, 'P']
-    Gains_ppl = annual_to_daily(P[c]['Gains_ppl'], df_cons['Gains'].values)
+    Gains_ppl = annual_to_daily(P[c, 'Gains_ppl_mean'], Occupation)
+    make_param(c, 'Gains_ppl', 'inputs.h5', meta)
     
-    P_meta[c]['Gains_elec'] = ['kW/m^2', 'Heat gains from appliances', 'calc']
+    meta = ['kW/m^2', 'Heat gains from appliances', 3]
     C_meta['Gains_elec'] = ['Building electric gains', 3, 'P']
-    Gains_elec = P[c]['Elec_heat_frac'] * Build_cons['Elec'] / Heated_area
+    Gains_elec = P[c, 'Elec_heat_frac'] * Elec_cons / P['build', 'Heated_area']
+    make_param(c, 'Gains_elec', 'inputs.h5', meta)
     
-    P_meta[c]['Gains_solar'] = ['kW/m^2', 'Heat gains from irradiation', 'calc']
+    meta = ['kW/m^2', 'Heat gains from irradiation', 3]
     C_meta['Gains_solar'] = ['Building solar gains', 3, 'P']
-    Gains_solar = P[c]['Building_absorptance'] * Irradiance
-        
-    P_meta[c]['Gains'] = ['kW/m^2', 'Sum of all heat gains', 'calc']
+    Gains_solar = P[c, 'Absorptance'] * Irradiance
+    make_param(c, 'Gains_solar', 'inputs.h5', meta)
+   
+    meta = ['kW/m^2', 'Sum of all heat gains', 3]
     C_meta['Gains'] = ['Sum of all building heating gains', 3, 'P']
     Gains = Gains_ppl + Gains_elec + Gains_solar
+    make_param(c, 'Gains', 'inputs.h5', meta)
+    
+    # N.B. Equivalent to:
+    # Gains = np.zeros((len(Days), len(Hours)))
+    # for d in Days:
+    #     Gains[d] = Gains_ppl + Gains_elec + Gains_solar[d]
     
     return Gains
 
@@ -240,79 +262,93 @@ def ad_sizing():
     """ Calculates the maxium size of the AD and its dimentions relative
         to the avilable manure.
     """
+    meta = {}
+    
     c = 'AD'
     name = 'Capacity'
-    P_meta[c][name] = ['kW', 'Rated Biogas production capacity', 'calc']
-    P[c][name] = np.round( P[c]['Manure_prod']*P[c]['Eff'] , 2)
+    meta[name] = ['kW', 'Rated Biogas production capacity', 'calc']
+    P[c,name] = np.round(P['Farm','Biomass_prod']*P[c,'Eff'] , 2)
     
     name = 'Sludge_volume'
-    P_meta[c][name] = ['m^3', 'Sludge volume capacity', 'calc']
-    P[c][name] = np.ceil( P[c]['Residence_time']*P[c]['LSU']*P[c]['Manure_per_cattle']/
-                       (1 - P[c]['Biomass_water'])/1000 )
+    meta[name] = ['m^3', 'Sludge volume capacity', 'calc']
+    P[c,name] = np.ceil(P[c,'Residence_time']*P['Farm','LSU']*
+                        P['Physical','Manure_per_cattle']/
+                       (1 - P[c,'Biomass_water'])/1000 )
     
     name = 'Cyl_volume'
-    P_meta[c][name] = ['m^3', 'Cylinder volume', 'calc']
-    P[c][name] = np.ceil( P[c]['Sludge_volume']/P[c]['Cyl_fill'] )
+    meta[name] = ['m^3', 'Cylinder volume', 'calc']
+    P[c,name] = np.ceil( P[c,'Sludge_volume']/P[c,'Cyl_fill'] )
     
     name = 'Cap_height'
-    P_meta[c][name] = ['m', 'Height of the AD top cap', 'calc']
-    P[c][name] = np.round( (P[c]['Sludge_volume']*P[c]['Cap_V_ratio']*(6/np.pi)/
-                         (3*P[c]['Cap_h_ratio']**2 + 1))**(1/3), 2)
+    meta[name] = ['m', 'Height of the AD top cap', 'calc']
+    P[c,name] = np.round( (P[c,'Sludge_volume']*P[c,'Cap_V_ratio']*(6/np.pi)/
+                         (3*P[c,'Cap_h_ratio']**2 + 1))**(1/3), 2)
     
     name = 'Diameter'
-    P_meta[c][name] = ['m', 'Diameter of the AD cylindrical body', 'calc']
-    P[c][name] = np.round( P[c]['Cap_h_ratio']*P[c]['Cap_height']*2, 2)
+    meta[name] = ['m', 'Diameter of the AD cylindrical body', 'calc']
+    P[c,name] = np.round( P[c,'Cap_h_ratio']*P[c,'Cap_height']*2, 2)
     
     name = 'Ground_area'
-    P_meta[c][name] = ['m^2', 'Ground floor area', 'calc']
-    P[c][name] = np.round( np.pi*P[c]['Diameter']**2/4, 2)
+    meta[name] = ['m^2', 'Ground floor area', 'calc']
+    P[c,name] = np.round( np.pi*P[c,'Diameter']**2/4, 2)
     
     name = 'Cap_area'
-    P_meta[c][name] = ['m^2', 'Surface area of the AD top cap', 'calc']
-    P[c][name] = np.round( np.pi*(P[c]['Cap_height']**2 + (P[c]['Diameter']/2)**2), 2)
+    meta[name] = ['m^2', 'Surface area of the AD top cap', 'calc']
+    P[c,name] = np.round( np.pi*(P[c,'Cap_height']**2 + (P[c,'Diameter']/2)**2), 2)
     
     name = 'Cyl_height'
-    P_meta[c][name] = ['m', 'Height of the AD cylindrical body', 'calc']
-    P[c][name] = np.round( P[c]['Cyl_volume']/(np.pi*(P[c]['Diameter']/2)**2), 2)
+    meta[name] = ['m', 'Height of the AD cylindrical body', 'calc']
+    P[c,name] = np.round( P[c,'Cyl_volume']/(np.pi*(P[c,'Diameter']/2)**2), 2)
 
-
+    make_param('AD', list(meta.keys()), P, meta)
+    
 def ad_gains(T_min):    
     """ Calculates the gains of the AD based on AD size and weather. 
         Concerning solar gains:    
-        Since the cover emissivity is close to 1 (Hreiz) the surface is the 
-        same outside and inside and the temperature is hotter inside but is 
-        considered similar the heat absorbed by the cover is considered to be 
-        emitted equally to the outside and inside.
+        Since the cover surface is the same outside and inside (the temperature 
+        is hotter inside but close) the heat absorbed by the cover is 
+        considered to be emitted equally to the outside and inside.
     """
-    c, g = 'AD', 'General'
+    meta = {}
+    
+    c, p = 'AD', 'Physical'
     n = 'U'
-    P_meta[c][n] = ['kW/°C', 'AD heat conductance', 'calc']
-    P[c][n] = P[c]['Cap_area']*P[c]['U_cap']
+    meta[n] = ['kW/°C', 'AD heat conductance', 'calc']
+    P[c,n] = P[c,'Cap_area']*P[c,'U_cap']
     
     n = 'C'
-    P_meta[c][n] = ['kWh/°C', 'Heat capacity of the AD', 'calc']
-    P[c][n] = (P[g]['Cp_water']*P[c]['Sludge_volume'] + 
-               P['build']['C_b']*P[c]['Ground_area'])
+    meta[n] = ['kWh/°C', 'Heat capacity of the AD', 'calc']
+    P[c,n] = (P[p,'Cp_water']*P[c,'Sludge_volume'] + 
+               P['build','C_b']*P[c,'Ground_area'])
+
+    C_meta['Gains_solar_AD'] = ['Heat gains from irradiation', 0, 'P']    
+    metadata = ['kW', 'Heat gains from irradiation', 'calc']
+    Gains_solar = P[c,'Cap_abs']*P[c,'Ground_area']*Irradiance/2
+    make_param(c, 'Gains_solar', 'inputs.h5', metadata)
     
-    P_meta[c]['Gains_solar'] = ['kW', 'Heat gains from irradiation', 'calc']
-    Gains_solar = P[c]['Cap_abs']*P[c]['Ground_area']*Irradiance/2
-    
-    n = 'Losses_biomass'
-    P_meta[c]['Heat_loss_biomass'] = ['kW', 'Heat gains from irradiation', 'calc']
-    P[c][n] = (((P[c]['Manure_prod']/P[c]['Manure_HHV_dry'])/
-                          (1 - P[c]['Biomass_water']))*(P[g]['Cp_water']/1000)*
+    C_meta['Losses_biomass'] = ['Heat losses due to cold biomass input', 0, 'P']
+    metadata = ['kW', 'Heat gains from irradiation', 'calc']
+    Losses_biomass = (((P['Farm', 'Biomass_prod']/P[p,'Manure_HHV_dry'])/
+                          (1 - P[c,'Biomass_water']))*(P[p,'Cp_water']/1000)*
                          (T_min - Ext_T))
+    make_param(c, 'Losses_biomass', 'inputs.h5', metadata)
     
     n = 'Losses_ground'
-    P_meta[c]['Heat_loss_biomass'] = ['kW', 'Heat gains from irradiation', 'calc']
-    P[c][n] = P[c]['Ground_losses']*P[c]['Ground_area']
+    meta[n] = ['kW', 'Heat gains from irradiation', 'calc']
+    P[c,n] = P[c,'Ground_losses']*P[c,'Ground_area']
     
     n = 'Gains_elec'
-    P_meta[c][n] = ['kW', 'Heat gains from electricity consumption', 'calc']
-    P[c][n] = P[c]['Capacity']*P[c]['Elec_cons']  
+    meta[n] = ['kW', 'Heat gains from electricity consumption', 'calc']
+    P[c,n] = P[c,'Capacity']*P[c,'Elec_cons']  
     
+
+    metadata = ['kW/m^2', 'Sum of all heat gains and losses', 0]
+    C_meta['Gains_AD'] = ['Sum of all AD heating gains and losses', 0, 'P']
     Gains = Gains_solar + (np.ones(np.shape(Ext_T))*
-            (P[c]['Gains_elec'] - P[c]['Losses_ground'] - P[c]['Losses_biomass']))
+            (P[c,'Gains_elec'] - P[c,'Losses_ground'] - Losses_biomass))
+    make_param(c, 'Gains', 'inputs.h5', metadata)
+    
+    make_param('AD', list(meta.keys()), P, meta)
     
     return Gains
 
@@ -327,19 +363,18 @@ def save_df_to_hdf5(key, profile, path):
         hdf.put(key, df, data_columns=True)
         
     
-def generate(file_name, directory):
+def generate(path, Clustered_days, Frequence):
     """ Generates and stored temperature and heat load profiles for the
         building and the AD.
     """
-    path = os.path.join(directory, file_name)
     
     # Building profiles
     c = 'build'
-    part_load = P[c]['Heating_part_load']
-    T_min, T_max = P[c]['T_min'], P[c]['T_max']
-    U, C = [P['build']['U_b']]*365, P['build']['C_b']
+    part_load = P[c,'Heating_part_load']
+    T_min, T_max = P[c,'T_min'], P[c,'T_max']
+    U, C = [P[c,'U_b']]*len(Days), P[c,'C_b']
     Gains = building_gains()
-    measured_heat_load = P[c]['cons_Heat_annual']
+    measured_heat_load = P['Farm','cons_Heat_annual']
     
     heat_load_modeled, temperature_cls = heat_load_precalc(
         part_load,
@@ -349,8 +384,9 @@ def generate(file_name, directory):
         C,
         T_min,
         T_max,
-        Heated_area,
-        print_it = True,
+        Clustered_days,
+        Frequence,
+        print_it = False,
         Building = True
         )
     
@@ -360,12 +396,13 @@ def generate(file_name, directory):
     
     # AD profile
     c = 'AD'
-    part_load = P[c]['Heating_part_load']
-    T_min, T_max = P[c]['T_min'], P[c]['T_max']
+    part_load = P[c,'Heating_part_load']
+    T_min, T_max = P[c,'T_min'], P[c,'T_max']
     ad_sizing()
     Gains = ad_gains(T_min)
-    U, C = [P[c]['U']]*len(Ext_T), P[c]['C']
-    measured_heat_load = (P[c]['Manure_prod']*P[c]['Eff']*8760)*P[c]['Heat_cons']
+    U, C = [P[c,'U']]*len(Ext_T), P[c,'C']
+    measured_heat_load = (P['Farm', 'Biomass_prod']*P[c,'Eff']*
+                          8760*P[c,'Heat_cons'])
     
     heat_load_modeled, temperature_cls = heat_load_precalc(
         part_load,
@@ -375,15 +412,16 @@ def generate(file_name, directory):
         C,
         T_min,
         T_max,
-        1,
-        print_it = True,
+        Clustered_days,
+        Frequence,
+        print_it = False,
         Building = False
         )
     
     save_df_to_hdf5('AD_Q', heat_load_modeled, path)
     save_df_to_hdf5('AD_T', temperature_cls, path)
 
-    print(f'All profiles where saved to {file_name} in the {directory} directory')
+    print(f'Heat load profiles for the building and AD where saved to {path}')
     
     # use get_hdf(path) to get back inputs in a dict format
 

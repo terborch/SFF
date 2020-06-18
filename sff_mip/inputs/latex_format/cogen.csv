@@ -1,0 +1,6 @@
+,Symbol,Value,Units,Source,Source
+SOFC,"$\eta_{SOFC, elec}$",$0.6$,-,None,SOFC electric efficiency
+SOFC,"$\eta_{SOFC, thermal}$",$0.95$,-,None,SOFC thermal efficiency
+ICE,"$\eta_{ICE, elec}$",$0.3$,-,Samuel PdM,ICE electric efficiency
+ICE,"$\eta_{ICE, thermal}$",$0.75$,-,Samuel PdM,ICE thermal efficiency
+GCSOFC,"$f_{elec,biogas}$",$0.018$,-,Nils PdS,Projet Semestre nils

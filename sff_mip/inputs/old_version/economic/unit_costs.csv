@@ -1,5 +1,5 @@
-Technology,Cost_per_size,Cost_per_unit,Cost_multiplier,Life,Maintenance,t-CO2,Size_units,Source
-BAT,970,620,1.33,10,0.02,0.1,kWh,Paul regression
+Technology,Cost_per_size,Cost_per_unit,Cost_multiplier,Life,Maintenance,LCA,Size_units,Source
+BAT,970,620,1.33,10,0.02,0.1,kWh,Paul regression et https://4thgeneration.energy/emissions-of-grid-scale-storage/
 GBOI,105,3800,1.8,20,0.05,0.02,kW,Paul
 WBOI,494,0,1,20,0.035,0.02,kW,energyscope
 AHP,1240,5680,1.8,20,0.02,0.02,kW,Paul

@@ -95,11 +95,14 @@ def unit_economics(file):
     df = data.default_data_to_df(file, 'economic', 0)
     
     # Convert strings of valuesto numpy.int64
-    Parameters = ['Cost_per_size', 'Cost_per_unit', 'Cost_multiplier', 'Life']
+    Parameters = ['Cost_per_size', 'Cost_per_unit', 'Cost_multiplier', 'Life', 
+                  'Maintenance', 'LCA']
     Descriptions = {'Cost_per_size': 'Cost retalive to installed capacity',
                     'Cost_per_unit': 'Cost per unit installed',
                     'Cost_multiplier': 'Cost multiplier for Switzerland', 
-                    'Life': 'Lifetime'}
+                    'Life': 'Lifetime',
+                    'Maintenance': 'Yearly maintenance cost in percent CAPEX',
+                    'LCA': 'LCA emissions from construction'}
     for p in Parameters:
         pd.to_numeric(df[p])
     
@@ -108,14 +111,20 @@ def unit_economics(file):
     df['Cost_per_unit'] /= 1000
     
     # Save a copy in P and the corresponding metdata in P_meta
-    for p in Parameters:
-        if p != 'Life':
-            for u in Units:
-                physical_units = ('Years' if p == 'Life' 
-                                  else 'kCHF/{}'.format(df['Size_units']))
-                meta = [physical_units, Descriptions[p], df['Source'][u]]
-                make_param('Eco', p, df[p][u], meta, u)
+    SI_units = {'Life': 'Years', 
+                'LCA': 'tCO2/S',
+                'Maintenance': '-',
+                'Cost_per_size': 'CHF/S',
+                'Cost_per_unit': 'CHF',
+                'Cost_multiplier': '-'}
     
+    for p in Parameters:
+        for u in Units:
+            SI_unit = (SI_units[p] if 'S' not in SI_units[p]
+                       else SI_units[p].replace('S', df['Size_units'][u]))
+            meta = [SI_unit, Descriptions[p], df['Source'][u]]
+            make_param('Eco', p, df[p][u], meta, u)
+
     return df
 
 
@@ -244,3 +253,43 @@ c = 'AD'
 name = 'Capacity'
 P_meta[c][name] = ['kW', 'Rated Biogas production capacity', 'calc']
 P[c][name] = np.round( P[c]['Manure_prod']*P[c]['Eff'] , 2)
+
+
+def make_df(df, Cat, Name, Val, Meta):
+    if 'Â' in Meta[0]:
+        Meta[0] = Meta[0].replace('Â', '')
+    row = {'Category': Cat, 
+           'Name': Name, 
+           'Value': Val,
+           'Units': Meta[0],
+           'Description': Meta[1],
+           'Source': Meta[2]}
+    return df.append(row, ignore_index=True)
+
+
+
+
+df = pd.DataFrame(columns=['Category', 'Name', 'Value', 'Units', 'Description', 'Source'])
+i = 0
+#keys = list(Units) + list(set(P.keys()) - set(Units))
+
+for k1 in P.keys():
+    for k2 in P[k1].keys():
+        if np.shape(P[k1][k2]) == () and type(P[k1][k2]) != dict:
+            pass
+            # df = make_df(df, k1, k2, P[k1][k2], P_meta[k1][k2])
+        elif type(P[k1][k2]) == dict:
+            for k3 in P[k1][k2].keys():
+                df = make_df(df, k2, k3,  P[k1][k2][k3], P_meta[k1][k2][k3])
+
+df.sort_values(by=['Category', 'Name'], inplace=True, ignore_index=True)
+
+# keys = list(set(P.keys()) - set(Units))
+
+# for k1 in keys:
+#     for k2 in P[k1].keys():
+#         if np.shape(P[k1][k2]) == () and type(P[k1][k2]) != dict:
+#             df = make_df(df, k1, k2, P[k1][k2], P_meta[k1][k2])
+
+
+df.to_csv('test.csv')

@@ -1,0 +1,12 @@
+Name,Symbol,Value,Units,Source,Description
+Heat_cons,"$f_{\dot{Q}^+, \dot{e}^-}$",$0.32$,-,Mini Biogas 2014,Heat consumed relative to biogas produced
+Ground_losses,"$\dot{q}^{- loss,ground}$",$0.062$,$kW/m^2$,Hreiz 2017,Steady state heat losses to the ground
+Manure_HHV_dry,$HHV_{manure}$,$3.694$,$kWh/kg-dry$,Font-Palma 2019,Fresh cattle manure energy content HHV dry basis
+Biomass_water,"$f_{biomass, water}$",$0.93$,-,Fujishima 2000,Water fraction of the digestate
+Biomass_prod,"$\dot{e}^+_{AD,biomass,t}$",$117$,$kWh/h$,calc,Biomass Production
+U_cap,$U^{AD}_{cap}$,$0.00208$,$kW/^\circ C/m^2$,Teleszeweski 2018,AD heat transmittance
+Cap_abs,"$\alpha_{AD, cap}$",$0.9$,-,Hreiz 2017,Solar Irradiance absorption coefficient for a black painted cap
+T_min,"$T^{AD,min}$",$39$,$^\circ C$,Hreiz 2017,Minimum allowed temperature for the digester
+T_max,"$T^{AD,max}$",$40$,$^\circ C$,Hreiz 2017,Maximum allowed temperature for the digester
+Temp_ext_mean,"$T^{ext,mean}$",$10$,$^\circ C$,calc,Annual average external temperature
+Cp_water,$C^{water}_p$,$1.16$,$kWh/^\circ C/m^3$,nist.gov,Heat capacity of water

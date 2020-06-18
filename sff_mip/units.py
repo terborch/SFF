@@ -4,7 +4,7 @@
 """
 
 # Internal modules
-from param_input import P, C_meta, Bound
+from read_inputs import P, C_meta, Bound
 
 ##################################################################################################
 ### Gas Boiler
@@ -96,7 +96,7 @@ def pv(m, Days, Hours, unit_prod, unit_size, Irradiance):
     
     n = 'PV_roof_size'
     C_meta[n] = ['Upper limit on Installed capacity relative to Available area', 6]
-    m.addConstr(unit_size <= P['build']['Ground_area'] * P['PV']['max_utilisation'], n);    
+    m.addConstr(unit_size <= P['Farm']['Ground_area'] * P['PV']['max_utilisation'], n);    
     
     
     
@@ -199,7 +199,7 @@ def gcsofc(m, Days, Hours, unit_prod, unit_cons, unit_size):
     
     n = 'GCSOFC_Elec_cons'
     C_meta[n] = ['Electricity consumption relative to Biogas production', 0]
-    m.addConstrs((unit_prod['Biogas',d,h] == unit_cons['Elec',d,h]*Elec_cons
+    m.addConstrs((unit_cons['Elec',d,h] == Elec_cons*unit_prod['Biogas',d,h]
                   for d in Days for h in Hours), n);
     
     n = 'GCSOFC_size'
@@ -270,18 +270,17 @@ def cgt(m, Periods, unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit
     """
     
     u = 'CGT'
-    g = 'General'
     r = 'Biogas'
     
     # Constraints
     n = f'{u}_SOC'
     C_meta[n] = ['State of Charge detla relative to Produced and Consumed Gas', 0]
     m.addConstrs((unit_SOC[p + 1] - unit_SOC[p] == (unit_cons[(r,p)] - unit_prod[(r,p)])/
-                  P[g]['Biogas_CH4'] for p in Periods), n);
+                  P['Physical']['Biogas_CH4'] for p in Periods), n);
     n = f'{u}_Compression_Elec'
     C_meta[n] = ['Electricity requiered to compress the Gas', 0]
     m.addConstrs((unit_cons[('Elec',p)] == unit_cons[(r,p)]*
-                  P[u]['Elec_comp']/P[g]['Biogas_CH4'] for p in Periods), n);
+                  P[u]['Elec_comp']/P['Physical']['Biogas_CH4'] for p in Periods), n);
     
     n = f'{u}_charge_discharge'
     C_meta[n] = ['Prevent the unit from charging and discharging at the same time', 0]

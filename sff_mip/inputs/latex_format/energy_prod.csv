@@ -1,0 +1,6 @@
+,Symbol,Value,Units,Source,Source
+AD,$\eta_{AD}$,$0.37$,-,Thees 2017,mini biogas book
+AD,"$f_{AD, elec}$",$0.008$,-,Carlini 2017,doi: 10.3390/en10081165
+PV,$\eta_{PV}$,$0.14$,-,Paul PHD,Paul
+PV,"$f_{PV,roof}$",$0.5$,-,Setting,setting
+PV,$A^b_{ground}$,$6601$,$m^2$,map.geo.admin.ch,
