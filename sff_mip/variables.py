@@ -16,7 +16,7 @@
 # External modules
 from gurobipy import GRB
 # Internal modules
-from global_set import (Units, U_prod, U_cons, Units_storage, U_time_resolution)
+from global_set import (Units, U_prod, U_cons, Units_storage)
 
         
 def time_steps(*args):
@@ -44,7 +44,7 @@ def declare_vars(m, Bound, V_meta, Days, Hours, Periods):
     # Result format : prod[PV][Elec,0]
     unit_prod, unit_cons = {}, {}
     for u in Units:
-        Time_periods = Time_steps[U_time_resolution[u]]
+        Time_periods = Time_steps['Daily']
         if u in U_prod:
             n = f'unit_prod[{u}]'
             for r in U_prod[u]:
@@ -78,35 +78,38 @@ def declare_vars(m, Bound, V_meta, Days, Hours, Periods):
     # Storga unit dict of variables                   
     unit_SOC, unit_charge, unit_discharge = {}, {}, {}
     for u in Units_storage:
-        Time_periods = Time_steps[U_time_resolution[u]]
+        Time_periods = Time_steps['Annual']
         n = f'unit_SOC[{u}]'
         V_meta[n] = ['kWh', f'State of charge of {u}', 'time']
         unit_SOC[u] = m.addVars(*extend(*Time_periods), lb=0, ub=Bound, name=n)
+        Time_periods = Time_steps['Daily']
         n = f'unit_charge[{u}]'
         V_meta[n] = ['kWh', f'Wheter {u} is charging or not', 'bool']
         unit_charge[u] = m.addVars(*Time_periods, vtype=GRB.BINARY, name=n)
         n = f'unit_discharge[{u}]'
         V_meta[n] = ['kWh', f'Wheter {u} is discharging or not', 'bool']
         unit_discharge[u] = m.addVars(*Time_periods, vtype=GRB.BINARY, name=n)
-        
-    # Temperature of a unit
-    unit_T = {}
-    u = 'AD'
-    n = f'unit_T[{u}]'
-    V_meta[n] = ['°C', f'Temperature in the {u}', 'time']
-    unit_T[u] = m.addVars(Days, Hours + [Hours[-1] + 1], lb=-Bound, ub=Bound, name=n)
-    
-    # Heat consuming units and building
-    n='build_cons_Heat'
-    V_meta[n] = ['kW', 'Heat consumed by the building', 'time']
-    build_cons_Heat = m.addVars(Days, Hours, lb=0, ub=Bound, name=n)
 
                     
-    return (unit_prod, unit_cons, unit_install, unit_size, unit_capex, unit_T, 
-            build_cons_Heat, unit_SOC, unit_charge, unit_discharge)
+    return (unit_prod, unit_cons, unit_install, unit_size, unit_capex, 
+            unit_SOC, unit_charge, unit_discharge)
 
+
+
+###############################################################################
+### END
+###############################################################################
 
 # PV_prod = m.addVars(['Elec'], Days, Hours, lb=0, ub=Bound, name='PV_prod');
 
+# # Heat consuming units and building
+# n='build_cons_Heat'
+# V_meta[n] = ['kW', 'Heat consumed by the building', 'time']
+# build_cons_Heat = m.addVars(Days, Hours, lb=0, ub=Bound, name=n)
 
-
+# # Temperature of a unit
+# unit_T = {}
+# u = 'AD'
+# n = f'unit_T[{u}]'
+# V_meta[n] = ['°C', f'Temperature in the {u}', 'time']
+# unit_T[u] = m.addVars(Days, Hours + [Hours[-1] + 1], lb=-Bound, ub=Bound, name=n)

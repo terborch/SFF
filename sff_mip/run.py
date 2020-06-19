@@ -28,7 +28,6 @@ start_construct = time.time()
 import results
 #from param_input import V_meta, V_bounds, P, P_meta, Closest, Hours, Periods, Days
 #from param_calc import Irradiance, Ext_T, Dates
-import model
 import plot
 #from plot import fig_width, fig_height
 
@@ -43,11 +42,12 @@ end_construct = time.time()
 print('model construct time: ', end_construct - start_construct, 's')
 
 
-def run(objective, Reload=False, relax=False, Pareto=False, Limit=None, Save_txt=False):
+def run(objective, Reload=False, relax=False, Pareto=False, Limit=None,
+        Plot=True, Summary=True, Save_txt=False):
     """ Solve the optimization model once then store the result in hdf5 format.
         # TODO save inputs into the resut folder
     """
-    
+    import model
     # Option to generate a new input.h5 file 
     if Reload:
         import write_inputs
@@ -63,7 +63,7 @@ def run(objective, Reload=False, relax=False, Pareto=False, Limit=None, Save_txt
     start_write = time.time()
     
     # Get results into python dictionnairies
-    Threshold = 1e-9
+    Threshold = 1e-6
     var_results, var_meta = results.get_all(m, Threshold, Days, Hours, Periods)  
     
     # Save all results to a hdf5 file
@@ -78,27 +78,18 @@ def run(objective, Reload=False, relax=False, Pareto=False, Limit=None, Save_txt
     end_write = time.time()
     print('model write time: ', end_write - start_write, 's')
     
-    plot.all_fig(path, save_fig=True)
-    results.summary(path, save=True)
+    if Plot:
+        plot.all_fig(path, save_fig=True)
+    if Summary:
+        results.summary(path, save=True)
 
-    if Pareto:
-        return path
+    return path
     
 """
 def display_results(date=today, run_nbr='last', save_df=True, save_fig=True, 
                     big_vars=False, discard_fig=False):    
 """
 
-# Execute single run
-#run('emissions')
-run('totex')
-#run_single('totex', save_fig=True, discard_fig=False)
-
-
-# # Dicts of all variables and their results
-# var_result_time_indep, var_result_time_dep = results.all_dic(m, Periods, V_bounds)
-# var_name_time_indep = list(var_result_time_indep.keys())
-# var_name_time_dep = list(var_result_time_dep.keys())
 
 
 Results = {}
@@ -119,20 +110,21 @@ def get_objective_value(objective, path):
 def pareto(objective_cstr, objective_free):
     solve_time = []
     
+    # Find the true minimum of objective_cstr
     path = run(objective_cstr, Pareto=True, Limit=None)
     min_obj_cstr = get_objective_value(objective_cstr, path)
     solve_time.append(time.time() - start)
     
+    # Find the true maximum of objective_cstr
     path = run(objective_free, Pareto=True, Limit=None)
     max_obj_cstr = get_objective_value(objective_cstr, path)
     solve_time.append(time.time() - start)
     
-    # Half of the number of steps
-    nsteps = 10
+    # Generate evenly distributed pareto points
+    nsteps = 5 # Half of the number of pareto points
     epsilon = 1e-6
     step = (max_obj_cstr - min_obj_cstr)/(nsteps*2)
     Limits_lin = np.arange(min_obj_cstr, max_obj_cstr, step)
-    
     Limits = np.concatenate((
         np.linspace(min_obj_cstr*(1 + epsilon), Limits_lin[6], num=nsteps), 
         np.linspace(Limits_lin[6], max_obj_cstr*(1 - epsilon), num=nsteps)[1:-1]))
@@ -144,21 +136,56 @@ def pareto(objective_cstr, objective_free):
     # print('Limts', Limits)
     # print('\n')
     
+    # Compute pareto points
     for i in range(1, len(Limits)):
         objective = 'limit_' + objective_cstr
         run(objective, Pareto=True, Limit=Limits[i])
         solve_time.append(time.time() - start)
         plt.close('all')
   
-#pareto('capex', 'opex')
-#pareto('emissions', 'totex')
+    # Plot pareto graphs
+    plot.pareto(date=today)
+    
+    
+def diagnostic(objective):
+    """ Run the model with one of each heating system only """
+    from global_set import U_res, Units
+    import data
+    
+    # Set all units max capacity to zero
+    for u in Units:
+        data.change_settings(u, 'max_capacity', 0)  
+    
+    # For each heating unit solve for objective and store result
+    # for u in U_res['prod']['Heat']:
+    for u in ['EH']:
+        data.change_settings(u, 'max_capacity', 1000)  
+        run(objective, Summary=False)
+        plt.close('all')
+        data.change_settings(u, 'max_capacity', 0) 
+    
+    data.reset_settings()
+    
 
-#solve_time.append([time.time() - solve_time[i]])
-end = time.time()
-
-print('global runtime: ', end - start, 's')
-# for i in range(10):
-#     print(f'Pareto_{i}_solve_time', solve_time[i] )
+if __name__ == "__main__":
+    # Execute single run
+    #run('emissions')
+    # run('totex')
+    #run_single('totex', save_fig=True, discard_fig=False)
+    
+    # Execute multi_run
+    #pareto('capex', 'opex')
+    #pareto('emissions', 'totex')
+    
+    
+    diagnostic('totex')
+    
+    #solve_time.append([time.time() - solve_time[i]])
+    end = time.time()
+    
+    print('global runtime: ', end - start, 's')
+    # for i in range(10):
+    #     print(f'Pareto_{i}_solve_time', solve_time[i] )
 
 """
 path = run('opex', Pareto=True, Limit=None)

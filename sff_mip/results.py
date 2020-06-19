@@ -119,7 +119,7 @@ def get_all(m, Threshold, Days, Hours, Periods):
     for n in var_names_cut:
         results = []
         
-        Time_steps = 'Daily' if 'CGT' not in n else 'Annual'
+        Time_steps = 'Daily' if 'SOC' not in n else 'Annual'
         if n[-1] == ',' or n[-1] == '[':
             if Time_steps == 'Daily':
                 key = 'daily'
@@ -144,6 +144,12 @@ def get_all(m, Threshold, Days, Hours, Periods):
 
 
 def save_df_to_hdf5(var_results, var_meta, path, Days, Hours, Periods):
+    """ Save all variable results into 3 frames in the same hdf5 object.
+        #TODO: single results should be stored as a serie
+        Signle for variables in 0D stored in a dataframe
+        Daily for variables in 2D format Days by Hours stored as a serie
+        Annual for variables in 1D format 8760 Periods stored as a serie
+    """
     # Format results into pandas series and dataframe objects
     columns = ['Var_name', 'Value']
     var_results_df = {}

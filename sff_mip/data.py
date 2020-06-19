@@ -184,7 +184,29 @@ def make_param(category, name, value, meta):
     df.sort_values(['Category', 'Name'], inplace=True)
     df.to_csv(os.path.join('inputs', 'calc_param.csv'))
     return
+
+
+def change_settings(category, name, value):
+    """ Modify an existing setting value by name and category """
     
+    # Open the settings.csv file as dataframe and set index
+    df = csv_to_df('settings.csv')
+    df.set_index(['Category', 'Name'], inplace=True)
+    
+    # Change the selected values
+    df.loc[(category, name), 'Value'] = value
+            
+    # Save the new dataframe in csv format
+    df.to_csv(os.path.join('inputs', 'settings.csv'))
+    return
+
+
+def reset_settings():
+    """ Reset the settings file to the default version in the unused folder """
+    df = csv_to_df(os.path.join('unused', 'settings.csv'))
+    df.set_index(['Category', 'Name'], inplace=True)
+    df.to_csv(os.path.join('inputs', 'settings.csv'))
+    return
 
 def time_param(S):
     """ Return the list of Periods, the number of Nbr_of_time_steps and the duration of the each

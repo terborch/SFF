@@ -19,13 +19,13 @@ ICE,max_capacity,0,kW,Maximum ICE installed capacity
 ICE,min_capacity,0,kW,Minimum ICE installed capacity
 GCSOFC,max_capacity,0,kW,Maximum GCSOFC installed capacity
 GCSOFC,min_capacity,0,kW,Minimum GCSOFC installed capacity
-GBOI,max_capacity,0,kW,Maximum GBOI installed capacity
+GBOI,max_capacity,1000,kW,Maximum GBOI installed capacity
 GBOI,min_capacity,0,kW,Minimum GBOI installed capacity
 WBOI,max_capacity,0,kW,Maximum WBOI installed capacity
 WBOI,min_capacity,0,kW,Minimum WBOI installed capacity
-EH,max_capacity,1000,kW,Maximum EH installed capacity
+EH,max_capacity,0,kW,Maximum EH installed capacity
 EH,min_capacity,0,kW,Minimum EH installed capacity
 AHP,max_capacity,0,kW,Maximum AHP installed capacity
 AHP,min_capacity,0,kW,Minimum AHP installed capacity
-CGT,max_capacity,1000,kWh,Minimum CGT installed capacity
+CGT,max_capacity,0,kWh,Minimum CGT installed capacity
 CGT,min_capacity,0,kWh,Minimum CGT installed capacity

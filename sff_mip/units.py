@@ -4,7 +4,18 @@
 """
 
 # Internal modules
-from read_inputs import P, C_meta, Bound
+from read_inputs import P, C_meta, Bound, Time_period_map
+
+
+def t(*args):
+    """ Given a resource (optional) and a Period key return the corresponding
+        Day - Hour keys with the resource pre-pended
+    """
+    p = args[-1]
+    if type(args[0]) == str:
+        return args[0], Time_period_map[p][0], Time_period_map[p][1]
+    else:
+        return Time_period_map[p]
 
 ##################################################################################################
 ### Gas Boiler
@@ -105,7 +116,8 @@ def pv(m, Days, Hours, unit_prod, unit_size, Irradiance):
 ##################################################################################################
 
 
-def bat(m, Days, Hours, unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge):
+def bat(m, Periods, Days, Hours, 
+        unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge):
     """ MILP model of a battery
         Charge and discharge efficiency follows Dirk Lauinge MA thesis
         Unit is force to cycle once a day
@@ -115,14 +127,14 @@ def bat(m, Days, Hours, unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, 
     # Parameters
     u = 'BAT'
     r = 'Elec'
-    Eff = P[u]['Eff']**0.5
+    Eff = P[u,'Eff']**0.5
 
     # Constraints
     n = f'{u}_SOC'
     C_meta[n] = ['State of Charge detla relative to Produced and Consumed Elec and Efficiency', 0]
-    m.addConstrs((unit_SOC[d,h + 1] - (1 - P[u]['Self_discharge'])*unit_SOC[d,h] ==  
-                  (Eff*unit_cons[r,d,h] - (1/Eff)*unit_prod[r,d,h]) 
-                  for d in Days for h in Hours), n);
+    m.addConstrs((unit_SOC[p + 1] - (1 - P[u,'Self_discharge'])*unit_SOC[p] ==  
+                  (Eff*unit_cons[t(r,p)] - (1/Eff)*unit_prod[t(r,p)]) 
+                  for p in Periods), n);
     P[u]['Self_discharge']
     n = f'{u}_charge_discharge'
     C_meta[n] = ['Prevent the unit from charging and discharging at the same time', 0]
@@ -134,16 +146,16 @@ def bat(m, Days, Hours, unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, 
     C_meta[n] = ['M constraint to link the boolean variable Discharge with Elec production', 0]
     m.addConstrs((unit_discharge[d,h]*Bound >= unit_prod[r,d,h] for d in Days for h in Hours), n);
     
-    n = f'{u}_daily_cycle'
-    C_meta[n] = ['Cycling constraint on the battery SOC', 0]
-    m.addConstrs((unit_SOC[d, Hours[-1]] == unit_SOC[d,Hours[-1] + 1] for d in Days), n);
-    n = f'{u}_cycle_init'
-    C_meta[n] = ['Cycling constraint to reset the battery SOC every day', 0]
-    m.addConstrs((unit_SOC[d,0] == 0 for d in Days), n);
+    n = f'{u}_annual_cycle'
+    C_meta[n] = ['Cycling constraint on the battery over a year', 0]
+    m.addConstr((unit_SOC[0] == unit_SOC[Periods[-1]]), n);
+    # n = f'{u}_annual_initial'
+    # C_meta[n] = ['Set the initial State of Charge at 0', 0]
+    # m.addConstr((unit_SOC[0] == 900), n);
     
     n = f'{u}_size_SOC'
     C_meta[n] = ['Upper limit on the State of Charge relative to the Installed Capacity', 0]
-    m.addConstrs((unit_SOC[d,h] <= unit_size for d in Days for h in Hours), n);
+    m.addConstrs((unit_SOC[p] <= unit_size for p in Periods), n);
     n = f'{u}_size_discharge'
     C_meta[n] = ['Upper limit on Elec produced relative to the Installed Capacity', 0]
     m.addConstrs((unit_prod[r,d,h] <= unit_size for d in Days for h in Hours), n);
@@ -153,15 +165,21 @@ def bat(m, Days, Hours, unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, 
 
 
 
-##################################################################################################
+###############################################################################
 ### Anaerobic Digester
-##################################################################################################
+###############################################################################
 
 
-def ad(m, Days, Hours, unit_prod, unit_cons, unit_size, AD_cons_Heat):
+def ad(m, Days, Hours, unit_prod, unit_cons, unit_size, AD_cons_Heat, unit_install):
     
     c = 'AD'
-    n = 'AD_production'
+    
+    n = 'AD_biomass_cons'
+    C_meta[n] = ['Biomass consumed equivalent to all available biomass', 0]
+    m.addConstrs((unit_cons['Biomass',d,h] == P['Farm', 'Biomass_prod']*unit_install
+                  for d in Days for h in Hours), n);
+    
+    n = 'AD_biogas_prod'
     C_meta[n] = ['Biogas produced relative to Biomass consumed and Efficiency', 0]
     m.addConstrs((unit_prod['Biogas',d,h] == 
                   unit_cons['Biomass',d,h]*P[c]['Eff'] for d in Days for h in Hours), n);
@@ -177,8 +195,8 @@ def ad(m, Days, Hours, unit_prod, unit_cons, unit_size, AD_cons_Heat):
 
     n = 'AD_heat_cons'
     C_meta[n] = ['Heat consumed relative to AD size', 0]
-    m.addConstrs((unit_cons['Heat',d,h] == (unit_size/P[c]['Capacity'])*
-                  AD_cons_Heat[d,h] for d in Days for h in Hours), n);
+    m.addConstrs((unit_cons['Heat',d,h] == AD_cons_Heat[d,h]*unit_install
+                  for d in Days for h in Hours), n);
         
 
 ###############################################################################
@@ -263,7 +281,8 @@ def ice(m, Days, Hours, unit_prod, unit_cons, unit_size):
 ###############################################################################
     
 
-def cgt(m, Periods, unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge):
+def cgt(m, Periods, Days, Hours, 
+        unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge):
     """ MILP model of Compressed Gas Tank for storing Natural Gas. No losses are modeled.
         The tank only accepts Biogas and assumes the energy consumption and volume takeup
         to be equivalent between 1m^3 of Methane and 1m^3 of CO2
@@ -275,39 +294,43 @@ def cgt(m, Periods, unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit
     # Constraints
     n = f'{u}_SOC'
     C_meta[n] = ['State of Charge detla relative to Produced and Consumed Gas', 0]
-    m.addConstrs((unit_SOC[p + 1] - unit_SOC[p] == (unit_cons[(r,p)] - unit_prod[(r,p)])/
+    m.addConstrs((unit_SOC[p + 1] - unit_SOC[p] == (unit_cons[t(r,p)] - unit_prod[t(r,p)])/
                   P['Physical']['Biogas_CH4'] for p in Periods), n);
     n = f'{u}_Compression_Elec'
     C_meta[n] = ['Electricity requiered to compress the Gas', 0]
-    m.addConstrs((unit_cons[('Elec',p)] == unit_cons[(r,p)]*
-                  P[u]['Elec_comp']/P['Physical']['Biogas_CH4'] for p in Periods), n);
+    m.addConstrs((unit_cons['Elec',d,h] == unit_cons[r,d,h]*
+                  P[u]['Elec_comp']/P['Physical']['Biogas_CH4'] 
+                  for d in Days for h in Hours), n);
     
     n = f'{u}_charge_discharge'
     C_meta[n] = ['Prevent the unit from charging and discharging at the same time', 0]
-    m.addConstrs((unit_charge[p] + unit_discharge[p] <= 1 for p in Periods), n);
+    m.addConstrs((unit_charge[d,h] + unit_discharge[d,h] <= 1 
+                  for d in Days for h in Hours), n);
     n = f'{u}_charge'
     C_meta[n] = ['M constraint to link the boolean variable Charge with Gas consumption', 0]
-    m.addConstrs((unit_charge[p]*Bound >= unit_cons[(r,p)] for p in Periods), n);
+    m.addConstrs((unit_charge[d,h]*Bound >= unit_cons[r,d,h] 
+                  for d in Days for h in Hours), n);
     n = f'{u}_discharge'
     C_meta[n] = ['M constraint to link the boolean variable Discharge with Gas production', 0]
-    m.addConstrs((unit_discharge[p]*Bound >= unit_prod[(r,p)] for p in Periods), n);
+    m.addConstrs((unit_discharge[d,h]*Bound >= unit_prod[r,d,h] 
+                  for d in Days for h in Hours), n);
     
-    n = f'{u}_daily_cycle'
+    n = f'{u}_annual_cycle'
     C_meta[n] = ['Cycling constraint for the State of Charge over the entire modelling Period', 0]
     m.addConstr((unit_SOC[0] == unit_SOC[Periods[-1]]), n);
-    n = f'{u}_daily_initial'
-    C_meta[n] = ['Set the initial State of Charge at 0', 0]
-    m.addConstr((unit_SOC[0] == 0), n);
+    # n = f'{u}_annual_initial'
+    # C_meta[n] = ['Set the initial State of Charge at 0', 0]
+    # m.addConstr((unit_SOC[0] == 9000), n);
     
     n = f'{u}_size_SOC'
     C_meta[n] = ['Upper limit on the State of Charge relative to the Installed Capacity', 0]
     m.addConstrs((unit_SOC[p] <= unit_size for p in Periods), n);
     n = f'{u}_size_discharge'
     C_meta[n] = ['Upper limit on Gas produced relative to the Installed Capacity', 0]
-    m.addConstrs((unit_prod[(r,p)] <= unit_size for p in Periods), n);
+    m.addConstrs((unit_prod[r,d,h] <= unit_size for d in Days for h in Hours), n);
     n = f'{u}_size_charge'
     C_meta[n] = ['Upper limit on Gas consumed relative to the Installed Capacity', 0]
-    m.addConstrs((unit_cons[(r,p)] <= unit_size for p in Periods), n);
+    m.addConstrs((unit_cons[r,d,h] <= unit_size for d in Days for h in Hours), n);
 
 ##################################################################################################
 ### END
@@ -391,3 +414,13 @@ def ad(m, Days, Hours, unit_prod, unit_cons, unit_size, unit_T, unit_install, Ex
     m.addConstrs((unit_T[d,h] >= min_T_AD for d in Days for h in Hours), n);
     m.addConstrs((unit_T[d,h] <= max_T_AD for d in Days for h in Hours), n);
 """
+
+
+# Daily Battery
+
+    # n = f'{u}_daily_cycle'
+    # C_meta[n] = ['Cycling constraint on the battery SOC', 0]
+    # m.addConstrs((unit_SOC[d, Hours[-1]] == unit_SOC[d,Hours[-1] + 1] for d in Days), n);
+    # n = f'{u}_cycle_init'
+    # C_meta[n] = ['Cycling constraint to reset the battery SOC every day', 0]
+    # m.addConstrs((unit_SOC[d,0] == 0 for d in Days), n);

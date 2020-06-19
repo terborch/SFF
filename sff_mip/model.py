@@ -21,6 +21,7 @@ from global_set import Units, U_res, G_res
 from read_inputs import (P, S, V_meta, C_meta, Bound, Periods, Days, Hours, 
                           Time_period_map, Frequence, Irradiance, Ext_T, 
                           Build_cons, AD_cons_Heat)
+print(S)
 # Functions
 from data import annualize
 import variables
@@ -60,15 +61,6 @@ def initialize_model():
 
 import units
 
-def t(*args):
-    p = args[-1]
-    if type(args[0]) == str:
-        return args[0], Time_period_map[p][0], Time_period_map[p][1]
-    else:
-        return Time_period_map[p]
-    
-def t_daily(p):
-    return p%len(Hours)
 
 def next_day(d):
     if not d == Days[-1]:
@@ -90,7 +82,7 @@ def cstr_unit_size(m, S, unit_size):
 
 
 def model_units(m, Days, Hours, Periods, unit_prod, unit_cons, unit_size, 
-                unit_SOC, unit_charge, unit_discharge):
+                unit_SOC, unit_charge, unit_discharge, unit_install):
     
     u = 'GBOI'
     units.gboi(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
@@ -108,11 +100,12 @@ def model_units(m, Days, Hours, Periods, unit_prod, unit_cons, unit_size,
     units.pv(m, Days, Hours, unit_prod[u], unit_size[u], Irradiance)
     
     u = 'BAT'
-    units.bat(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], 
+    units.bat(m, Periods, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], 
               unit_SOC[u], unit_charge[u], unit_discharge[u])
     
     u = 'AD'
-    units.ad(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], AD_cons_Heat)
+    units.ad(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], 
+             AD_cons_Heat, unit_install[u])
     
     u = 'GCSOFC'
     units.gcsofc(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
@@ -124,22 +117,8 @@ def model_units(m, Days, Hours, Periods, unit_prod, unit_cons, unit_size,
     units.ice(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
     
     u = 'CGT'
-    units.cgt(m, Periods, unit_prod[u], unit_cons[u], unit_size[u], unit_SOC[u], 
-              unit_charge[u], unit_discharge[u])
-    
-
-
-##################################################################################################
-### Heat cascade
-##################################################################################################
-
-def model_heating(m, Days, Hours, unit_cons, unit_prod, build_cons, unit_install):
-    r = 'Heat'
-    n = 'Balance_' + r
-    C_meta[n] = ['Heat sinks equal to heat sources', 0]
-    m.addConstrs((unit_cons['AD']['Heat',d,h] + Build_cons['Heat'][d,h] ==
-                  sum(unit_prod[up][r,d,h] for up in U_res['prod']['Heat'])
-                  for d in Days for h in Hours), n);
+    units.cgt(m, Periods, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], 
+              unit_SOC[u], unit_charge[u], unit_discharge[u])
     
 
 ##################################################################################################
@@ -166,7 +145,7 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod):
     V_meta[n] = ['kW', 'Resources purchased by the farm', 'time']
     grid_import = m.addVars(G_res, Days, Hours, lb=0, ub=Bound, name=n)
     
-    Unused_res = ['Biomass', 'Biogas', 'Gas', 'Wood']
+    Unused_res = ['Biomass', 'Biogas', 'Gas', 'Wood', 'Heat']
     n = 'unused'
     V_meta[n] = ['kW', 'Resources unused or flared by the farm', 'time']
     unused = m.addVars(Unused_res, Days, Hours, lb=0, ub=Bound, name=n)
@@ -179,18 +158,18 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod):
     n = 'Balance_' + r
     C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
     m.addConstrs((
-        grid_import[t(r,p)] + sum(unit_prod[up][t(r,p)] for up in U_res['prod'][r]) == 
-        grid_export[t(r,p)] + sum(unit_cons[uc][t(r,p)] if uc != 'CGT' else 
-        unit_cons[uc][r,p] for uc in U_res['cons'][r]) + Build_cons['Elec'][t_daily(p)] 
-        for p in Periods), n);
+        grid_import[r,d,h] + sum(unit_prod[up][r,d,h] for up in U_res['prod'][r]) == 
+        grid_export[r,d,h] + sum(unit_cons[uc][r,d,h] if uc != 'CGT' else 
+        unit_cons[uc][r,d,h] for uc in U_res['cons'][r]) + Build_cons['Elec'][h] 
+        for d in Days for h in Hours), n);
     
     r = 'Biogas'
     n = 'Balance_' + r
     C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
-    m.addConstrs((unit_prod['AD'][t(r,p)] + unit_prod['CGT'][r,p] - unused[t(r,p)] == 
-                  unit_cons['GCSOFC'][t(r,p)] + unit_cons['GBOI'][t(r,p)] + 
-                  unit_cons['ICE'][t(r,p)] + unit_cons['CGT'][r,p] 
-                  for p in Periods), n);
+    m.addConstrs((unit_prod['AD'][r,d,h] + unit_prod['CGT'][r,d,h] - unused[r,d,h] == 
+                  unit_cons['GCSOFC'][r,d,h] + unit_cons['GBOI'][r,d,h] + 
+                  unit_cons['ICE'][r,d,h] + unit_cons['CGT'][r,d,h] 
+                  for d in Days for h in Hours), n);
     
     r = 'Biogas_cleaned_for_SOFC'
     n = 'Balance_' + r
@@ -216,6 +195,14 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod):
     C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
     m.addConstrs((grid_import[r,d,h] - grid_export[r,d,h] - unused[r,d,h] == 
                   unit_cons['WBOI'][r,d,h] for d in Days for h in Hours), n);
+    
+    # Heat balance
+    r = 'Heat'
+    n = 'Balance_' + r
+    C_meta[n] = ['Heat sinks equal to heat sources', 0]
+    m.addConstrs((unit_cons['AD'][r,d,h] + Build_cons[r][d,h] + unused[r,d,h] ==
+                  sum(unit_prod[up][r,d,h] for up in U_res['prod'][r])
+                  for d in Days for h in Hours), n);
     
     # Total annual import / export
     n = f'{r}_grid_import'
@@ -343,16 +330,14 @@ def run(objective, Limit=None, relax=False):
     # Reset old model and creat a new model
     m = initialize_model()
     # Create most variables
-    (unit_prod, unit_cons, unit_install, unit_size, unit_capex, unit_T, 
-     build_cons, unit_SOC, unit_charge, unit_discharge
+    (unit_prod, unit_cons, unit_install, unit_size, unit_capex, unit_SOC, 
+     unit_charge, unit_discharge
      ) = variables.declare_vars(m, Bound, V_meta, Days, Hours, Periods)
     # Constrain unit sizes accoring to settings.csv
     cstr_unit_size(m, S, unit_size)
     # Model each unit
     model_units(m, Days, Hours, Periods, unit_prod, unit_cons, unit_size, 
-                unit_SOC, unit_charge, unit_discharge)
-    # Model a heat cascade
-    model_heating(m, Days, Hours, unit_cons, unit_prod, build_cons, unit_install)
+                unit_SOC, unit_charge, unit_discharge, unit_install)
     # Model mass and energy balance
     grid_import_a, grid_export_a = model_energy_balance(m, Days, Hours, unit_cons, unit_prod)
     # Calculate objective variables
