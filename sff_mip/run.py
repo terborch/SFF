@@ -21,10 +21,13 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 #import matplotlib
 import numpy as np
+from importlib import reload
 
 start_construct = time.time()
 
 # Internal modules
+import model
+import read_inputs
 import results
 #from param_input import V_meta, V_bounds, P, P_meta, Closest, Hours, Periods, Days
 #from param_calc import Irradiance, Ext_T, Dates
@@ -47,7 +50,6 @@ def run(objective, Reload=False, relax=False, Pareto=False, Limit=None,
     """ Solve the optimization model once then store the result in hdf5 format.
         # TODO save inputs into the resut folder
     """
-    import model
     # Option to generate a new input.h5 file 
     if Reload:
         import write_inputs
@@ -121,7 +123,7 @@ def pareto(objective_cstr, objective_free):
     solve_time.append(time.time() - start)
     
     # Generate evenly distributed pareto points
-    nsteps = 5 # Half of the number of pareto points
+    nsteps = 10 # Half of the number of pareto points
     epsilon = 1e-6
     step = (max_obj_cstr - min_obj_cstr)/(nsteps*2)
     Limits_lin = np.arange(min_obj_cstr, max_obj_cstr, step)
@@ -157,9 +159,11 @@ def diagnostic(objective):
         data.change_settings(u, 'max_capacity', 0)  
     
     # For each heating unit solve for objective and store result
-    # for u in U_res['prod']['Heat']:
-    for u in ['EH']:
-        data.change_settings(u, 'max_capacity', 1000)  
+    for u in U_res['prod']['Heat']:
+    # for u in ['EH']:
+        data.change_settings(u, 'max_capacity', 1000) 
+        reload(read_inputs)
+        reload(model)
         run(objective, Summary=False)
         plt.close('all')
         data.change_settings(u, 'max_capacity', 0) 
@@ -169,7 +173,7 @@ def diagnostic(objective):
 
 if __name__ == "__main__":
     # Execute single run
-    #run('emissions')
+    run('emissions')
     # run('totex')
     #run_single('totex', save_fig=True, discard_fig=False)
     
@@ -178,7 +182,7 @@ if __name__ == "__main__":
     #pareto('emissions', 'totex')
     
     
-    diagnostic('totex')
+    # diagnostic('totex')
     
     #solve_time.append([time.time() - solve_time[i]])
     end = time.time()
@@ -278,3 +282,37 @@ plot.all_fig(path, save_fig=True)
 
         
 """
+
+
+
+
+
+
+# Attempt at a smoothly distributed pareto graph
+
+# pareto = {}
+# def y(x):
+#     return 860.9098 + 38512.62*(np.e)**(-10.05036*x)
+# x = np.arange(0.3,1.3,0.1)
+# x_max, x_min = max(x), min(x)
+# y_max, y_min = max(y(x)), min(y(x))
+# Dx = x_max - x_min
+# Dy = y_max - y_min
+# def mid_point(x1, x2, y1, y2):
+#     dx = np.abs((x1 - x2))/Dx
+#     dy = np.abs((y1 - y2))/Dy
+#     if dx > dy:
+#         return np.abs(x1 - x2)/2
+#     else:
+#         return np.abs(y1 - y2)/2
+#     pass
+    
+# pareto[0] = [x_min, y(x_min)]
+# pareto[10] = [x_max, y(x_max)]
+# pareto[5] = [(x_max + x_min)/2, y((x_max + x_min)/2)]
+
+
+# plt.plot(x,y(x))
+# for p in pareto:        
+#     plt.scatter(pareto[p][0], pareto[p][1], color='black')    
+# plt.show()

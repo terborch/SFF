@@ -8,20 +8,10 @@
 from gurobipy import GRB
 import gurobipy as gp
 # Internal modules
-
-# Variables
-# from param_input import (P, S, V_meta, C_meta, Bound, Periods, Days, 
-#                          Hours, Time_period_map, Frequence)
-
-
-# from param_calc import (Irradiance, Ext_T, Build_cons, Biomass_prod, Costs_u, 
-#                         Costs_res, AD_cons_Heat)
-
 from global_set import Units, U_res, G_res
 from read_inputs import (P, S, V_meta, C_meta, Bound, Periods, Days, Hours, 
                           Time_period_map, Frequence, Irradiance, Ext_T, 
                           Build_cons, AD_cons_Heat)
-print(S)
 # Functions
 from data import annualize
 import variables
