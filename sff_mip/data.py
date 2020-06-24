@@ -277,6 +277,13 @@ def annual_to_daily(Annual, Profile_norm):
 ##################################################################################################
 ### Load weather clustering results and sorting algorythm
 ##################################################################################################
+
+
+def save_to_hdf(key, item, path):
+    df = pd.DataFrame(item)
+    with pd.HDFStore(path) as hdf:
+        hdf.put(key, df)
+    print(f'Item {key} saved to {path}')
     
 
 def read_json(file_path):
