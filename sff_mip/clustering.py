@@ -176,6 +176,7 @@ plt.xlabel('Number of clusters')
 plt.ylabel('Mean Square error')
 plt.ylim(0.001,0.007)
 plt.xticks(C)
+plt.yticks([MSE[i,Minimas[i]] for i in range(len(C))])
 plt.legend()
 plt.show()  
 
@@ -184,7 +185,11 @@ path = os.path.join('inputs', 'clsuters.h5')
 for i, k in enumerate(Minimas):
     Cluster = np.concatenate((CLS['labels'][C[i]][k], CLS['closest'][C[i]][k]))
     data.save_to_hdf(f'Cluster_{C[i]}', Cluster, path)
-
+    
+for i, k in enumerate(Minimas):
+    Cluster = np.concatenate((CLS['labels'][C[i]][k], CLS['closest'][C[i]][k]))
+    print(MSE[i,Minimas[i]])
+    
 # for n in range(0,30):
 #     labels, closest = {}, {}
 #     for c in range(2, 20):
