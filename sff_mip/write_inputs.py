@@ -1,10 +1,8 @@
 """
 ### Read or calculate all parameters then write them to the inputs files
-    # Write the dictionnary P for signle value parameters to inputs.csv 
+    # Write the dictionnary P for signle value parameters to calc_param.csv 
     # Write each parameter array to inputs.h5 with its name as key
-"""
 
-"""
 ### Get input parameters and settings. Define time related parameters. 
     #   P       dict with parameters values from parameters.csv will contain calculated parameters
                 P has at least two entries, the first is the Category and the second is the
@@ -126,7 +124,35 @@ def biomass_prod(Pigs, Cows):
     data.make_param(f, 'Biomass_prod', Biomass_prod, meta)
 
 
-
+def tractor_fueling(Days, Hours, Frequence, Ext_T):
+    """ Generate a fueling profile based on annual diesel consumption, 
+        weather and fueling time. The fueling takes place from 18:00 to
+        04:00. Check that the sum of the fueling profile equals annual 
+        consumption and cause an error if not.
+    """
+    Daily_avg_T = np.mean(Ext_T, axis=1)
+    Fueling_days = np.sum(Frequence[Daily_avg_T > P['Farm', 'Temp_tractors']])
+    
+    meta = ['kW/year', 'Fuel consumed by tractors in a year', 'calc' ]
+    Fuel_cons = P['Farm', 'cons_Diesel_annual']*P['Physical', 'Diesel_LHV']
+    data.make_param('Farm', 'Fuel_cons', Fuel_cons, meta)
+    
+    meta = ['kW', 'Fuel consumed by tractors during fueling', 'calc' ]
+    Fueling_load = Fuel_cons/(Fueling_days*P['GFS', 'Fueling_Time'])
+    data.make_param('Farm', 'Fueling_load', Fueling_load, meta)
+    
+    Fueling_day = np.zeros(len(Hours))
+    Fueling_day[18:] = Fueling_load
+    Fueling_day[:P['GFS', 'Fueling_Time']-6] = Fueling_load
+    Fueling_profile = [Fueling_day if Daily_avg_T[d] > P['Farm', 'Temp_tractors']
+                       else np.zeros(len(Hours)) for d in Days]
+    
+    if np.round(np.sum(Fueling_profile*Frequence[:, None])) == Fuel_cons:
+        return Fueling_profile
+    else:
+        print('Error: The fueling profile does not match annual fuel consumption')
+        
+    
 ###############################################################################
 ### Write inputs
 ###############################################################################
@@ -162,7 +188,6 @@ def write_arrays(path, Cluster=True):
                                                   (Days_all, Hours), S['Time'], 
                                                   Clustered_days)
 
-
     # List of dates modelled
     Dates, Dates_pd = [], Index
     for d in Dates_pd: 
@@ -178,10 +203,12 @@ def write_arrays(path, Cluster=True):
     # Biomass potential
     biomass_prod(P['Farm']['Pigs'], P['Farm']['Cows'])
     
-
     P_write['Ext_T'] = Ext_T
     P_write['Irradiance'] = Irradiance
     P_write['Build_cons_Elec'] = Build_cons['Elec']
+    
+    # Load profile for tractor fueling
+    P_write['Fueling_profile'] = tractor_fueling(Days, Hours, Frequence, Ext_T)
 
 
     for k in P_write.keys():

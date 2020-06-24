@@ -164,7 +164,7 @@ def diagnostic(objective):
         data.change_settings(u, 'max_capacity', 1000) 
         reload(read_inputs)
         reload(model)
-        run(objective, Summary=False)
+        run(objective)
         plt.close('all')
         data.change_settings(u, 'max_capacity', 0) 
     
@@ -173,13 +173,13 @@ def diagnostic(objective):
 
 if __name__ == "__main__":
     # Execute single run
-    run('emissions')
+    # run('emissions')
     # run('totex')
     #run_single('totex', save_fig=True, discard_fig=False)
     
     # Execute multi_run
     #pareto('capex', 'opex')
-    #pareto('emissions', 'totex')
+    pareto('emissions', 'totex')
     
     
     # diagnostic('totex')

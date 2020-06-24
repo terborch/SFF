@@ -1,6 +1,7 @@
 Category,Name,Value,Units,Description
 Model,Solver_time_limit,2000,s,Maximum solving time allowed
 Model,Var_bound,10000,-,Default upper bound for all variables
+Model,Var_bound_tight,10,-,Default upper bound for small variables
 Time,Time_step,01:00:00,time,Number of minutes in a time step
 Time,Period_start,2019-01-01,date,Period starting from this date
 Time,Period_end,2020-01-01,date,Period lasting until this date
@@ -29,3 +30,5 @@ AHP,max_capacity,1000,kW,Maximum AHP installed capacity
 AHP,min_capacity,0,kW,Minimum AHP installed capacity
 CGT,max_capacity,10000,kWh,Minimum CGT installed capacity
 CGT,min_capacity,0,kWh,Minimum CGT installed capacity
+GFS,max_capacity,1000,kW,Minimum GFS installed capacity
+GFS,min_capacity,0,kW,Minimum GFS installed capacity

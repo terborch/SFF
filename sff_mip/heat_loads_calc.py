@@ -313,11 +313,11 @@ def ad_gains(T_min):
     
     c, p = 'AD', 'Physical'
     n = 'U'
-    meta[n] = ['kW/°C', 'AD heat conductance', 'calc']
+    meta[n] = ['kW/C', 'AD heat conductance', 'calc']
     P[c,n] = P[c,'Cap_area']*P[c,'U_cap']
     
     n = 'C'
-    meta[n] = ['kWh/°C', 'Heat capacity of the AD', 'calc']
+    meta[n] = ['kWh/C', 'Heat capacity of the AD', 'calc']
     P[c,n] = (P[p,'Cp_water']*P[c,'Sludge_volume'] + 
                P['build','C_b']*P[c,'Ground_area'])
 

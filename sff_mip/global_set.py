@@ -27,6 +27,7 @@ Abbrev = {'GBOI':   'Gas Boiler',
           'ICE':    'Internal Combustion Engine',
           'AD':     'Anaerobic Digester',
           'CGT':    'Compressed Gas Tank',
+          'GFS':    'Gas Fueling Station',
           'build':  'building',
           'Elec':   'Electricity',
           'Gas':    'Natural Gas or Syntetic NG',
@@ -36,12 +37,13 @@ Abbrev = {'GBOI':   'Gas Boiler',
 
 # Eneregy conversion units
 Units = ('GBOI', 'WBOI', 'EH', 'AHP',   # Heating
-         'ICE', 'SOFC', 'GCSOFC',       # Cogeneration
+         'ICE', 'SOFC',                 # Cogeneration
          'PV', 'AD',                    # Energy Production
-         'BAT', 'CGT')                  # Energy Storage
+         'BAT', 'CGT',                  # Energy Storage
+         'GCSOFC', 'GFS')               # Utility
 
 # Resources and energy carriers
-Resources = ('Elec', 'Gas', 'Wood', 'Biogas', 'Biomass', 'Heat')
+Resources = ('Elec', 'Gas', 'Wood', 'Biogas', 'Biomass', 'Heat', 'Diesel')
 
 # The resources each unit produce
 U_prod = {
@@ -55,7 +57,8 @@ U_prod = {
     'SOFC':     ('Elec', 'Heat'),
     'ICE':      ('Elec', 'Heat'),
     'AD':       ('Biogas',),
-    'CGT':      ('Biogas',) 
+    'CGT':      ('Biogas',),
+    'GFS':      ('Biogas', 'Gas')
     }
 
 # The resources each unit consumes
@@ -69,7 +72,8 @@ U_cons = {
     'SOFC':     ('Gas', 'Biogas'),
     'ICE':      ('Gas', 'Biogas'),
     'AD':       ('Biomass', 'Elec', 'Heat'),
-    'CGT':      ('Biogas', 'Elec')
+    'CGT':      ('Biogas', 'Elec'),
+    'GFS':      ('Biogas', 'Gas', 'Elec')
     }
 
 # The units producing and consuming a given resource
@@ -89,7 +93,7 @@ Heat_cons = tuple(['build'] + list(U_res['cons']['Heat']))
 Heat_prod = U_res['prod']['Heat']
 
 # Resources that can be exchanged with the grids
-G_res = ('Elec', 'Gas', 'Wood')
+G_res = ('Elec', 'Gas', 'Wood', 'Diesel')
 
 # Linestyles for differentiating units
 Linestyles = {'loosely dotted': (0, (1, 10)),
@@ -112,6 +116,7 @@ Linestyle_code = {'PV':     'dotted',
                   'EH':     'loosely dashed',
                   'AHP':    'loosely dashed',
                   'CGT':    'densely dashdotdotted',
+                  'GFS':    'solid',
                   'default':'solid'
                   }
 

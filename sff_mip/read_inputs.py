@@ -1,14 +1,8 @@
 import os
-import results
 
-# External modules
 import numpy as np
-import pandas as pd
-from datetime import datetime, timedelta
 
 # Internal modules
-import data
-from global_set import Units
 from data import get_param, time_param
 
 
@@ -25,6 +19,8 @@ P_eco, _ = get_param('cost_param.csv')
 P = P.append(P_calc)
 P = P.append(P_eco)
 
+# Increase the Cost_per_unit of GFS by the conversion cost times nbr of tractors
+P['GFS', 'Cost_per_unit'] += P['GFS', 'Conversion_cost']*P['Farm', 'nbr_tractors']
 # Dictionnaries of values and metadata from the file 'Settings.csv'
 S, _ = get_param('settings.csv')
 # Time discretization
@@ -35,6 +31,7 @@ S, _ = get_param('settings.csv')
 Time_steps = {'Days': Days_all, 'Hours': Hours, 'Periods': Periods}
 # Default upper bound for most variables
 Bound = S['Model','Var_bound']
+Tight = S['Model','Var_bound_tight']
 # Dictionnary of variable metadata
 V_meta = {}
 V_meta['Header'] = ['Name', 'Value', 'Lower Bound', 'Upper Bound', 'Units', 'Decription', 'Type']
@@ -56,6 +53,7 @@ Ext_T = dic['Ext_T'].values
 AD_cons_Heat = dic['AD_Q'].values
 Frequence = dic['Frequence'].values
 Irradiance = dic['Irradiance'].values
+Fueling = dic['Fueling_profile'].values
 
 AD_T = dic['AD_T'].values
 Build_T = dic['build_T'].values
@@ -67,7 +65,6 @@ if __name__ == "__main__":
         day_tics = [f'Day {d+1}' for d in Days]
         ax1.set_xticks(Time_steps[12::24], minor=False)
         ax1.set_xticklabels(day_tics, fontdict=None, minor=False)  
-    
     
     Time_steps = list(range(len(Hours)*len(Days)))
     

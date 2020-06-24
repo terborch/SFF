@@ -332,6 +332,46 @@ def cgt(m, Periods, Days, Hours,
     C_meta[n] = ['Upper limit on Gas consumed relative to the Installed Capacity', 0]
     m.addConstrs((unit_cons[r,d,h] <= unit_size for d in Days for h in Hours), n);
 
+
+
+###############################################################################
+### Compressed Gas Tank
+###############################################################################
+    
+
+def gfs(m, Days, Hours, unit_prod, unit_cons, unit_size, U_prod):
+    """ MILP model of Gas Fueling Station for the slow refueling of utility
+        vehicles. Takes Natural Gas or Biogas as inputs. No gas is stored.
+        The gas is dried and compressed to 3600 PSI. The vehicles are refueld
+        overnight once a day.
+    """
+    u = 'GFS'
+    Res = ('Biogas', 'Gas')
+    Elec_comp, Elec_dry = {}, {}
+    Elec_comp['Biogas'] = P[u]['Elec_comp']/P['Physical']['Biogas_CH4'] 
+    Elec_comp['Gas'] = P[u]['Elec_comp']
+    Elec_dry['Biogas'] = P[u]['Elec_dry']
+    Elec_dry['Gas'] = P[u]['Elec_dry']*P['Physical']['Biogas_CH4']
+    
+    n = f'{u}_Comp_Dry_Elec'
+    C_meta[n] = ['Electricity requiered to compress and dry the Gas', 0]
+    m.addConstrs((
+        unit_cons['Elec',d,h] == sum(unit_cons[r,d,h]*
+                                     (Elec_comp[r] + Elec_dry[r]) for r in Res) 
+        for d in Days for h in Hours), n);
+    
+    for r in U_prod:
+        n = f'{u}_{r}_production'
+        C_meta[n] = [f'{r} prod relative to {r} cons', 0]
+        m.addConstrs((unit_prod[r,d,h] == unit_cons[r,d,h] 
+                      for d in Days for h in Hours), n);
+    
+    n = f'{u}_size'
+    C_meta[n] = ['Upper limit on prod relative to installed capacity', 0]
+    m.addConstrs((sum(unit_prod[r,d,h] for r in U_prod) <= unit_size 
+                  for d in Days for h in Hours), n);    
+
+
 ##################################################################################################
 ### END
 ##################################################################################################

@@ -273,37 +273,41 @@ def SOFC_results(path):
     
 def SOC_results(path):
     """ Plot all variables results relative to  the SOFC """
+    
+    def set_x_ticks(ax1, Time_steps):
+        day_tics = [f'Day {d+1}' for d in range(0,365)]
+        ax1.set_xticks(Time_steps[12::24], minor=False)
+        ax1.set_xticklabels(day_tics, fontdict=None, minor=False) 
+    
     # Get relevant results into dic
     soc = results.get_hdf(path, 'annual')
     df = results.get_hdf(path, 'single').set_index('Var_name')['Value']
     Time_steps = list(range(len(Hours)*365))
     
-    # Convert the SOC result in kW to percent relative to max capacity
-    
+    if max(df[f'unit_size[{n}]'] for n in ['BAT', 'CGT']) <= 0:
+        return
     
     # Items to plot
     items = {}
-    items['name'] = ['unit_SOC[BAT]', 'unit_SOC[CGT]']
-    items['label'] = [unit_labels(n) for n in items['name']]
+    items['name'] = ['BAT', 'CGT']
+    items['label'] = ['Battery SOC', 'Compressed Gas Tank SOC']
+    items['resource'] = ['Elec', 'Biogas']
     
     fig, ax1 = plt.subplots()
-    fig.set_size_inches(fig_width, fig_height)
-    plt.title('SOFC')
+    fig.set_size_inches(fig_width*10, fig_height)
+    plt.title('Storage Normalized State of Charge (SOC)')
     ax1.set_xlabel('Dates')
-    ax1.set_ylabel('Resources consumed and produced by the SOFC in kW')
+    ax1.set_ylabel('State of Charge [-]')
     set_x_ticks(ax1, Time_steps)
-    ax2 = ax1.twinx()
-    ax2.set_ylabel('Heat produced by the SOFC in kW')
     
-    for i, n in enumerate(items['name'][:-1]):
-        ax1.plot(Time_steps, df[n], label=items['label'][i], 
-                 color=col(n), ls=ls(n)) 
-    n = 'unit_prod[SOFC][Heat]'
-    ax2.plot(Time_steps, df[n], label=items['label'][-1], 
-             color=col(n), ls=ls(n))
+    # Convert the SOC result in kW to percent relative to max capacity
+    for i, n in enumerate(items['name']):
+        ax1.plot(soc[f'unit_SOC[{n}]']/df[f'unit_size[{n}]'], 
+                 label=items['label'][i], color=col(items['resource'][i]), ls=ls(n)) 
+    ax1.legend(loc='upper left')
+    fig.autofmt_xdate()
+    plt.tight_layout()
 
-    ax1.legend(loc='upper left') 
-    ax2.legend(loc='upper right')
     
 
 def all_fig(path, save_fig=True):
@@ -383,7 +387,7 @@ def pareto(*args, date=None, print_it=False):
     
     for file_name in (list_of_files):
         i = get_pareto_nbr(file_name)
-        plt.text(Pareto_totex[i - 1] + 0.03, Perto_emissions[i - 1] + 0.1, f'{i}')
+        plt.text(Pareto_totex[i - 1] + 0.0015, Perto_emissions[i - 1] + 0.0015, f'{i}')
         
     plt.scatter(Pareto_totex, Perto_emissions, label='emissions', marker='o')
     plt.plot()
@@ -391,7 +395,6 @@ def pareto(*args, date=None, print_it=False):
     plt.savefig(fig_path)
     
     
-
     Pareto_totex, Perto_emissions = [], []
     
     n_pareto = len(list_of_files)
