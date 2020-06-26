@@ -16,7 +16,7 @@
 # External modules
 from gurobipy import GRB
 # Internal modules
-from global_set import (Units, U_prod, U_cons, Units_storage)
+from global_set import (Units, U_prod, U_cons, Units_storage, G_res, Resources)
 
         
 def time_steps(*args):
@@ -90,7 +90,19 @@ def declare_vars(m, Bound, V_meta, Days, Hours, Periods):
         V_meta[n] = ['kWh', f'Wheter {u} is discharging or not', 'bool']
         unit_discharge[u] = m.addVars(*Time_periods, vtype=GRB.BINARY, name=n)
 
-                    
+    # # Resource Variables grid['import_a']['Elec']    
+    # grid = {}
+    # for g in ['export', 'import']:
+    #     for t in ['instant', 'annual']:
+    #         u = 'kW' if t=='instant' else 'MWh'
+    #         a = '' if t=='instant' else f'_a'
+    #         Type = 'time' if t=='instant' else 'unique'
+    #         Description = 'purchased by' if t=='import' else 'sold by'
+    #         n = f'grid_{g}{a}'
+    #         p = (Resources, Days, Hours) if t=='instant' else (Resources)
+    #         V_meta[n] = [u, f'{t} resource {Description} by the Farm', Type]
+    #         grid[n] = m.addVars(*p, lb=0, ub=Bound, name=n)
+    
     return (unit_prod, unit_cons, unit_install, unit_size, unit_capex, 
             unit_SOC, unit_charge, unit_discharge)
 

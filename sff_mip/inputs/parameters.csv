@@ -1,43 +1,44 @@
-Category,Name,Value,Units,Description,Source,doi
-AD,Eff,0.37,-,AD efficiency,Thees 2017,
-AD,Elec_cons,0.008,-,AD faction of electricity consumed,Carlini 2017,10.3390/en10081165
-AD,Heat_cons,0.32,-,Fraction of heat self consumed relative to the biogas procued,Thees 2017,
-AHP,COP,3,-,Coefficient of Performance,energyscope,
-BAT,Eff,0.9,-,BAT roundtrip efficiency,Paul PHD,
-BAT,Self_discharge,0.003,-,Constant hourly self discharge,none,
-CGT,Elec_comp,0.02,-,Fraction of energy requiered to compress natural gas to 2500 psig,Sinor 1991,
-EH,Eff,0.99,-,Electric Heater efficiency,Paul PHD,
-GBOI,Eff,0.98,-,Gas Boiler efficiency,energyscope,
-GCSOFC,Elec_cons,0.03,-,GCSOFC Elec cons relative to SOFC output,Nils PdS,
-ICE,Eff_elec,0.3,-,ICE electric efficiency,Samuel PdM,
-ICE,Eff_thermal,0.75,-,ICE thermal efficiency,Samuel PdM,
-PV,Eff,0.14,-,PV efficiency,Paul PHD,
-PV,max_utilisation,0.5,-,Maximum utilisation of available rood area,setting,
-SOFC,Eff_elec,0.5,-,SOFC electric efficiency,Jan,
-SOFC,Eff_thermal,0.95,-,SOFC thermal efficiency,Jan,
-SOFC,GC_elec_frac,0.03,-,gas cleaning electric consumption fraction,Nils PdS,
-WBOI,Eff,0.85,-,Wood Boiler efficiency,energyscope,
-GFS,Conversion_cost,48,kCHF/Tractor,Conversion cost of one tractor from diesel to cng,omnitekcorp.com,
-GFS,Elec_dry,0.0075,-,Fraction of electricity requiered to dry biogas,est from PdS nils,
-GFS,Elec_comp,0.03,-,Fraction of energy requiered to compress natural gas to 3600 psig,est from Sinor 1991,
-GFS,Fueling_Time,10,h,Time to refuel 2 to 5 tractors in hours,gastsationpaper,
-Physical,Hours_per_year,8760,h/year,Hours in a year,fact,
-Physical,Cp_water,1.16222222222222,kWh/°C/m^3,Heat capacity of water,nist.gov,
-Physical,Biogas_CH4,0.6,-,Fraction of CO2 contained in Biogas,none,
-Physical,LSU_pigs,0.5,-,LSU per Pigs,ec.europa.eu,
-Physical,Manure_HHV_dry,3.694444444,kWh/kg-dry,Fresh cattle manure energy content HHV dry basis,Carlini 2017,10.3390/c5020027
-Physical,Manure_per_cattle,7.3,kg-dry/day/LSU,Cattle manure production dry basis,Carlini 2017,10.3390/c5020027
-Physical,Diesel_LHV,10,kWh/l,Diesel lower heating value per liter,engineeringtoolbox.com,
-Farm,Ground_area,6601,m^2,Building ground surface area,geo.admin.ch,
-Farm,Pigs,55,-,Number of Pigs,SFF,
-Farm,Cows,65,-,Number of Pigs,SFF,
-Farm,cons_Elec_annual,787000,kWh/year,Annual electric consumption,SFF,
-Farm,cons_Heat_annual,1650000,kWh/year,Annual heat consumption,SFF,
-Farm,cons_Diesel_annual,8000,l/year,Annual diesel consumption for tractors,SFF,
-Farm,nbr_tractors,4,Tractor,Number of tractors in poteration,SFF,
-Farm,Temp_tractors,5,°C,Temperature treshold for using tractors,none,
-Farm,i,0.025,-,Annual interest rate,Nils PdS,
-Profile,Temperature,Weather,°C,External shaded Temperature ,agrometeo.ch,
-Profile,Irradiance,Weather,kWh/m^2,Global Irradiance,agrometeo.ch,
-Profile,Elec_cons,farm_elec_cons.csv,-,Electricity consumption profile,None SIA,
-Profile,Occupation,farm_occupation.csv,-,Occupation profile relating to humain gains,None SIA,
+Category,Name,Value,Units,Description,Source,doi,Uncertainty
+AD,Eff,0.37,-,AD efficiency,Thees 2017,,0.05
+AD,Elec_cons,0.008,-,AD faction of electricity consumed,Carlini 2017,10.3390/en10081165,0.1
+AD,Heat_cons,0.32,-,Fraction of heat self consumed relative to the biogas procued,Thees 2017,,0.1
+AHP,COP,3,-,Coefficient of Performance,energyscope,,0.25
+BAT,Eff,0.9,-,BAT roundtrip efficiency,Paul PHD,,0.05
+BAT,Self_discharge,0.003,-,Constant hourly self discharge,none,,0.1
+CGT,Elec_comp,0.02,-,Fraction of energy requiered to compress natural gas to 2500 psig,Sinor 1991,,0.1
+EH,Eff,0.99,-,Electric Heater efficiency,Paul PHD,,0.01
+GBOI,Eff,0.98,-,Gas Boiler efficiency,energyscope,,0.01
+GCSOFC,Elec_cons,0.03,-,GCSOFC Elec cons relative to SOFC output,Nils PdS,,0.1
+ICE,Eff_elec,0.3,-,ICE electric efficiency,Samuel PdM,,0.1
+ICE,Eff_thermal,0.75,-,ICE thermal efficiency,Samuel PdM,,0.1
+PV,Eff,0.14,-,PV efficiency,Paul PHD,,0.25
+PV,max_utilisation,0.5,-,Maximum utilisation of available rood area,setting,,0.25
+SOFC,Eff_elec,0.5,-,SOFC electric efficiency,Jan,,0.1
+SOFC,Eff_thermal,0.95,-,SOFC thermal efficiency,Jan,,0.1
+SOFC,GC_elec_frac,0.03,-,gas cleaning electric consumption fraction,Nils PdS,,0.1
+WBOI,Eff,0.85,-,Wood Boiler efficiency,energyscope,,0.05
+GFS,Conversion_cost,48,kCHF/Tractor,Conversion cost of one tractor from diesel to cng,omnitekcorp.com,,0.5
+GFS,Total_cost,41,kCHF,Total invesetemnt cost for a 5 tractor fueling station (without multiplication),gastsationpaper,,0.5
+GFS,Elec_dry,0.0075,-,Fraction of electricity requiered to dry biogas,est from PdS nils,,0.1
+GFS,Elec_comp,0.03,-,Fraction of energy requiered to compress natural gas to 3600 psig,est from Sinor 1991,,0.1
+GFS,Fueling_Time,10,h,Time to refuel 2 to 5 tractors in hours,gastsationpaper,,0
+Physical,Hours_per_year,8760,h/year,Hours in a year,fact,,0
+Physical,Cp_water,1.16222222222222,kWh/°C/m^3,Heat capacity of water,nist.gov,,0
+Physical,Biogas_CH4,0.6,-,Fraction of CO2 contained in Biogas,none,,0
+Physical,LSU_pigs,0.5,-,LSU per Pigs,ec.europa.eu,,0
+Physical,Manure_HHV_dry,3.694444444,kWh/kg-dry,Fresh cattle manure energy content HHV dry basis,Carlini 2017,10.3390/c5020027,0
+Physical,Manure_per_cattle,7.3,kg-dry/day/LSU,Cattle manure production dry basis,Carlini 2017,10.3390/c5020027,0
+Physical,Diesel_LHV,10,kWh/l,Diesel lower heating value per liter,engineeringtoolbox.com,,0
+Farm,Ground_area,6601,m^2,Building ground surface area,geo.admin.ch,,0
+Farm,Pigs,55,-,Number of Pigs,SFF,,0
+Farm,Cows,65,-,Number of Pigs,SFF,,0
+Farm,cons_Elec_annual,787000,kWh/year,Annual electric consumption,SFF,,0
+Farm,cons_Heat_annual,1650000,kWh/year,Annual heat consumption,SFF,,0
+Farm,cons_Diesel_annual,8000,l/year,Annual diesel consumption for tractors,SFF,,0
+Farm,nbr_tractors,4,Tractor,Number of tractors in poteration,SFF,,0
+Farm,Temp_tractors,5,°C,Temperature treshold for using tractors,none,,0
+Farm,i,0.025,-,Annual interest rate,Nils PdS,,0.1
+Profile,Temperature,Weather,°C,External shaded Temperature ,agrometeo.ch,,0
+Profile,Irradiance,Weather,kWh/m^2,Global Irradiance,agrometeo.ch,,0
+Profile,Elec_cons,farm_elec_cons.csv,-,Electricity consumption profile,None SIA,,0
+Profile,Occupation,farm_occupation.csv,-,Occupation profile relating to humain gains,None SIA,,0

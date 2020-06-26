@@ -16,8 +16,37 @@ import json
  
 
 ###############################################################################
-### External Parameter (weather profiles)
+### Read and Write from files
 ###############################################################################
+
+
+def save_to_hdf(key, item, path):
+    """ Save an 'item' to a hdf5 file format using pandas. Print the location. 
+    """
+    df = pd.DataFrame(item)
+    with pd.HDFStore(path) as hdf:
+        hdf.put(key, df)
+    print(f'Item {key} saved to {path}')
+    
+    
+def get_hdf(file_path, *args, Series=False):
+    """ Fetch all items stored in a hdf file and returns a dictionnary. 
+        If args are passed only opens the items in args.
+    """
+    result_dic = {}
+    with pd.HDFStore(file_path) as hdf:
+        if not args:
+            for i in hdf.keys():
+                result_dic[i[1:]] = hdf[i]
+        elif len(args) > 1:
+            for i in args:
+                result_dic[i] = hdf[i]
+        else:
+            result_dic = hdf[args[0]]
+    if Series:
+        for k in result_dic.keys():
+            result_dic[k] = result_dic[k].values.T[0]
+    return result_dic
 
 
 def open_csv(file, folder, separator):
@@ -27,6 +56,19 @@ def open_csv(file, folder, separator):
     else:
         path = os.path.join('inputs', file)
     return pd.read_csv(path , sep = separator, engine='python')
+
+
+def read_json(file_path):
+    """ Import clustering values from a json file """
+    with open(file_path, 'r') as json_file:
+        data = json.load(json_file)
+    return data['labels'], data['closest']
+
+
+
+###############################################################################
+### External Parameter (weather profiles)
+###############################################################################
  
 
 def to_date_time(df, column):
@@ -39,7 +81,10 @@ def time_delta(delta):
     """ Get a timedelta object from a given string with a fomat hrs_min_sec as "00:00:00" hours 
         minutes seconds.
     """
-    t = datetime.strptime(delta,"%H:%M:%S")
+    try:
+        t = datetime.strptime(delta,"%H:%M:%S")
+    except:
+        return timedelta(days=delta)
     return timedelta(hours=t.hour, minutes=t.minute, seconds=t.second)
 
 
@@ -49,7 +94,10 @@ def weather_data_to_df(file, period_start, period_end, timestep):
     """
     folder = 'profiles'
     subfolder = 'weather'
-    df = open_csv(file, os.path.join(folder, subfolder), ';')
+    df = open_csv(file, os.path.join(folder, subfolder), ',')
+    for t in ['Temperature', 'Irradiance']:
+        df[t] = pd.to_numeric(df[t], errors='coerce')
+        
     to_date_time(df, 'Date')
     
     df = df.truncate(before = period_start, after = period_end)
@@ -60,10 +108,19 @@ def weather_data_to_df(file, period_start, period_end, timestep):
     return df
 
 
+def extreme_day(file, S):
+    # Add coldest day in the 10 last year
+    file = 'meteo_Liebensberg_10years.csv'
+    df = weather_data_to_df(file, '2010-01-01', '2020-01-01', S['Time_step'])
+    Daily_sum = df.resample(time_delta(1)).agg({'Temperature': np.mean, 
+                                                'Irradiance': np.sum})
+    Minima = Daily_sum['Temperature'].idxmin().strftime(S['Date_format'])
+    return df.loc[Minima]
 
-##################################################################################################
+
+###############################################################################
 ### Internal Parameters (consumption profiles)
-##################################################################################################
+###############################################################################
 
 
 def print_error(error):
@@ -229,7 +286,7 @@ def time_param(S):
     dt_end = datetime.strptime(end, Datetime_format)
     
     # Nbr_of_time_steps
-    Nbr_of_time_steps = ((dt_end - dt_start).days * 24) / dt
+    Nbr_of_time_steps = (((dt_end - dt_start).days + 1) * 24) / dt
     Nbr_of_time_steps_per_day = 24 / dt
     
     # Period index
@@ -274,23 +331,9 @@ def annual_to_daily(Annual, Profile_norm):
 
     return np.array(Peak * Profile_norm)
 
-##################################################################################################
+###############################################################################
 ### Load weather clustering results and sorting algorythm
-##################################################################################################
-
-
-def save_to_hdf(key, item, path):
-    df = pd.DataFrame(item)
-    with pd.HDFStore(path) as hdf:
-        hdf.put(key, df)
-    print(f'Item {key} saved to {path}')
-    
-
-def read_json(file_path):
-    """ Import 'labels' and 'closest' values from a json file """
-    with open(file_path, 'r') as json_file:
-        data = json.load(json_file)
-    return data['labels'], data['closest']
+###############################################################################
 
 
 def unique(l):
@@ -396,8 +439,8 @@ def arrange_clusters(Labels, display=False):
         signle value.
         Once each clsuter has been cut a list of ordered clusters is returned.
     """
-    Filtered_labels = filter_labels(Labels, len(unique(Labels)))
-    
+    # Filtered_labels = filter_labels(Labels, len(unique(Labels)))
+    Filtered_labels = Labels
     frequency = []
     for i in unique(Filtered_labels):
         frequency.append(np.count_nonzero(Filtered_labels == i))
@@ -432,7 +475,7 @@ def cluster(a, Clustered_days, Hours):
     return clustered_a
 
 
-def weather_param(file, epsilon, Format, S, *Clustered_days):
+def weather_param(file, epsilon, Format, S):
     """ Returns Ext_T and Irradiance where values within epsilon around zero
         will be replaced by zero. Format is a tuple with two lists first the
         Days then the Hours.
@@ -447,11 +490,6 @@ def weather_param(file, epsilon, Format, S, *Clustered_days):
     # Global irradiance
     Irradiance = reshape_day_hour((df_weather['Irradiance'].values), *Format)
     Irradiance[np.abs(Irradiance) < epsilon] = 0
-    
-    # Clustering
-    if Clustered_days:
-        Ext_T = cluster(Ext_T, Clustered_days[0], Format[1])
-        Irradiance = cluster(Irradiance, Clustered_days[0], Format[1])
     
     return Ext_T, Irradiance, df_weather.index
 
@@ -491,7 +529,7 @@ def display_inputs(S, Disp_cons):
     ax2.tick_params(axis='y', labelcolor=c)
     
     fig.tight_layout()  # otherwise the right y-label is slightly clipped
-    plt.title('Weather data for Liebensberg from ' + S['Period_start']  + 'to' + S['Period_end'])
+    plt.title('Weather data for Liebensberg from ' + S['Period_start']  + ' to ' + S['Period_end'])
     
     return plt
     

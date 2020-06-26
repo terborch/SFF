@@ -15,6 +15,7 @@ from read_inputs import (Periods, dt_end, Days, Hours, Ext_T, Irradiance,
 from global_set import (Units, Units_storage, Resources, Color_code, 
                         Linestyle_code, Linestyles, Abbrev)
 import results
+from data import get_hdf
 
 ###############################################################################
 ### Global variables to be eliminated
@@ -51,7 +52,7 @@ def unit_size(path):
     Names['storage'] = [f'unit_size[{u}]' for u in Units_storage]
      
     # Only time independent results are used, set names as index
-    df = results.get_hdf(path, 'single')
+    df = get_hdf(path, 'single')
     df.set_index('Var_name', inplace=True)
     for t in ['non_storage', 'storage']:
         Values[t] = [df.loc[n, 'Value'] for n in Names[t]]   
@@ -89,11 +90,7 @@ def unit_temperature(path):
     """ Plot the building and AD temperature against externale temperature and
         Irradiance.
         # TODO option to plot daily averages only
-    """
-    # Get relevant results into dic and shape them into the same shape as Ext_T
-    shape = np.shape(Ext_T)
-    df = results.get_hdf(path, 'daily')
-    
+    """    
     # Items to plot
     Time_steps = list(range(len(Hours)*len(Days)))
     items = {}
@@ -116,11 +113,11 @@ def unit_temperature(path):
     # Store plot in plt object
     for i, n in enumerate(items['name'][:-1]):
         ax1.scatter(Time_steps, items['value'][i].flatten(), label=items['label'][i], 
-                 color=items['color'][i])
+                 color=items['color'][i], s = 5)
     n = 'Irradiance'
     ax2.plot(Time_steps, items['value'][3].flatten(), label=n, color=items['color'][3])
-    ax1.legend(loc='center left') 
-    ax2.legend(loc='center right')
+    ax1.legend(loc='upper left') 
+    ax2.legend(loc='upper right')
     
     # if daily:
     #     Dates = Day_Dates
@@ -134,7 +131,7 @@ def all_results(Per_cent_vary, path):
     """
     
     # Get relevant results into dic
-    df = results.get_hdf(path, 'daily')
+    df = get_hdf(path, 'daily')
     Time_steps = list(range(len(Hours)*len(Days)))
     
     # Get the names of variables that vary more than 1%
@@ -165,7 +162,7 @@ def all_results(Per_cent_vary, path):
 def resource(Resource, Threshold, path):
     
     # Get relevant results into dic
-    df = results.get_hdf(path, 'daily')
+    df = get_hdf(path, 'daily')
     Time_steps = list(range(len(Hours)*len(Days)))
     
     names = []
@@ -209,7 +206,7 @@ def PV_results(path):
     """
     
     # Get relevant results into dic
-    df = results.get_hdf(path, 'daily')
+    df = get_hdf(path, 'daily')
     Time_steps = list(range(len(Hours)*len(Days)))
     
     fig, ax1 = plt.subplots()
@@ -242,7 +239,7 @@ def PV_results(path):
 def SOFC_results(path):
     """ Plot all variables results relative to  the SOFC """
     # Get relevant results into dic
-    df = results.get_hdf(path, 'daily')
+    df = get_hdf(path, 'daily')
     Time_steps = list(range(len(Hours)*len(Days)))
     
     # Items to plot
@@ -280,8 +277,8 @@ def SOC_results(path):
         ax1.set_xticklabels(day_tics, fontdict=None, minor=False) 
     
     # Get relevant results into dic
-    soc = results.get_hdf(path, 'annual')
-    df = results.get_hdf(path, 'single').set_index('Var_name')['Value']
+    soc = get_hdf(path, 'annual')
+    df = get_hdf(path, 'single').set_index('Var_name')['Value']
     Time_steps = list(range(len(Hours)*365))
     
     if max(df[f'unit_size[{n}]'] for n in ['BAT', 'CGT']) <= 0:
@@ -371,7 +368,7 @@ def pareto(*args, date=None, print_it=False):
         if print_it:
             print('\n ------------------------------------------------- \n')
         file_path = os.path.join(path, file_name, 'results.h5')
-        df = results.get_hdf(file_path, 'single')
+        df = get_hdf(file_path, 'single')
         df.set_index('Var_name', inplace=True)
         totex, emissions = float(df.loc['totex']), float(df.loc['emissions'])
         Pareto_totex[run_nbr-1] = totex
@@ -420,7 +417,7 @@ def pareto(*args, date=None, print_it=False):
         file_path = os.path.join(path, file_name, 'results.h5')
         
         # Only time independent results are used, set names as index
-        df = results.get_hdf(file_path, 'single')
+        df = get_hdf(file_path, 'single')
         df.set_index('Var_name', inplace=True)
         for t in ['non_storage', 'storage']:
             Values[t] = [df.loc[n, 'Value'] for n in Names[t]]   
@@ -456,6 +453,132 @@ def pareto(*args, date=None, print_it=False):
     fig_path = os.path.join(path, 'units.png')
     plt.savefig(fig_path)
     
+   
+def inputs():
+    
+    """ Electric Consumption in a day """
+    Profile = Build_cons['Elec'].T[0]
+    plt.step(Hours, Profile, where='post', c='black')
+    plt.title('Instant Electric Consumption')
+    plt.ylabel('Electric Consumption in kW')
+    plt.xlabel('Time of the day in Hours')       
+    plt.xticks(Hours[::2])
+    plt.ylim(0,250)
+    plt.show()
+
+    """ Heat Consumption in a year """
+    
+    Time_steps = list(range(len(Hours)*len(Days)))
+    
+    from read_inputs import Build_cons, AD_cons_Heat
+
+    fig_width, fig_height = 11.7*2, 5.8
+    from matplotlib import pyplot as plt
+    def set_x_ticks(ax1, Time_steps):
+        day_tics = [f'Day {d+1}' for d in Days]
+        ax1.set_xticks(Time_steps[12::24], minor=False)
+        ax1.set_xticklabels(day_tics, fontdict=None, minor=False)  
+    
+    
+    fig, ax1 = plt.subplots()
+    fig.set_size_inches(fig_width, fig_height)
+    plt.title('Heat Consumption')
+    ax1.set_xlabel('Dates')
+    ax1.set_ylabel('Building Heat consumption in kW')
+    set_x_ticks(ax1, Time_steps)
+    ax2 = ax1.twinx()
+    ax2.set_ylabel('AD Heat Consumption in kW')
+        
+    n = 'Building Heat Consumption'
+    ax1.plot(Time_steps, Build_cons['Heat'].flatten(), label=n, c='black')
+    n = 'AD Heat Consumption'
+    ax2.plot(Time_steps, AD_cons_Heat.flatten(), label=n, c='green')
+    
+    plt.show()
+    
+    
+    
+    
+def clustering(Number_of_clusters):
+    
+    # A list of dates in day/month format
+    D = 365
+    import pandas as pd
+    from datetime import datetime
+    datelist = pd.date_range(datetime.strptime('2019-01-01', '%Y-%m-%d'), periods=D).tolist()
+    D_list, M_list = [0]*D, [0]*D
+    for d in range(D):
+        D_list[d] = f'{datelist[d].day}/{datelist[d].month}'
+        M_list[d] = f'{datelist[d].strftime("%b")}'
+    
+    
+    import data
+    Days = range(D)
+    path = os.path.join('inputs', 'clsuters.h5')
+    Clusters = get_hdf(path, Series=True)
+    n = f'Cluster_{Number_of_clusters}'
+    Clusters[n] = list(Clusters[n].astype(int))
+    Labels, Closest = Clusters[n][:D], Clusters[n][D:]
+    Clusters_order = data.arrange_clusters(Labels)
+    Clustered_days = data.reorder(Closest, Clusters_order)
+    Frequence = data.get_frequence(Labels)
+    Frequence = data.reorder(Frequence, Clusters_order)
+    
+    
+    S, _ = data.get_param('settings.csv')
+    filename = 'meteo_Liebensberg_10min.csv'
+    epsilon = 1e-6
+    Ext_T, Irr, _ = data.weather_param(filename, epsilon, 
+                                       (Days, Hours), S['Time'])
+    
+    Ext_T_cls = data.cluster(Ext_T, Clustered_days, Hours)
+    Irr_cls = data.cluster(Irr, Clustered_days, Hours)
+
+    def repeat(Values, Frequence):
+        """ Return a liste of repeated values by frequencies """
+        List = []
+        for i, f in enumerate(Frequence):
+            List.append([Values[i]]*int(f))
+        List = [item for sublist in List for item in sublist]
+        return List
+    
+    Ext_T_cls = repeat(np.mean(Ext_T_cls, axis=1), Frequence)
+    Irr_cls = repeat(np.mean(Irr_cls, axis=1), Frequence)
+     
+    def set_axis():
+        """ Set xlabel to 'Date'
+            Set xticks as months    
+            Remove splines
+            Add legend and autoformat layout
+        """
+        ax.set_xlabel('Date')
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        plt.xticks(Days[::31], M_list[::31])
+        plt.legend()
+        fig.tight_layout()
+        fig.autofmt_xdate()
+        
+        
+    fig, ax = plt.subplots()
+    plt.title('Clustering results - Irradiance')
+    c = 'red'
+    ax.set_ylabel('Daily average Irradiance in kW/m^2')
+    ax.plot(Days, np.mean(Irr, axis=1), c=c, alpha=0.3, label='Measured')
+    ax.step(Days, Irr_cls, where='post', c=c, label='Clustered')   
+    set_axis()
+    plt.show()
+    
+    fig, ax = plt.subplots()
+    plt.title('Clustering results - Temperature')
+    c = 'blue'
+    ax.set_ylabel('Daily average Temperature in °C')
+    ax.plot(Days, np.mean(Ext_T, axis=1), c=c, alpha=0.3, label='Measured')
+    ax.step(Days, Ext_T_cls, where='post', c=c, label='Clustered')
+  
+    set_axis()
+    plt.show()
+
     
 ###############################################################################
 ### Secondairy methods

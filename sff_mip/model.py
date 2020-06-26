@@ -10,7 +10,7 @@ import gurobipy as gp
 # Internal modules
 from global_set import Units, U_res, G_res, U_prod
 from read_inputs import (P, S, V_meta, C_meta, Bound, Tight, 
-                         Periods, Days, Hours, Time_period_map, Frequence, 
+                         Periods, Days, Hours, Frequence, 
                          Irradiance, Ext_T, Build_cons, AD_cons_Heat, Fueling)
 # Functions
 from data import annualize
@@ -34,7 +34,7 @@ import variables
 def initialize_model():
     """ Return a blank Gurobi model and set solver timelimit """
     # Create a new model
-    m = gp.Model("MIP_SFF_v0.31")
+    m = gp.Model("MIP_SFF_v0.54")
     # Remove previous model parameters and data
     m.resetParams()
     m.reset()
@@ -152,16 +152,18 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod, unit_install):
     C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
     m.addConstrs((
         grid_import[r,d,h] + sum(unit_prod[up][r,d,h] for up in U_res['prod'][r]) == 
-        grid_export[r,d,h] + sum(unit_cons[uc][r,d,h] if uc != 'CGT' else 
-        unit_cons[uc][r,d,h] for uc in U_res['cons'][r]) + Build_cons['Elec'][h] 
-        for d in Days for h in Hours), n);
+        grid_export[r,d,h] + sum(unit_cons[uc][r,d,h] for uc in U_res['cons'][r]) + 
+        Build_cons['Elec'][h] for d in Days for h in Hours), n);
     
     r = 'Biogas'
     n = 'Balance_' + r
     C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
-    m.addConstrs((unit_prod['AD'][r,d,h] + unit_prod['CGT'][r,d,h] - unused[r,d,h] == 
-                  unit_cons['GCSOFC'][r,d,h] + unit_cons['GBOI'][r,d,h] + 
-                  unit_cons['ICE'][r,d,h] + unit_cons['CGT'][r,d,h] 
+    m.addConstrs((unit_prod['AD'][r,d,h] + unit_prod['CGT'][r,d,h] - unused[r,d,h] ==
+                  # sum(unit_cons[uc][r,d,h] if uc != 'SOFC' 
+                  #     else None for uc in U_res['cons'][r])
+                   unit_cons['GCSOFC'][r,d,h] + unit_cons['GBOI'][r,d,h] + 
+                   unit_cons['ICE'][r,d,h] + unit_cons['CGT'][r,d,h] + 
+                   unit_cons['GFS'][r,d,h] 
                   for d in Days for h in Hours), n);
     
     r = 'Biogas_cleaned_for_SOFC'
@@ -261,7 +263,7 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
     
     n = 'Is_installed_capex'
     C_meta[n] = ['Additional big-M constraint to eliminate CAPEX error', 0]
-    m.addConstrs((unit_install[u]*10 >= unit_capex[u] for u in Units), n);
+    m.addConstrs((unit_install[u]*Tight >= unit_capex[u] for u in Units), n);
     
     n = 'Capex'
     C_meta[n] = ['Unit CAPEX relative to unit size and cost parameters', 0]
@@ -280,8 +282,7 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
     m.addConstr(opex == sum(grid_import_a[r]*P[r,'Import_cost'] - 
                             grid_export_a[r]*P[r,'Export_cost'] 
                             for r in G_res) 
-                        + sum(unit_capex[u]*P[u,'Maintenance']/
-                              annualize(P[u,'Life'], P['Farm','i'])
+                        + sum(unit_capex[u]*P[u,'Maintenance']
                               for u in Units), n);
     
     n = 'totex_sum'
@@ -298,10 +299,12 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
     C_meta[n] = ['Instant CO2 emissions relative to Elec and Gas imports', 0]
     m.addConstr(emissions == 
                 sum(grid_import_a[r]*P[r,c] for r in G_res) + 
-                sum(unit_size[u]*P[u,'LCA']/P[u,'Life'] for u in Units)/1000, n);
+                sum(unit_size[u]*P[u,'LCA']/P[u,'Life']/1000 for u in Units), n);
     
     C_meta['Limit_emissions'] = ['Fix a limit to the emissions, for Pareto only', 0]
     C_meta['Limit_totex'] = ['Fix a limit to the TOTEX, for Pareto only', 0]
+    
+    
     
     return totex, capex, opex, emissions
 

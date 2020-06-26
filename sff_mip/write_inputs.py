@@ -24,7 +24,6 @@
 
 # External modules
 import numpy as np
-import pandas as pd
 from datetime import datetime
 import os
 # Internal modules
@@ -42,28 +41,6 @@ C_meta = {}
 P_write = {}    
 # Dictionnary of parameters to be stored in csv format
 P_calc = {}
-
-
-###############################################################################
-### Function used in both write and read
-###############################################################################       
-
-
-# def param_calc(category, name, data):
-#     """ Passes the value and metadata of a given parameter into P and P_meta, 
-#         given a Category and a name.
-#     """
-#     try:
-#         P_calc[category]
-#     except KeyError:
-#         P_calc[category] = {}
-        
-#     try:
-#         P_calc[category][name]
-#     except KeyError:
-#         P_calc[category][name] = {}
-    
-#     P_calc[category][name] = data
   
 
 ###############################################################################
@@ -71,11 +48,16 @@ P_calc = {}
 ###############################################################################
 
 
-def typical_days(Periods, Hours, Cluster=True, Identifier=6, Number_of_clusters=12):
-
-    path = os.path.join('jupyter_notebooks', 'jsons', 
-                        f'clusters_{Identifier}_{Number_of_clusters}.json')
-    Labels, Closest = [r[f'{Number_of_clusters}'] for r in data.read_json(path)]
+def typical_days(Periods, Hours, Cluster=True, Number_of_clusters=20):
+    """ Get the clustering parameters from a pre-rendered cluster stored 
+        in the clusters.h5 file. Currently accepts 10, 20, 30, 50, 100 as 
+        cluster numbers. 
+    """
+    path = os.path.join('inputs', 'clsuters.h5')
+    Clusters = data.get_hdf(path, Series=True)
+    n = f'Cluster_{Number_of_clusters}'
+    Clusters[n] = list(Clusters[n].astype(int))
+    Labels, Closest = Clusters[n][:365], Clusters[n][365:]
     Clusters_order = data.arrange_clusters(Labels)
     Clustered_days = data.reorder(Closest, Clusters_order)
     Frequence = data.get_frequence(Labels)
@@ -87,6 +69,10 @@ def typical_days(Periods, Hours, Cluster=True, Identifier=6, Number_of_clusters=
         Clustered_days = list(range(365))
         Days = list(range(365))
         Frequence = [1]*365
+        
+    # Add extreme day
+    Frequence = np.append(Frequence, 1)
+    Clustered_days = np.append(Clustered_days, -1)
 
     Days = list(range(len(Clustered_days)))
 
@@ -159,28 +145,37 @@ def tractor_fueling(Days, Hours, Frequence, Ext_T):
     
     
 def write_arrays(path, Cluster=True):
-    
-    if path == 'default':
-        path = os.path.join('inputs', 'inputs.h5')
+    """ Precalculate and write single input parameters to calc_param.csv and 
+        profile or time-dependent input parameters to inputs.h5 """
     
     # Time related parameters
     (Periods, Nbr_of_time_steps, dt, Day_dates, Time, dt_end, Days_all, Hours
      ) = data.time_param(S['Time'])
     
     (Days, Frequence, Time_period_map, Clustered_days
-     ) = typical_days(Periods, Hours, Cluster=Cluster) 
+     ) = typical_days(Periods, Hours, Cluster=Cluster, 
+                      Number_of_clusters=S['Model', 'Clusters']) 
     
     P_write['Frequence'] = Frequence
     P_write['Time_period_map'] = Time_period_map
     P_write['Days'] = Days
-    
+        
     # Hoourly weather parameters for a year at Liebensberg
     filename = 'meteo_Liebensberg_10min.csv'
     epsilon = 1e-6
     Ext_T, Irradiance, Index = data.weather_param(filename, epsilon, 
-                                                  (Days_all, Hours), S['Time'], 
-                                                  Clustered_days)
-
+                                                  (Days_all, Hours), S['Time'])
+    # Append extreme period
+    file = 'meteo_Liebensberg_10years.csv'
+    Coldest_day = data.extreme_day(file, S['Time'])
+    Ext_T = np.concatenate((Ext_T, [Coldest_day['Temperature'].values]))
+    Irradiance = np.concatenate((Irradiance, [Coldest_day['Irradiance'].values]))
+    
+    # Cluster weather parameters
+    if Cluster:
+        Ext_T = data.cluster(Ext_T, Clustered_days, Hours)
+        Irradiance = data.cluster(Irradiance, Clustered_days, Hours)
+    
     # List of dates modelled
     Dates, Dates_pd = [], Index
     for d in Dates_pd: 
@@ -202,10 +197,12 @@ def write_arrays(path, Cluster=True):
     
     # Load profile for tractor fueling
     P_write['Fueling_profile'] = tractor_fueling(Days, Hours, Frequence, Ext_T)
-
+    
+    if path == 'default':
+        path = os.path.join('inputs', 'inputs.h5')
 
     for k in P_write.keys():
-        save_to_hdf(k, P_write[k], path)  
+        data.save_to_hdf(k, P_write[k], path)  
 
     heat_loads_calc.generate(path, Clustered_days, Frequence)
     

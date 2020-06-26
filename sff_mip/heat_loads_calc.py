@@ -21,7 +21,7 @@ import pandas as pd
 
 # Internal module methods
 from data import (annual_to_daily, weather_param, get_param, get_profile, 
-                  make_param)
+                  make_param, weather_data_to_df, time_delta, extreme_day)
 
 P, P_meta = get_param('parameters.csv')
 P_heat_load, _ = get_param('heat_load_param.csv')
@@ -46,6 +46,12 @@ Days = list(range(365))
 Hours = list(range(24))
 Ext_T, Irradiance, Index = weather_param(filename, epsilon, (Days, Hours), S['Time'])
 
+# Add coldest day in the 10 last year
+file = 'meteo_Liebensberg_10years.csv'
+Coldest_day = extreme_day(file, S['Time'])
+Ext_T = np.concatenate((Ext_T, [Coldest_day['Temperature'].values]))
+Irradiance = np.concatenate((Irradiance, [Coldest_day['Irradiance'].values]))
+Days = list(range(365 + 1))
 
 ###############################################################################
 ### MILP thermodynamic model 
@@ -100,6 +106,9 @@ def heat_load_model(Ext_T, Gains, U, C, T_min, T_max, part_load,
     if not Building:
         n = 'Temperature_init'
         m.addConstr(T[0,0] == T_min, n);
+    # else:
+    #     n = 'Temperature_init'
+    #     m.addConstrs((T[d,0] == T_min + Ext_T[d,0] for d in Days), n);
     
     m.optimize()
     

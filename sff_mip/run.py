@@ -173,7 +173,7 @@ def diagnostic(objective):
 
 if __name__ == "__main__":
     # Execute single run
-    # run('emissions')
+    # run('emissions', Reload=True)
     # run('totex')
     #run_single('totex', save_fig=True, discard_fig=False)
     

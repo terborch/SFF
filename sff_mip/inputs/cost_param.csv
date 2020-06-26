@@ -1,88 +1,94 @@
-Category,Name,Value,Units,Description,Source
-AD,Cost_multiplier,1.8,-,Cost multiplier for Switzerland,Nils PdS and IEA
-AD,Cost_per_size,1.5,kCHF/kW,Cost retalive to installed capacity,Nils PdS and IEA
-AD,Cost_per_unit,5,kCHF,Cost per unit installed,Nils PdS and IEA
-AD,LCA,0.02,tCO2/kW,LCA emissions from construction,
-AD,Life,20,Years,Lifetime,Nils PdS and IEA
-AD,Maintenance,0.1,-,Yearly maintenance cost in percent CAPEX,Nils PdS and IEA
-AHP,Cost_multiplier,1.8,-,Cost multiplier for Switzerland,Paul PHD
-AHP,Cost_per_size,1.24,kCHF/kW,Cost retalive to installed capacity,Paul PHD
-AHP,Cost_per_unit,5.68,kCHF,Cost per unit installed,Paul PHD
-AHP,LCA,0.02,tCO2/kW,LCA emissions from construction,
-AHP,Life,20,Years,Lifetime,Paul PHD
-AHP,Maintenance,0.02,-,Yearly maintenance cost in percent CAPEX,Paul PHD
-BAT,Cost_multiplier,1.33,-,Cost multiplier for Switzerland,Paul PHD
-BAT,Cost_per_size,0.97,kCHF/kWh,Cost retalive to installed capacity,Paul PHD
-BAT,Cost_per_unit,0.62,kCHF,Cost per unit installed,Paul PHD
-BAT,LCA,0.1,tCO2/kWh,LCA emissions from construction,https://4thgeneration.energy/emissions-of-grid-scale-storage/
-BAT,Life,10,Years,Lifetime,Paul PHD
-BAT,Maintenance,0.02,-,Yearly maintenance cost in percent CAPEX,Paul PHD
-CGT,Cost_multiplier,1.8,-,Cost multiplier for Switzerland,DOI: 10.2172/1156975
-CGT,Cost_per_size,0.000923,kCHF/kWh,Cost retalive to installed capacity,DOI: 10.2172/1156975
-CGT,Cost_per_unit,71.6,kCHF,Cost per unit installed,DOI: 10.2172/1156975
-CGT,LCA,0.02,tCO2/kWh,LCA emissions from construction,
-CGT,Life,25,Years,Lifetime,DOI: 10.2172/1156975
-CGT,Maintenance,0.02,-,Yearly maintenance cost in percent CAPEX,DOI: 10.2172/1156975
-EH,Cost_multiplier,1,-,Cost multiplier for Switzerland,Paul PHD
-EH,Cost_per_size,0.013,kCHF/kW,Cost retalive to installed capacity,Paul PHD
-EH,Cost_per_unit,0.968,kCHF,Cost per unit installed,Paul PHD
-EH,LCA,0.02,tCO2/kW,LCA emissions from construction,
-EH,Life,20,Years,Lifetime,Paul PHD
-EH,Maintenance,0.02,-,Yearly maintenance cost in percent CAPEX,Paul PHD
-GBOI,Cost_multiplier,1.8,-,Cost multiplier for Switzerland,Paul PHD
-GBOI,Cost_per_size,0.105,kCHF/kW,Cost retalive to installed capacity,Paul PHD
-GBOI,Cost_per_unit,3.8,kCHF,Cost per unit installed,Paul PHD
-GBOI,LCA,0.02109,tCO2/kW,LCA emissions from construction,energyscope
-GBOI,Life,20,Years,Lifetime,Paul PHD
-GBOI,Maintenance,0.0508,-,Yearly maintenance cost in percent CAPEX,energyscope
-GCSOFC,Cost_multiplier,1,-,Cost multiplier for Switzerland,Nils PdS
-GCSOFC,Cost_per_size,0.0234,kCHF/kW,Cost retalive to installed capacity,Nils PdS
-GCSOFC,Cost_per_unit,0.467,kCHF,Cost per unit installed,Nils PdS
-GCSOFC,LCA,0.02,tCO2/kW,LCA emissions from construction,
-GCSOFC,Life,10,Years,Lifetime,Nils PdS
-GCSOFC,Maintenance,0.03,-,Yearly maintenance cost in percent CAPEX,Nils PdS
-ICE,Cost_multiplier,1,-,Cost multiplier for Switzerland,Samuel PdM
-ICE,Cost_per_size,1.4,kCHF/kW,Cost retalive to installed capacity,Samuel PdM
-ICE,Cost_per_unit,6,kCHF,Cost per unit installed,Samuel PdM
-ICE,LCA,0.02,tCO2/kW,LCA emissions from construction,
-ICE,Life,20,Years,Lifetime,Samuel PdM
-ICE,Maintenance,0.025,-,Yearly maintenance cost in percent CAPEX,Samuel PdM
-PV,Cost_multiplier,1.33,-,Cost multiplier for Switzerland,Paul PHD
-PV,Cost_per_size,2.656,kCHF/kW,Cost retalive to installed capacity,Paul PHD
-PV,Cost_per_unit,2.495,kCHF,Cost per unit installed,Paul PHD
-PV,LCA,0.02,tCO2/kW,LCA emissions from construction,
-PV,Life,20,Years,Lifetime,Paul PHD
-PV,Maintenance,0.02,-,Yearly maintenance cost in percent CAPEX,Paul PHD
-SOFC,Cost_multiplier,1.8,-,Cost multiplier for Switzerland,Paul PHD
-SOFC,Cost_per_size,2.1,kCHF/kW,Cost retalive to installed capacity,Paul PHD
-SOFC,Cost_per_unit,15.542,kCHF,Cost per unit installed,Paul PHD
-SOFC,LCA,0.02,tCO2/kW,LCA emissions from construction,
-SOFC,Life,10,Years,Lifetime,Paul PHD
-SOFC,Maintenance,0.05,-,Yearly maintenance cost in percent CAPEX,Paul PHD
-WBOI,Cost_multiplier,1.8,-,Cost multiplier for Switzerland,
-WBOI,Cost_per_size,0.148,kCHF/kW,Cost retalive to installed capacity,energyscope
-WBOI,Cost_per_unit,5.359,kCHF,Cost per unit installed,energyscope
-WBOI,LCA,0.02109,tCO2/kW,LCA emissions from construction,energyscope
-WBOI,Life,17,Years,Lifetime,energyscope
-WBOI,Maintenance,0.017,-,Yearly maintenance cost in percent CAPEX,energyscope
-GFS,Cost_multiplier,1.8,-,Cost multiplier for Switzerland,
-GFS,Cost_per_size,1.03,kCHF/kW,Cost retalive to installed capacity,DOI: 10.2172/1156975
-GFS,Cost_per_unit,12.3,kCHF,Cost per unit installed,DOI: 10.2172/1156975
-GFS,LCA,0.02,tCO2/kW,LCA emissions from construction,
-GFS,Life,25,Years,Lifetime,DOI: 10.2172/1156975
-GFS,Maintenance,0.02,-,Yearly maintenance cost in percent CAPEX,
-Biogas,Export_cost,0,kCHF/kWh,Price at which Biogas is sold,Assumption
-Biogas,Import_cost,1,kCHF/kWh,Cost to import Biogas,Assumption
-Biogas,Emissions,0,t-CO2/MWh,Emissions from importing biogas,Assumption
-Elec,Export_cost,6E-05,kCHF/kWh,Price at which Elec is sold,Paul PHD
-Elec,Import_cost,0.0002107,kCHF/kWh,Cost to import Elec ,OFS
-Elec,Emissions,0.00013,t-CO2/MWh,Emissions from importing Electricity in Switzerland,Ecovient
-Gas,Export_cost,6E-05,kCHF/kWh,Price at which Gas is sold,Paul PHD
-Gas,Import_cost,9.78E-05,kCHF/kWh,Cost to import Gas,OFS
-Gas,Emissions,0.000181083170605,t-CO2/MWh,Emissions from importing natural gas,EIA
-Wood,Export_cost,0,kCHF/kWh,Price at which Wood Pellets are sold,www.propellets.ch
-Wood,Import_cost,7.417E-05,kCHF/kWh,Cost to import Wood Pellets,OFS + energie-bois.ch(4.8kwh/kg)
-Wood,Emissions,1E-05,t-CO2/MWh,Emissions from importing wood pellets,Assumption
-Diesel,Import_cost,0.000174,kCHF/kWh,Cost to import diesel,OFS + engineering toolbox (10kwh/l)
-Diesel,Export_cost,0,kCHF/kWh,Price at wich diesel is sold,assumption
-Diesel,Emissions,0.000267,t-CO2/MWh,Emissions from importing diesel,energyscope + engineering toolbox (10kwh/l)
+Category,Name,Value,Units,Description,Source,Uncertainty
+AD,Cost_multiplier,1.8,-,Cost multiplier for Switzerland,Nils PdS and IEA,0.5
+AD,Cost_per_size,1.5,kCHF/kW,Cost retalive to installed capacity,Nils PdS and IEA,0
+AD,Cost_per_unit,5,kCHF,Cost per unit installed,Nils PdS and IEA,0
+AD,LCA,0.02,kgCO2/kW,LCA emissions from construction,,0
+AD,Life,20,Years,Lifetime,Nils PdS and IEA,0
+AD,Maintenance,0.1,-,Yearly maintenance cost in percent CAPEX,Nils PdS and IEA,0
+AHP,Cost_multiplier,1.8,-,Cost multiplier for Switzerland,Paul PHD,0.5
+AHP,Cost_per_size,1.24,kCHF/kW,Cost retalive to installed capacity,Paul PHD,0
+AHP,Cost_per_unit,5.68,kCHF,Cost per unit installed,Paul PHD,0
+AHP,LCA,0.02,kgCO2/kW,LCA emissions from construction,,0
+AHP,Life,20,Years,Lifetime,Paul PHD,0
+AHP,Maintenance,0.02,-,Yearly maintenance cost in percent CAPEX,Paul PHD,0
+BAT,Cost_multiplier,1.33,-,Cost multiplier for Switzerland,Paul PHD,0.5
+BAT,Cost_per_size,0.97,kCHF/kWh,Cost retalive to installed capacity,Paul PHD,0
+BAT,Cost_per_unit,0.62,kCHF,Cost per unit installed,Paul PHD,0
+BAT,LCA,0.1,kgCO2/kWh,LCA emissions from construction,https://4thgeneration.energy/emissions-of-grid-scale-storage/,0
+BAT,Life,10,Years,Lifetime,Paul PHD,0
+BAT,Maintenance,0.02,-,Yearly maintenance cost in percent CAPEX,Paul PHD,0
+CGT,Cost_multiplier,1.8,-,Cost multiplier for Switzerland,DOI: 10.2172/1156975,0.5
+CGT,Cost_per_size,0.000923,kCHF/kWh,Cost retalive to installed capacity,DOI: 10.2172/1156975,0
+CGT,Cost_per_unit,71.6,kCHF,Cost per unit installed,DOI: 10.2172/1156975,0
+CGT,LCA,0.02,kgCO2/kWh,LCA emissions from construction,,0
+CGT,Life,25,Years,Lifetime,DOI: 10.2172/1156975,0
+CGT,Maintenance,0.02,-,Yearly maintenance cost in percent CAPEX,DOI: 10.2172/1156975,0
+EH,Cost_multiplier,1,-,Cost multiplier for Switzerland,Paul PHD,0.5
+EH,Cost_per_size,0.013,kCHF/kW,Cost retalive to installed capacity,Paul PHD,0
+EH,Cost_per_unit,0.968,kCHF,Cost per unit installed,Paul PHD,0
+EH,LCA,0.02,kgCO2/kW,LCA emissions from construction,,0
+EH,Life,20,Years,Lifetime,Paul PHD,0
+EH,Maintenance,0.02,-,Yearly maintenance cost in percent CAPEX,Paul PHD,0
+GBOI,Cost_multiplier,1.8,-,Cost multiplier for Switzerland,Paul PHD,0.5
+GBOI,Cost_per_size,0.105,kCHF/kW,Cost retalive to installed capacity,Paul PHD,0
+GBOI,Cost_per_unit,3.8,kCHF,Cost per unit installed,Paul PHD,0
+GBOI,LCA,0.02109,kgCO2/kW,LCA emissions from construction,energyscope,0
+GBOI,Life,20,Years,Lifetime,Paul PHD,0
+GBOI,Maintenance,0.0508,-,Yearly maintenance cost in percent CAPEX,energyscope,0
+GCSOFC,Cost_multiplier,1,-,Cost multiplier for Switzerland,Nils PdS,0.5
+GCSOFC,Cost_per_size,0.0234,kCHF/kW,Cost retalive to installed capacity,Nils PdS,0
+GCSOFC,Cost_per_unit,0.467,kCHF,Cost per unit installed,Nils PdS,0
+GCSOFC,LCA,0.02,kgCO2/kW,LCA emissions from construction,,0
+GCSOFC,Life,10,Years,Lifetime,Nils PdS,0
+GCSOFC,Maintenance,0.03,-,Yearly maintenance cost in percent CAPEX,Nils PdS,0
+ICE,Cost_multiplier,1,-,Cost multiplier for Switzerland,Samuel PdM,0.5
+ICE,Cost_per_size,1.4,kCHF/kW,Cost retalive to installed capacity,Samuel PdM,0
+ICE,Cost_per_unit,6,kCHF,Cost per unit installed,Samuel PdM,0
+ICE,LCA,0.02,kgCO2/kW,LCA emissions from construction,,0
+ICE,Life,20,Years,Lifetime,Samuel PdM,0
+ICE,Maintenance,0.025,-,Yearly maintenance cost in percent CAPEX,Samuel PdM,0
+PV,Cost_multiplier,1.33,-,Cost multiplier for Switzerland,Paul PHD,0.5
+PV,Cost_per_size,2.656,kCHF/kW,Cost retalive to installed capacity,Paul PHD,0
+PV,Cost_per_unit,2.495,kCHF,Cost per unit installed,Paul PHD,0
+PV,LCA,0.02,kgCO2/kW,LCA emissions from construction,,0
+PV,Life,20,Years,Lifetime,Paul PHD,0
+PV,Maintenance,0.02,-,Yearly maintenance cost in percent CAPEX,Paul PHD,0
+SOFC,Cost_multiplier,1.8,-,Cost multiplier for Switzerland,Paul PHD,0.5
+SOFC,Cost_per_size,2.1,kCHF/kW,Cost retalive to installed capacity,Paul PHD,0
+SOFC,Cost_per_unit,15.542,kCHF,Cost per unit installed,Paul PHD,0
+SOFC,LCA,0.02,kgCO2/kW,LCA emissions from construction,,0
+SOFC,Life,10,Years,Lifetime,Paul PHD,0
+SOFC,Maintenance,0.05,-,Yearly maintenance cost in percent CAPEX,Paul PHD,0
+WBOI,Cost_multiplier,1.8,-,Cost multiplier for Switzerland,,0.5
+WBOI,Cost_per_size,0.148,kCHF/kW,Cost retalive to installed capacity,energyscope,0
+WBOI,Cost_per_unit,5.359,kCHF,Cost per unit installed,energyscope,0
+WBOI,LCA,0.02109,kgCO2/kW,LCA emissions from construction,energyscope,0
+WBOI,Life,17,Years,Lifetime,energyscope,0
+WBOI,Maintenance,0.017,-,Yearly maintenance cost in percent CAPEX,energyscope,0
+GFS,Cost_multiplier,1.8,-,Cost multiplier for Switzerland,,0.5
+GFS,Cost_per_size,1.03,kCHF/kW,Cost retalive to installed capacity,DOI: 10.2172/1156975,0
+GFS,Cost_per_unit,12.3,kCHF,Cost per unit installed,DOI: 10.2172/1156975,0
+GFS,LCA,0.02,kgCO2/kW,LCA emissions from construction,,0
+GFS,Life,25,Years,Lifetime,DOI: 10.2172/1156975,0
+GFS,Maintenance,0.02,-,Yearly maintenance cost in percent CAPEX,,0
+Biogas,Export_cost,0,kCHF/kWh,Price at which Biogas is sold,Assumption,0
+Biogas,Import_cost,1,kCHF/kWh,Cost to import Biogas,Assumption,0
+Biogas,Emissions,0,t-CO2/MWh,Emissions from importing biogas,Assumption,0
+Elec,Export_cost,6E-05,kCHF/kWh,Price at which Elec is sold,Paul PHD,0.5
+Elec,Import_cost,0.0002107,kCHF/kWh,Cost to import Elec ,OFS,0.15
+Elec,Emissions,0.00013,t-CO2/MWh,Emissions from importing Electricity in Switzerland,Ecovient,0
+Gas,Export_cost,6E-05,kCHF/kWh,Price at which Gas is sold,Paul PHD,0
+Gas,Import_cost,9.78E-05,kCHF/kWh,Cost to import Gas,OFS,0.15
+Gas,Emissions,0.000181083170605,t-CO2/MWh,Emissions from importing natural gas,EIA,0
+Wood,Export_cost,0,kCHF/kWh,Price at which Wood Pellets are sold,www.propellets.ch,0
+Wood,Import_cost,7.417E-05,kCHF/kWh,Cost to import Wood Pellets,OFS + energie-bois.ch(4.8kwh/kg),0.15
+Wood,Emissions,1E-05,t-CO2/MWh,Emissions from importing wood pellets,Assumption,0
+Diesel,Import_cost,0.000174,kCHF/kWh,Cost to import diesel,OFS + engineering toolbox (10kwh/l),0.25
+Diesel,Export_cost,0,kCHF/kWh,Price at wich diesel is sold,assumption,0
+Diesel,Emissions,0.000267,t-CO2/MWh,Emissions from importing diesel,energyscope + engineering toolbox (10kwh/l),0
+Biomass,Import_cost,1,kCHF/kWh,Cost to import biomass,assumption,0
+Biomass,Export_cost,-0.0001,kCHF/kWh,Price at wich biomass is sold,assumption,0
+Biomass,Emissions,0,t-CO2/MWh,Emissions from importing biomass,assumption,0
+Heat,Import_cost,1,kCHF/kWh,Cost to import heat,assumption,0
+Heat,Export_cost,0,kCHF/kWh,Price at wich heat is sold,assumption,0
+Heat,Emissions,0,t-CO2/MWh,Emissions from importing heat,assumption,0

@@ -13,6 +13,8 @@ import re
 import os
 from datetime import datetime
 
+from data import get_hdf
+
 ###############################################################################
 ### Global variables to be eliminated
 ###############################################################################
@@ -72,23 +74,6 @@ def make_path(objective=None, Limit=None, Pareto=False):
         
     os.makedirs(os.path.dirname(cd), exist_ok=True)
     return cd
-
-
-def get_hdf(file_path, *args):
-    """ Fetch all items stored in a hdf file and returns a dictionnary. 
-        If args are passed only opens the items in args.
-    """
-    result_dic = {}
-    with pd.HDFStore(file_path) as hdf:
-        if not args:
-            for i in hdf.keys():
-                result_dic[i[1:]] = hdf[i]
-        elif len(args) > 1:
-            for i in args:
-                result_dic[i] = hdf[i]
-        else:
-            result_dic = hdf[args[0]]
-    return result_dic
 
 
 def get_all(m, Threshold, Days, Hours, Periods):
