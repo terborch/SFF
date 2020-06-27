@@ -53,7 +53,7 @@ def run(objective, Reload=False, relax=False, Pareto=False, Limit=None,
     # Option to generate a new input.h5 file 
     if Reload:
         import write_inputs
-        write_inputs.write_arrays('default', Cluster=True)
+        write_inputs.write_arrays('default', Cluster=False)
            
     
     start_solve = time.time()
@@ -74,16 +74,31 @@ def run(objective, Reload=False, relax=False, Pareto=False, Limit=None,
     path = os.path.join(cd, file_name)
     results.save_df_to_hdf5(var_results, var_meta, path, Days, Hours, Periods)
     
+    # Save a txt file containing variable results close to the model limit
     if Save_txt:
         results.save_txt(m, cd)
         
     end_write = time.time()
     print('model write time: ', end_write - start_write, 's')
     
+    # Plot graphs and save xls files of results
+    start_plot = time.time()
     if Plot:
         plot.all_fig(path, save_fig=True)
     if Summary:
         results.summary(path, save=True)
+    end_plot = time.time()
+    
+    # Save info about the run
+    file_name = 'run_info.txt'
+    info = {0: f'Objective:     {objective}',
+            1: f'Limit:         {Limit}',
+            2: f'Solve Time:    {end_solve - start_solve}',
+            3: f'Write Time:    {end_write - start_write}',
+            4: f'Plot Time:     {end_plot - start_plot}'}
+    with open(os.path.join(cd, file_name), 'w') as f:
+        for k in info.keys():
+            print(info[k], file=f)
 
     return path
     
@@ -109,16 +124,16 @@ def get_objective_value(objective, path):
     return df['Value'][objective]
 
 
-def pareto(objective_cstr, objective_free):
+def pareto(objective_cstr, objective_free, Plot=True, Summary=True):
     solve_time = []
     
     # Find the true minimum of objective_cstr
-    path = run(objective_cstr, Pareto=True, Limit=None)
+    path = run(objective_cstr, Pareto=True, Limit=None, Plot=Plot, Summary=Summary)
     min_obj_cstr = get_objective_value(objective_cstr, path)
     solve_time.append(time.time() - start)
     
     # Find the true maximum of objective_cstr
-    path = run(objective_free, Pareto=True, Limit=None)
+    path = run(objective_free, Pareto=True, Limit=None, Plot=Plot, Summary=Summary)
     max_obj_cstr = get_objective_value(objective_cstr, path)
     solve_time.append(time.time() - start)
     
@@ -141,7 +156,7 @@ def pareto(objective_cstr, objective_free):
     # Compute pareto points
     for i in range(1, len(Limits)):
         objective = 'limit_' + objective_cstr
-        run(objective, Pareto=True, Limit=Limits[i])
+        run(objective, Pareto=True, Limit=Limits[i], Plot=Plot, Summary=Summary)
         solve_time.append(time.time() - start)
         plt.close('all')
   
@@ -179,7 +194,7 @@ if __name__ == "__main__":
     
     # Execute multi_run
     #pareto('capex', 'opex')
-    pareto('emissions', 'totex')
+    pareto('emissions', 'totex', Plot=False, Summary=False)
     
     
     # diagnostic('totex')

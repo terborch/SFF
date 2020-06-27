@@ -20,3 +20,4 @@ build,T_open_windows,25,°C,If the minimum building temperature in a day is belo
 build,T_min,18,°C,Minimum indoor temperature,setting,
 build,T_max,34,°C,Maximum indoor temperature,setting,
 build,Heated_area,14705,m^2,Building heated surface area,geo.admin.ch,
+build,Safety_factor,1.5,-,Safety factor for the maximum heating load,none,

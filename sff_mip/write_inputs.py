@@ -53,26 +53,23 @@ def typical_days(Periods, Hours, Cluster=True, Number_of_clusters=20):
         in the clusters.h5 file. Currently accepts 10, 20, 30, 50, 100 as 
         cluster numbers. 
     """
+    D = 365
     path = os.path.join('inputs', 'clsuters.h5')
     Clusters = data.get_hdf(path, Series=True)
     n = f'Cluster_{Number_of_clusters}'
     Clusters[n] = list(Clusters[n].astype(int))
-    Labels, Closest = Clusters[n][:365], Clusters[n][365:]
+    Labels, Closest = Clusters[n][:D], Clusters[n][D:]
     Clusters_order = data.arrange_clusters(Labels)
     Clustered_days = data.reorder(Closest, Clusters_order)
     Frequence = data.get_frequence(Labels)
     Frequence = data.reorder(Frequence, Clusters_order)
     
     if not Cluster:
-        Labels = list(range(365))
-        Closest = list(range(365))
-        Clustered_days = list(range(365))
-        Days = list(range(365))
-        Frequence = [1]*365
-        
-    # Add extreme day
-    Frequence = np.append(Frequence, 1)
-    Clustered_days = np.append(Clustered_days, -1)
+        Labels = list(range(D))
+        Closest = list(range(D))
+        Clustered_days = list(range(D))
+        Days = list(range(D))
+        Frequence = np.ones(D)
 
     Days = list(range(len(Clustered_days)))
 
@@ -86,6 +83,10 @@ def typical_days(Periods, Hours, Cluster=True, Number_of_clusters=20):
                 p += 1
             
     return Days, Frequence, Time_period_map, Clustered_days
+
+    # # Add extreme day
+    # Frequence = np.append(Frequence, 1)
+    # Clustered_days = np.append(Clustered_days, -1)
 
 
 
@@ -165,12 +166,7 @@ def write_arrays(path, Cluster=True):
     epsilon = 1e-6
     Ext_T, Irradiance, Index = data.weather_param(filename, epsilon, 
                                                   (Days_all, Hours), S['Time'])
-    # Append extreme period
-    file = 'meteo_Liebensberg_10years.csv'
-    Coldest_day = data.extreme_day(file, S['Time'])
-    Ext_T = np.concatenate((Ext_T, [Coldest_day['Temperature'].values]))
-    Irradiance = np.concatenate((Irradiance, [Coldest_day['Irradiance'].values]))
-    
+
     # Cluster weather parameters
     if Cluster:
         Ext_T = data.cluster(Ext_T, Clustered_days, Hours)
@@ -206,7 +202,14 @@ def write_arrays(path, Cluster=True):
 
     heat_loads_calc.generate(path, Clustered_days, Frequence)
     
-
+    
+    # # Append extreme period
+    # file = 'meteo_Liebensberg_10years.csv'
+    # Coldest_day = data.extreme_day(file, S['Time'])
+    # Ext_T = np.concatenate((Ext_T, [Coldest_day['Temperature'].values]))
+    # Irradiance = np.concatenate((Irradiance, [Coldest_day['Irradiance'].values]))
+    
+    
 ###############################################################################
 ### END
 ###############################################################################

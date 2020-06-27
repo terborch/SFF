@@ -46,12 +46,12 @@ Days = list(range(365))
 Hours = list(range(24))
 Ext_T, Irradiance, Index = weather_param(filename, epsilon, (Days, Hours), S['Time'])
 
-# Add coldest day in the 10 last year
-file = 'meteo_Liebensberg_10years.csv'
-Coldest_day = extreme_day(file, S['Time'])
-Ext_T = np.concatenate((Ext_T, [Coldest_day['Temperature'].values]))
-Irradiance = np.concatenate((Irradiance, [Coldest_day['Irradiance'].values]))
-Days = list(range(365 + 1))
+# # Add coldest day in the 10 last year
+# file = 'meteo_Liebensberg_10years.csv'
+# Coldest_day = extreme_day(file, S['Time'])
+# Ext_T = np.concatenate((Ext_T, [Coldest_day['Temperature'].values]))
+# Irradiance = np.concatenate((Irradiance, [Coldest_day['Irradiance'].values]))
+# Days = list(range(365 + 1))
 
 ###############################################################################
 ### MILP thermodynamic model 
@@ -398,6 +398,11 @@ def generate(path, Clustered_days, Frequence):
         print_it = False,
         Building = True
         )
+    
+    # Add safety margin to the last heat load
+    Max_load = np.where(heat_load_modeled==heat_load_modeled.max())   
+    Max_load_idx = (Max_load[0][0], Max_load[1][0])
+    heat_load_modeled[Max_load_idx] *= P['build']['Safety_factor'] 
     
     save_df_to_hdf5('build_Q', heat_load_modeled, path)
     save_df_to_hdf5('build_T', temperature_cls, path)
