@@ -176,7 +176,7 @@ def diagnostic(objective):
     # For each heating unit solve for objective and store result
     for u in U_res['prod']['Heat']:
     # for u in ['EH']:
-        data.change_settings(u, 'max_capacity', 1000) 
+        data.change_settings(u, 'max_capacity', 1500) 
         reload(read_inputs)
         reload(model)
         run(objective)

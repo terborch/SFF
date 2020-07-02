@@ -1,5 +1,5 @@
 Category,Name,Value,Units,Description
-Model,Solver_time_limit,20000,s,Maximum solving time allowed
+Model,Solver_time_limit,30000,s,Maximum solving time allowed
 Model,Var_bound,10000,-,Default upper bound for all variables
 Model,Var_bound_tight,10,-,Default upper bound for small variables
 Model,Clusters,100,clusters,"Number of clusters (10, 20, 30, 50 or 100)"

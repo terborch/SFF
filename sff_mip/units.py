@@ -1,6 +1,5 @@
 """ This module contains all functions necessary to model each unit
     #   TODO: add depth of discharge limit to battery
-    #   TODO: add better aprox for biomass temperature
 """
 
 # Internal modules
@@ -17,9 +16,9 @@ def t(*args):
     else:
         return Time_period_map[p]
 
-##################################################################################################
+###############################################################################
 ### Gas Boiler
-##################################################################################################
+###############################################################################
 
 
 def gboi(m, Days, Hours, unit_prod, unit_cons, unit_size):
