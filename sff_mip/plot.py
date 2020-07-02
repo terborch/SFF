@@ -514,7 +514,7 @@ def clustering(Number_of_clusters):
     
     import data
     Days = range(D)
-    path = os.path.join('inputs', 'clsuters.h5')
+    path = os.path.join('inputs', 'clusters.h5')
     Clusters = get_hdf(path, Series=True)
     n = f'Cluster_{Number_of_clusters}'
     Clusters[n] = list(Clusters[n].astype(int))

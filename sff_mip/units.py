@@ -25,8 +25,9 @@ def gboi(m, Days, Hours, unit_prod, unit_cons, unit_size):
     c = 'GBOI'
     n = 'GBOI_production'
     C_meta[n] = ['Heat produced relative to Gas and Biogas consumed and Efficiency', 0]
-    m.addConstrs(((unit_cons['Biogas',d,h] + unit_cons['Gas',d,h])*P[c]['Eff'] == 
-                  unit_prod['Heat',d,h] for d in Days for h in Hours), n);
+    m.addConstrs((unit_prod['Heat',d,h] == (unit_cons['Biogas',d,h] + 
+                                            unit_cons['Gas',d,h])*P[c]['Eff'] 
+                  for d in Days for h in Hours), n);
     
     n = 'GBOI_size'
     C_meta[n] = ['Upper limit on Heat produced relative to installed capacity', 0]
@@ -43,7 +44,7 @@ def wboi(m, Days, Hours, unit_prod, unit_cons, unit_size):
     c = 'WBOI'
     n = 'WBOI_production'
     C_meta[n] = ['Heat produced relative to Gas and Biogas consumed and Efficiency', 0]
-    m.addConstrs((unit_cons['Wood',d,h]*P[c]['Eff'] == unit_prod['Heat',d,h] 
+    m.addConstrs((unit_prod['Heat',d,h] == unit_cons['Wood',d,h]*P[c]['Eff']  
                   for d in Days for h in Hours), n);
     
     n = 'WBOI_size'
@@ -61,8 +62,8 @@ def eh(m, Days, Hours, unit_prod, unit_cons, unit_size):
     c = 'EH'
     n = 'EH_production'
     C_meta[n] = ['Heat produced relative to Electricity consumed and Efficiency', 0]
-    m.addConstrs((unit_cons['Elec',d,h]*P[c]['Eff'] == 
-                  unit_prod['Heat',d,h] for d in Days for h in Hours), n);
+    m.addConstrs((unit_prod['Heat',d,h] == unit_cons['Elec',d,h]*P[c]['Eff']
+                  for d in Days for h in Hours), n);
     
     n = 'EH_size'
     C_meta[n] = ['Upper limit on Heat produced relative to installed capacity', 0]
@@ -101,7 +102,7 @@ def pv(m, Days, Hours, unit_prod, unit_size, Irradiance):
     c = 'PV'
     n = 'PV_production'
     C_meta[n] = ['Elec produced relative to Irradiance, Efficiency and Installed capacity', 5]
-    m.addConstrs((unit_prod['Elec',d,h] == Irradiance[d,h] * P[c]['Eff'] * unit_size 
+    m.addConstrs((unit_prod['Elec',d,h] == Irradiance[d,h]*P[c]['Eff']*unit_size 
                   for d in Days for h in Hours), n);
     
     n = 'PV_roof_size'
@@ -131,7 +132,7 @@ def bat(m, Periods, Days, Hours,
     # Constraints
     n = f'{u}_SOC'
     C_meta[n] = ['State of Charge detla relative to Produced and Consumed Elec and Efficiency', 0]
-    m.addConstrs((unit_SOC[p + 1] - (1 - P[u,'Self_discharge'])*unit_SOC[p] ==  
+    m.addConstrs((unit_SOC[p+1] - (1 - P[u,'Self_discharge'])*unit_SOC[p] ==  
                   (Eff*unit_cons[t(r,p)] - (1/Eff)*unit_prod[t(r,p)]) 
                   for p in Periods), n);
     P[u]['Self_discharge']

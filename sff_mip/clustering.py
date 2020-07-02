@@ -181,7 +181,7 @@ plt.legend()
 plt.show()  
 
 import os
-path = os.path.join('inputs', 'clsuters.h5')
+path = os.path.join('inputs', 'clusters.h5')
 for i, k in enumerate(Minimas):
     Cluster = np.concatenate((CLS['labels'][C[i]][k], CLS['closest'][C[i]][k]))
     data.save_to_hdf(f'Cluster_{C[i]}', Cluster, path)

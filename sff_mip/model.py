@@ -15,6 +15,7 @@ from read_inputs import (P, S, V_meta, C_meta, Bound, Tight,
 # Functions
 from data import annualize
 import variables
+import units
 
 """
 ### Variable declaration
@@ -48,16 +49,6 @@ def initialize_model():
 ### Units model
 ###############################################################################
 
-
-import units
-
-
-def next_day(d):
-    if not d == Days[-1]:
-        return d+1
-    else:
-        return 0
-
 def cstr_unit_size(m, S, unit_size):
     """ Size constraints for each units """
         
@@ -69,6 +60,8 @@ def cstr_unit_size(m, S, unit_size):
     for u in Units:
         C_meta[n + f'[{u}]'] = [f'Lower limit on the installed capacity of {u} fixed in settings', 0]
     m.addConstrs((unit_size[u] >= S[u, 'min_capacity'] for u in Units), n);
+    n = 'unit_min_available_size'
+    
 
 
 def model_units(m, Days, Hours, Periods, unit_prod, unit_cons, unit_size, 
@@ -265,6 +258,10 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
     C_meta[n] = ['Additional big-M constraint to eliminate CAPEX error', 0]
     m.addConstrs((unit_install[u]*Tight >= unit_capex[u] for u in Units), n);
     
+    for u in Units:
+        C_meta[n + f'[u]'] = [f'Lower limit on installed capacity if the unit is installed']
+    m.addConstrs((unit_size[u] >= P[u, 'Min_size']*unit_install[u] for u in Units), n);
+    
     n = 'Capex'
     C_meta[n] = ['Unit CAPEX relative to unit size and cost parameters', 0]
     m.addConstrs((unit_capex[u] == P[u,'Cost_multiplier']*
@@ -282,7 +279,8 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
     m.addConstr(opex == sum(grid_import_a[r]*P[r,'Import_cost'] - 
                             grid_export_a[r]*P[r,'Export_cost'] 
                             for r in G_res) 
-                        + sum(unit_capex[u]*P[u,'Maintenance']
+                        + sum(unit_capex[u]*P[u,'Maintenance']/
+                              annualize(P[u,'Life'], P['Farm','i'])
                               for u in Units), n);
     
     n = 'totex_sum'
@@ -346,7 +344,7 @@ def run(objective, Limit=None, relax=False):
     (unit_prod, unit_cons, unit_install, unit_size, unit_capex, unit_SOC, 
      unit_charge, unit_discharge
      ) = variables.declare_vars(m, Bound, V_meta, Days, Hours, Periods)
-    # Constrain unit sizes accoring to settings.csv
+    # Constrain unit sizes accoring to settings.csv min-max
     cstr_unit_size(m, S, unit_size)
     # Model each unit
     model_units(m, Days, Hours, Periods, unit_prod, unit_cons, unit_size, 
@@ -453,6 +451,12 @@ def model_heating(m, Days, Hours, unit_cons, unit_prod, build_cons_Heat, v, unit
 ###############################################################################
 
 """
+def next_day(d):
+    if not d == Days[-1]:
+        return d+1
+    else:
+        return 0
+
 # Farm temperature
 penalty = model_farm_temperature(m, Days, Hours, Ext_T, Irradiance, build_cons_Heat)
 

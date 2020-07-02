@@ -16,7 +16,7 @@ AD,Sludge_volume,290.0,m^3,Sludge volume capacity,calc
 AD,U,0.22526400000000002,kW/C,AD heat conductance,calc
 Farm,Biomass_prod,103.94473378379166,kW,Biomass portential,calc
 Farm,Fuel_cons,80000,kW/year,Fuel consumed by tractors in a year,calc
-Farm,Fueling_load,29.850746268656717,kW,Fuel consumed by tractors during fueling,calc
+Farm,Fueling_load,31.496062992125985,kW,Fuel consumed by tractors during fueling,calc
 Farm,LSU,92.5,LSU,Number of LSU,calc
 Physical,Nbr_of_time_steps,8760,integer,Number of timesteps,calc
 Physical,dt,1,hour,Length of a timestep in hours,calc

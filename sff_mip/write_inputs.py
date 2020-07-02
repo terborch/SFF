@@ -54,7 +54,7 @@ def typical_days(Periods, Hours, Cluster=True, Number_of_clusters=20):
         cluster numbers. 
     """
     D = 365
-    path = os.path.join('inputs', 'clsuters.h5')
+    path = os.path.join('inputs', 'clusters.h5')
     Clusters = data.get_hdf(path, Series=True)
     n = f'Cluster_{Number_of_clusters}'
     Clusters[n] = list(Clusters[n].astype(int))

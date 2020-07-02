@@ -53,7 +53,7 @@ def run(objective, Reload=False, relax=False, Pareto=False, Limit=None,
     # Option to generate a new input.h5 file 
     if Reload:
         import write_inputs
-        write_inputs.write_arrays('default', Cluster=False)
+        write_inputs.write_arrays('default', Cluster=True)
            
     
     start_solve = time.time()
@@ -190,11 +190,12 @@ if __name__ == "__main__":
     # Execute single run
     # run('emissions', Reload=True)
     # run('totex')
+    run('emissions')
     #run_single('totex', save_fig=True, discard_fig=False)
     
     # Execute multi_run
     #pareto('capex', 'opex')
-    pareto('emissions', 'totex', Plot=False, Summary=False)
+    # pareto('emissions', 'totex', Plot=False, Summary=False)
     
     
     # diagnostic('totex')
