@@ -95,21 +95,24 @@ def typical_days(Periods, Hours, Cluster=True, Number_of_clusters=20):
 ###############################################################################
 
 
-def biomass_prod(Pigs, Cows):
+def biomass_prod(file):
     """ Given an number of cows and pigs, calculate the biomass potential in kW"""
     
-    f = 'Farm'
-    p = 'Physical'
-    meta = ['LSU', 'Number of LSU', 'calc']
-    LSU = Pigs*P[p]['LSU_pigs'] + Cows
-    data.make_param(f, 'LSU', LSU, meta)
+    A, A_meta = data.get_param(file)
     
-    meta = ['kW', 'Biomass portential', 'calc']
-    C_meta['Biomass_prod'] = ['Production of manue relative to the number of LSU', 1, 'P']
-    Biomass_prod = LSU*P[p]['Manure_per_cattle']*P[p]['Manure_HHV_dry']/24
+    # Set of all animals 
+    animals = set(A.index.get_level_values(0))
     
-    data.make_param(f, 'Biomass_prod', Biomass_prod, meta)
-
+    meta = ['kW', 'Methane yield from animals', 'calc']
+    C_meta['Biogas_prod'] = ['Methane yield relative to animals', 1, 'P']
+    Biogas_prod = sum((A[a,'Nbr_at_farm']/A[a,'LSU'])*A[a,'Methane_yield']
+                      for a in animals)/P['Physical','Hours_per_year']
+    data.make_param('Farm', 'Biogas_prod', Biogas_prod, meta)
+    
+    meta = ['kW', 'Biomass yield from animals', 'calc']
+    C_meta['Biomass_prod'] = ['Biomass relative to methane yield and AD eff', 1, 'P']
+    Biomass_prod = Biogas_prod/P['AD','Eff']
+    data.make_param('Farm', 'Biomass_prod', Biomass_prod, meta)
 
 def tractor_fueling(Days, Hours, Frequence, Ext_T):
     """ Generate a fueling profile based on annual diesel consumption, 
@@ -185,7 +188,7 @@ def write_arrays(path, Cluster=True):
                                               Elec_cons)
     
     # Biomass potential
-    biomass_prod(P['Farm']['Pigs'], P['Farm']['Cows'])
+    biomass_prod('animals.csv')
     
     P_write['Ext_T'] = Ext_T
     P_write['Irradiance'] = Irradiance

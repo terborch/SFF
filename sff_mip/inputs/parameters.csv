@@ -8,11 +8,12 @@ BAT,Self_discharge,0.003,-,Constant hourly self discharge,none,,0.1
 CGT,Elec_comp,0.02,-,Fraction of energy requiered to compress natural gas to 2500 psig,Sinor 1991,,0.1
 EH,Eff,0.99,-,Electric Heater efficiency,Paul PHD,,0.01
 GBOI,Eff,0.98,-,Gas Boiler efficiency,energyscope,,0.01
-GCSOFC,Elec_cons,0.03,-,GCSOFC Elec cons relative to SOFC output,Nils PdS,,0.1
+GCSOFC,Elec_cons,0.015,-,GCSOFC Elec cons relative to Biogas throughput,Nils PdS,,0.1
 ICE,Eff_elec,0.3,-,ICE electric efficiency,Samuel PdM,,0.1
 ICE,Eff_thermal,0.75,-,ICE thermal efficiency,Samuel PdM,,0.1
 PV,Eff,0.14,-,PV efficiency,Paul PHD,,0.25
 PV,max_utilisation,0.5,-,Maximum utilisation of available rood area,setting,,0.25
+PV,P_density,0.197,kW/m^2,PV power density,Panasonic datasheet,,0.1
 SOFC,Eff_elec,0.5,-,SOFC electric efficiency,Jan,,0.1
 SOFC,Eff_thermal,0.95,-,SOFC thermal efficiency,Jan,,0.1
 SOFC,GC_elec_frac,0.03,-,gas cleaning electric consumption fraction,Nils PdS,,0.1
@@ -25,13 +26,10 @@ GFS,Fueling_Time,10,h,Time to refuel 2 to 5 tractors in hours,gastsationpaper,,0
 Physical,Hours_per_year,8760,h/year,Hours in a year,fact,,0
 Physical,Cp_water,1.16222222222222,kWh/°C/m^3,Heat capacity of water,nist.gov,,0
 Physical,Biogas_CH4,0.6,-,Fraction of CO2 contained in Biogas,none,,0
-Physical,LSU_pigs,0.5,-,LSU per Pigs,ec.europa.eu,,0
-Physical,Manure_HHV_dry,3.694444444,kWh/kg-dry,Fresh cattle manure energy content HHV dry basis,Carlini 2017,10.3390/c5020027,0
-Physical,Manure_per_cattle,7.3,kg-dry/day/LSU,Cattle manure production dry basis,Carlini 2017,10.3390/c5020027,0
 Physical,Diesel_LHV,10,kWh/l,Diesel lower heating value per liter,engineeringtoolbox.com,,0
+Physical,Methane_per_pig,269.92,kWh/head/year,Methane yield from Anaerobig digestion of its manure,Scarlat 2018,,0
+Physical,Methane_per_cow,2971,kWh/head/year,Methane yield from Anaerobig digestion of its manure,Scarlat 2019,,0
 Farm,Ground_area,6601,m^2,Building ground surface area,geo.admin.ch,,0
-Farm,Pigs,55,-,Number of Pigs,SFF,,0
-Farm,Cows,65,-,Number of Pigs,SFF,,0
 Farm,cons_Elec_annual,787000,kWh/year,Annual electric consumption,SFF,,0
 Farm,cons_Heat_annual,1650000,kWh/year,Annual heat consumption,SFF,,0
 Farm,cons_Diesel_annual,8000,l/year,Annual diesel consumption for tractors,SFF,,0

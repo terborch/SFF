@@ -138,13 +138,18 @@ def pareto(objective_cstr, objective_free, Plot=True, Summary=True):
     solve_time.append(time.time() - start)
     
     # Generate evenly distributed pareto points
-    nsteps = 10 # Half of the number of pareto points
-    epsilon = 1e-6
-    step = (max_obj_cstr - min_obj_cstr)/(nsteps*2)
-    Limits_lin = np.arange(min_obj_cstr, max_obj_cstr, step)
-    Limits = np.concatenate((
-        np.linspace(min_obj_cstr*(1 + epsilon), Limits_lin[6], num=nsteps), 
-        np.linspace(Limits_lin[6], max_obj_cstr*(1 - epsilon), num=nsteps)[1:-1]))
+    # nsteps = 10 # Half of the number of pareto points
+    # epsilon = 1e-6
+    # step = (max_obj_cstr - min_obj_cstr)/(nsteps*2)
+    # Limits_lin = np.arange(min_obj_cstr, max_obj_cstr, step)
+    # Limits = np.concatenate((
+    #     np.linspace(min_obj_cstr*(1 + epsilon), Limits_lin[6], num=nsteps), 
+    #     np.linspace(Limits_lin[6], max_obj_cstr*(1 - epsilon), num=nsteps)[1:-1]))
+    
+    nsteps = 18
+    epsilon = 1e-3
+    Limits = np.linspace(min_obj_cstr*(1 + epsilon), max_obj_cstr*(1 - epsilon), 
+                         num=nsteps, endpoint=True)
     
     # print('\n')
     # print('min_obj_cstr', min_obj_cstr)
@@ -190,13 +195,13 @@ if __name__ == "__main__":
     # Execute single run
     # run('emissions', Reload=True)
     # run('totex')
-    run('emissions')
+    # run('emissions')
     #run_single('totex', save_fig=True, discard_fig=False)
     
     # Execute multi_run
     #pareto('capex', 'opex')
     # pareto('emissions', 'totex', Plot=False, Summary=False)
-    
+    pareto('emissions', 'totex', Plot=True, Summary=True)
     
     # diagnostic('totex')
     

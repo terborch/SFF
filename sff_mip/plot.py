@@ -62,8 +62,8 @@ def unit_size(path):
     plt.title('Installed capacity for each unit')
     fig.set_size_inches(8, 3)
     ax2 = ax1.twinx()
-    ax1.set_ylabel('Installed production capacity in kW')
-    ax2.set_ylabel('Installed storage capacity in kWh')
+    ax1.set_ylabel('Production capacity in kW')
+    ax2.set_ylabel('Storage capacity in kWh')
     ax1.set_xlim(-1, len(Units))
     ax1.set_ylim(0, max(Values['non_storage'])*1.25)
     ax2.set_ylim(0, max(Values['storage'])*1.25)
@@ -347,9 +347,9 @@ def pareto(*args, date=None, print_it=False):
         nbr = results.get_last_run_nbr(cd, 'Pareto')
         path = os.path.join(cd, f'Pareto_{nbr}')
         
-        if 'pareto.png' in [f for f in sorted(os.listdir(path))]:
-            print('Pareto figures already in pareto result folder')
-            return
+        # if 'pareto.png' in [f for f in sorted(os.listdir(path))]:
+        #     print('Pareto figures already in pareto result folder')
+        #     return
     
     def get_pareto_nbr(file_name):
         if 'totex' in file_name:
@@ -359,10 +359,10 @@ def pareto(*args, date=None, print_it=False):
         else:
             return int(file_name.split('_')[0]) - 1
         
-    Pareto_totex, Perto_emissions = [], []
+    Pareto_totex, Pareto_emissions = [], []
     list_of_files = [f for f in os.listdir(path)]
     Pareto_totex = np.zeros(len(list_of_files))
-    Perto_emissions = np.zeros(len(list_of_files))
+    Pareto_emissions = np.zeros(len(list_of_files))
     for file_name in list_of_files:
         run_nbr = get_pareto_nbr(file_name)
         if print_it:
@@ -372,7 +372,7 @@ def pareto(*args, date=None, print_it=False):
         df.set_index('Var_name', inplace=True)
         totex, emissions = float(df.loc['totex']), float(df.loc['emissions'])
         Pareto_totex[run_nbr-1] = totex
-        Perto_emissions[run_nbr-1] = emissions
+        Pareto_emissions[run_nbr-1] = emissions
         if print_it:
             print(f'run_{run_nbr}    ', 'TOTEX: {0:.4f} [MCHF]    '.format(totex), 
                   'emissions: {0:.5g} [t-CO2]'.format(emissions))
@@ -380,19 +380,20 @@ def pareto(*args, date=None, print_it=False):
     plt.title('Pareto possibility frontiere')
     plt.xlabel('TOTEX in [MCHF/year]')
     plt.ylabel('emissions in [t-CO2/year]')
-    plt.ylim(min(Perto_emissions)*0.95, max(Perto_emissions)*1.05)
+    plt.ylim(min(Pareto_emissions)*0.95, max(Pareto_emissions)*1.05)
     
     for file_name in (list_of_files):
         i = get_pareto_nbr(file_name)
-        plt.text(Pareto_totex[i - 1] + 0.0015, Perto_emissions[i - 1] + 0.0015, f'{i}')
+        plt.text(Pareto_totex[i - 1] + 0.0015, Pareto_emissions[i - 1] + 0.0015, f'{i}')
         
-    plt.scatter(Pareto_totex, Perto_emissions, label='emissions', marker='o')
+    plt.scatter(Pareto_totex, Pareto_emissions, label='emissions', marker='o')
     plt.plot()
     fig_path = os.path.join(path, 'pareto.png')
-    plt.savefig(fig_path)
+    # plt.savefig(fig_path)
+    plt.show()
     
     
-    Pareto_totex, Perto_emissions = [], []
+    Pareto_totex, Pareto_emissions = [], []
     
     n_pareto = len(list_of_files)
     fig, ax1 = plt.subplots(n_pareto, 1, sharex=True)

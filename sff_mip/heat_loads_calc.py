@@ -280,8 +280,8 @@ def ad_sizing():
     
     name = 'Sludge_volume'
     meta[name] = ['m^3', 'Sludge volume capacity', 'calc']
-    P[c,name] = np.ceil(P[c,'Residence_time']*P['Farm','LSU']*
-                        P['Physical','Manure_per_cattle']/
+    P[c,name] = np.ceil(P[c,'Residence_time']*P['AD','LSU']*
+                        P['AD','Manure_per_cattle']/
                        (1 - P[c,'Biomass_water'])/1000 )
     
     name = 'Cyl_volume'
@@ -337,7 +337,7 @@ def ad_gains(T_min):
     
     C_meta['Losses_biomass'] = ['Heat losses due to cold biomass input', 0, 'P']
     metadata = ['kW', 'Heat gains from irradiation', 'calc']
-    Losses_biomass = (((P['Farm', 'Biomass_prod']/P[p,'Manure_HHV_dry'])/
+    Losses_biomass = (((P['Farm', 'Biomass_prod']/P[c,'Manure_HHV_dry'])/
                           (1 - P[c,'Biomass_water']))*(P[p,'Cp_water']/1000)*
                          (T_min - Ext_T))
     make_param(c, 'Losses_biomass', 'inputs.h5', metadata)

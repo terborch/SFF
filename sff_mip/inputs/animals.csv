@@ -1,0 +1,19 @@
+Category,Name,Value,Units,Description,Source,doi,Uncertainty
+Calves,Nbr_at_farm,0.4,LSU,Number of animals in LSU,SFF,,0
+Dairy_cows,Nbr_at_farm,65,LSU,Number of animals in LSU,SFF,,0
+Pigs,Nbr_at_farm,40,LSU,Number of animals in LSU,SFF,,
+Sows,Nbr_at_farm,27.5,LSU,Number of animals in LSU,SFF,,
+Sheeps,Nbr_at_farm,3,LSU,Number of animals in LSU,SFF,,
+Goats,Nbr_at_farm,3,LSU,Number of animals in LSU,SFF,,
+Calves,LSU,0.5,LSU/head,Number of LSU per animal head,Scarlat 2018,,0
+Dairy_cows,LSU,1,LSU/head,Number of LSU per animal head,Scarlat 2018,,0
+Pigs,LSU,0.3,LSU/head,Number of LSU per animal head,Scarlat 2018,,
+Sows,LSU,0.5,LSU/head,Number of LSU per animal head,Scarlat 2018,,
+Sheeps,LSU,0.1,LSU/head,Number of LSU per animal head,Scarlat 2018,,
+Goats,LSU,0.1,LSU/head,Number of LSU per animal head,Scarlat 2018,,
+Calves,Methane_yield,396.1111,kWh/head/year,Methane yield from Anaerobig digestion of its manure,Scarlat 2018,,0
+Dairy_cows,Methane_yield,3017.222,kWh/head/year,Methane yield from Anaerobig digestion of its manure,Scarlat 2018,,0
+Pigs,Methane_yield,235.8333,kWh/head/year,Methane yield from Anaerobig digestion of its manure,Scarlat 2018,,
+Sows,Methane_yield,576.6666,kWh/head/year,Methane yield from Anaerobig digestion of its manure,Scarlat 2018,,
+Sheeps,Methane_yield,261.9444,kWh/head/year,Methane yield from Anaerobig digestion of its manure,Scarlat 2018,,
+Goats,Methane_yield,261.9444,kWh/head/year,Methane yield from Anaerobig digestion of its manure,Scarlat 2018,,

@@ -21,7 +21,7 @@ size, capex = {}, {}
 size['SOFC'] = 6 # kW electric installed capacity
 size['GCSOFC'] = size['SOFC']/P['SOFC', 'Eff_elec']
 
-Eff_GCSOFC = P['GCSOFC', 'Elec_cons']*P['SOFC', 'Eff_elec']     #kW_el/kW_biogas
+Eff_GCSOFC = P['GCSOFC', 'Elec_cons']   #kW_el/kW_biogas
 Biogas_cons = size['SOFC']/P['SOFC', 'Eff_elec']*t_op/1000      #MWh/an
 
 SOFC_eff = np.array([0.5, 0.55]) #Electric efficience low estimate, high estimate
