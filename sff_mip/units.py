@@ -351,10 +351,9 @@ def gfs(m, Days, Hours, unit_prod, unit_cons, unit_size, U_prod):
 
     n = f'{u}_Comp_Dry_Elec'
     C_meta[n] = ['Electricity requiered to compress and dry the Gas', 0]
-    m.addConstrs((
-        unit_cons['Elec',d,h] == sum(unit_cons[r,d,h]*(Elec_gfs[r]) 
-                                     for r in U_prod) 
-        for d in Days for h in Hours), n);
+    m.addConstrs((unit_cons['Elec',d,h] == sum(unit_cons[r,d,h]*Elec_gfs[r] 
+                                               for r in U_prod) 
+                  for d in Days for h in Hours), n);
     
     for r in U_prod:
         n = f'{u}_{r}_production'

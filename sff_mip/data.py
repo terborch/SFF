@@ -331,6 +331,8 @@ def annual_to_daily(Annual, Profile_norm):
 
     return np.array(Peak * Profile_norm)
 
+
+
 ###############################################################################
 ### Load weather clustering results and sorting algorythm
 ###############################################################################

@@ -1,0 +1,11 @@
+,Symbol,Value,Units,Source,Source
+cons_Elec_annual,$E^-_b$,$787$,$MWh/year$,SFF,Annual electric consumption
+cons_Heat_annual,$Q^{+ heating}_{b}$,$1650$,$MWh/year$,SFF,Annual heat consumption
+Gains_ppl,$\dot{q}^{+ ppl}$,$26$,$kWh/m^2/year$,Paul PDH,Heating Gains from People
+Elec_heat_frac,"$f_{E, Q}$",$0.9$,-,Dirk MA PdM,Fraction of heat produced by electricity consumber
+U_b,$U_b$,$206$,$W/^\circ C/m^2$,Paul PDH ,Building heat transmittance
+C_b,$C_b$,$0.12$,$kWh/^\circ C/m^2$,Paul PDH ,Building heat capacity
+A_b,$A^b_{heated}$,$14705$,$m^2$,map.geo.admin.ch,
+Absorptance,$\alpha_b$,$0.08$,-,None,Fraction of solar radiation absorbed relative to ground surface
+T_min,$T_{min}$,$18$,$^\circ C$,setting,Minimum indoor temperature
+T_max,$T_{max}$,$34$,$^\circ C$,setting,Maximum indoor temperature

@@ -241,7 +241,7 @@ def building_gains():
     c = 'build'
     meta = ['kW/m^2', 'Heat gains from people', 4]
     C_meta['Gains_ppl'] = ['Building people gains', 4, 'P']
-    Gains_ppl = annual_to_daily(P[c, 'Gains_ppl_mean'], Occupation)
+    Gains_ppl = annual_to_daily(P[c, 'Gains_ppl_annual'], Occupation)
     make_param(c, 'Gains_ppl', 'inputs.h5', meta)
     
     meta = ['kW/m^2', 'Heat gains from appliances', 3]
@@ -299,7 +299,7 @@ def ad_sizing():
     
     name = 'Ground_area'
     meta[name] = ['m^2', 'Ground floor area', 'calc']
-    P[c,name] = np.round( np.pi*P[c,'Diameter']**2/4, 2)
+    P[c,name] = np.round( np.pi*(P[c,'Diameter']/2)**2, 2)
     
     name = 'Cap_area'
     meta[name] = ['m^2', 'Surface area of the AD top cap', 'calc']
@@ -337,9 +337,9 @@ def ad_gains(T_min):
     
     C_meta['Losses_biomass'] = ['Heat losses due to cold biomass input', 0, 'P']
     metadata = ['kW', 'Heat gains from irradiation', 'calc']
-    Losses_biomass = (((P['Farm', 'Biomass_prod']/P[c,'Manure_HHV_dry'])/
-                          (1 - P[c,'Biomass_water']))*(P[p,'Cp_water']/1000)*
-                         (T_min - Ext_T))
+    Losses_biomass = ((P['Farm', 'Biomass_prod']/(P[c,'Manure_HHV_dry']*
+                    (1 - P[c,'Biomass_water'])))*(P[p,'Cp_water']/1000)*
+                    (T_min - Ext_T))
     make_param(c, 'Losses_biomass', 'inputs.h5', metadata)
     
     n = 'Losses_ground'
@@ -399,7 +399,7 @@ def generate(path, Clustered_days, Frequence):
         Building = True
         )
     
-    # Add safety margin to the last heat load
+    # Add safety margin to the first max heat load
     Max_load = np.where(heat_load_modeled==heat_load_modeled.max())   
     Max_load_idx = (Max_load[0][0], Max_load[1][0])
     heat_load_modeled[Max_load_idx] *= P['build']['Safety_factor'] 

@@ -184,13 +184,13 @@ def save_txt(m, path_dir):
     file_name = 'vars_above_10k.txt'
     with open(os.path.join(path_dir, file_name), 'w') as f:
         for v in m.getVars():
-            if v.x > 10000:
+            if v.x > 8000:
                 print(v.varName + ': {:.2f}\n'.format(v.x), file=f)
     
-    file_name = 'vars_above_10k.txt'
-    with open(os.path.join(path_dir, file_name), 'w') as f:
-        for v in m.getVars():
-                print(v.varName + ': {:.2f}\n'.format(v.x), file=f)
+    # file_name = 'vars_above_10k.txt'
+    # with open(os.path.join(path_dir, file_name), 'w') as f:
+    #     for v in m.getVars():
+    #             print(v.varName + ': {:.2f}\n'.format(v.x), file=f)
 
                     
 def summary(result_path, save=True):

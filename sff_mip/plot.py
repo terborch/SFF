@@ -11,7 +11,7 @@ import numpy as np
 import os.path
 # Internal modules
 from read_inputs import (Periods, dt_end, Days, Hours, Ext_T, Irradiance, 
-                         Build_cons, Build_T, AD_T)
+                         Build_cons, Build_T, AD_T, Fueling, Frequence)
 from global_set import (Units, Units_storage, Resources, Color_code, 
                         Linestyle_code, Linestyles, Abbrev)
 import results
@@ -36,7 +36,7 @@ fig_width, fig_height = 11.7*2, 5.8
 ### Primary methods
 ###############################################################################
 def plot_value(axis, x_position, value):
-    if value > 0:
+    if np.round(value) > 0:
         ysize = axis.get_ylim()[1] - axis.get_ylim()[0]
         axis.text(x_position, value + ysize*0.05, '{:.0f}'.format(value))
 
@@ -84,45 +84,6 @@ def unit_size(path):
                [Abbrev[Names_order[i]] for i in range(len(Units))])
     fig.autofmt_xdate()
     plt.tight_layout()
-
-
-def unit_temperature(path):
-    """ Plot the building and AD temperature against externale temperature and
-        Irradiance.
-        # TODO option to plot daily averages only
-    """    
-    # Items to plot
-    Time_steps = list(range(len(Hours)*len(Days)))
-    items = {}
-    items['name'] = ['Build_T', 'AD_T', 'Ext_T', 'Irradiance']
-    items['value'] = [Build_T, AD_T, Ext_T, Irradiance]
-    items['label'] = ['Building Temperature', 'AD Temperature', 
-                      'External Temperature', 'Irradiance']
-    items['color'] = ['black', 'green', 'blue', 'red']
-    
-    # Plot options 
-    fig, ax1 = plt.subplots()
-    fig.set_size_inches(fig_width, fig_height)
-    plt.title('Building and unit temperatures')
-    ax1.set_xlabel('Dates')
-    ax1.set_ylabel('Temperature in °C')
-    set_x_ticks(ax1, Time_steps)
-    ax2 = ax1.twinx()
-    ax2.set_ylabel('Global Irradiance in kW/m^2')
-    
-    # Store plot in plt object
-    for i, n in enumerate(items['name'][:-1]):
-        ax1.scatter(Time_steps, items['value'][i].flatten(), label=items['label'][i], 
-                 color=items['color'][i], s = 5)
-    n = 'Irradiance'
-    ax2.plot(Time_steps, items['value'][3].flatten(), label=n, color=items['color'][3])
-    ax1.legend(loc='upper left') 
-    ax2.legend(loc='upper right')
-    
-    # if daily:
-    #     Dates = Day_Dates
-    #     for i in range(len(items['value'])):
-    #         items['value'][i] = np.mean(items['value'][i], axis=1)
 
 
 def all_results(Per_cent_vary, path):
@@ -314,8 +275,8 @@ def all_fig(path, save_fig=True):
     unit_size(path)
     print_fig(save_fig, os.path.join(cd, 'installed_capacity.png'))
         
-    unit_temperature(path)
-    print_fig(save_fig, os.path.join(cd, 'temperature_results.png'))
+    # unit_temperature(path)
+    # print_fig(save_fig, os.path.join(cd, 'temperature_results.png'))
     
     Per_cent_vary = 1.01
     all_results(Per_cent_vary, path)
@@ -352,61 +313,60 @@ def pareto(*args, date=None, print_it=False):
         #     return
     
     def get_pareto_nbr(file_name):
-        if 'totex' in file_name:
-            return len(list_of_files)
-        elif 'emissions_Limit_None' in file_name:
-            return 1
-        else:
-            return int(file_name.split('_')[0]) - 1
-        
-    Pareto_totex, Pareto_emissions = [], []
+        return int(file_name.split('_')[0])
+    
+    ### Pareto scatter plot
+    Pareto = []
     list_of_files = [f for f in os.listdir(path)]
-    Pareto_totex = np.zeros(len(list_of_files))
-    Pareto_emissions = np.zeros(len(list_of_files))
     for file_name in list_of_files:
-        run_nbr = get_pareto_nbr(file_name)
-        if print_it:
-            print('\n ------------------------------------------------- \n')
         file_path = os.path.join(path, file_name, 'results.h5')
         df = get_hdf(file_path, 'single')
         df.set_index('Var_name', inplace=True)
         totex, emissions = float(df.loc['totex']), float(df.loc['emissions'])
-        Pareto_totex[run_nbr-1] = totex
-        Pareto_emissions[run_nbr-1] = emissions
-        if print_it:
-            print(f'run_{run_nbr}    ', 'TOTEX: {0:.4f} [MCHF]    '.format(totex), 
-                  'emissions: {0:.5g} [t-CO2]'.format(emissions))
+        Pareto.append([file_name, totex, emissions])
         
+    # Sort the Pareto list along totex
+    Pareto.sort(key=lambda x: x[1])
+    Totex = [sublist[1] for sublist in Pareto]
+    Emissions = [sublist[2] for sublist in Pareto]
+    
+    # Plot options
     plt.title('Pareto possibility frontiere')
     plt.xlabel('TOTEX in [MCHF/year]')
-    plt.ylabel('emissions in [t-CO2/year]')
-    plt.ylim(min(Pareto_emissions)*0.95, max(Pareto_emissions)*1.05)
+    plt.ylabel('emissions in [kt-CO2/year]')
+    plt.ylim(min(Emissions)*0.95, max(Emissions)*1.05)
     
-    for file_name in (list_of_files):
-        i = get_pareto_nbr(file_name)
-        plt.text(Pareto_totex[i - 1] + 0.0015, Pareto_emissions[i - 1] + 0.0015, f'{i}')
+    # Plot pareto point number
+    for i, _ in enumerate(Totex):
+        # Text on graph
+        plt.text(Totex[i] + 0.0015, Emissions[i] + 0.0015, f'{i + 1}')
         
-    plt.scatter(Pareto_totex, Pareto_emissions, label='emissions', marker='o')
-    plt.plot()
+        # Rename directories according to the pareto points
+        l = Pareto[i][0].split('_')
+        l[0] = f'{i+1}'
+        name = '_'.join(l)
+        cd_old = os.path.join(path, Pareto[i][0])
+        cd_new = os.path.join(path, name)
+        os.rename(cd_old, cd_new)
+    
+    # Grab the list of files with new names and deduce next graph size
+    list_of_files = [f for f in os.listdir(path)]
+    
+    # Pareto scatter plot
+    plt.scatter(Totex, Emissions, label='emissions', marker='o')
+    
+    # Save figure
     fig_path = os.path.join(path, 'pareto.png')
-    # plt.savefig(fig_path)
-    plt.show()
+    plt.savefig(fig_path)
     
-    
-    Pareto_totex, Pareto_emissions = [], []
-    
+    ### Pareto units installed
     n_pareto = len(list_of_files)
     fig, ax1 = plt.subplots(n_pareto, 1, sharex=True)
     fig.set_size_inches(8, 2*n_pareto)
     fig.subplots_adjust(hspace=0)
     ax2 = np.array(range(n_pareto), dtype=object)
-    
-    def plot_value(axis, x_position, value):
-        if value > 0:
-            ysize = axis.get_ylim()[1] - axis.get_ylim()[0]
-            axis.text(x_position, value + ysize*0.05, '{:.0f}'.format(value))
-    
-    # Split into torage and non storage units
+
+    # Split into storage and non storage units
     Names, Values = {}, {}
     Units_ns = list(set(Units) - set(Units_storage))
     Units_ns.sort()
@@ -425,8 +385,8 @@ def pareto(*args, date=None, print_it=False):
     
         # Figure options
         ax2[p] = ax1[p].twinx()
-        ax1[p].set_ylabel(f'{p} \n Capacity in kW')
-        ax2[p].set_ylabel(f'Capacity in kWh \n {p}')
+        ax1[p].set_ylabel(f'{p + 1} \n Capacity in kW')
+        ax2[p].set_ylabel(f'Capacity in kWh \n {p + 1}')
         ax1[p].set_xlim(-1, len(Units))
         ax1[p].set_ylim(0, max(Values['non_storage'])*1.2)
         ax2[p].set_ylim(0, max(Values['storage'])*1.2)
@@ -454,12 +414,102 @@ def pareto(*args, date=None, print_it=False):
     fig_path = os.path.join(path, 'units.png')
     plt.savefig(fig_path)
     
+    
    
 def inputs():
+    """ Represent all inputs in a few graphs.
+        1. Frequency, Temperature and Irradiance are presented once at top
+        2. Unit temperatures
+        3. Heat consumption
+        4. Fuel Consumption
+    """
+    
+    def frequency(ax):
+        # Frequency in background
+        ax3 = ax.twinx()
+        ax3.spines['top'].set_visible(False)
+        ax3.axis('off')
+        ax3.bar(Time_steps[int(len(Hours)/2)::len(Hours)], Frequence.T[0], 
+                alpha=0.15, width=23, color='grey', label='Freuqnecy')
+        return ax3
+    
+    def temperature(ax):
+        ax2 = ax.twinx()
+        ax2.spines['top'].set_visible(False)
+        ax2.set_ylabel('Temperature in °C')
+        ax2.step(Time_steps, Ext_T.flatten(), label='Exterior Temperature', 
+             color='blue')    
+        return ax2
+    
+    Time_steps = list(range(len(Hours)*len(Days)))
+    fig_width, fig_height = 11.7*2, 5.8
+    
+    """ Weather and Frequency """
+    fig, ax1 = plt.subplots()
+    fig.set_size_inches(fig_width, fig_height)
+    set_x_ticks(ax1, Time_steps)
+    ax2 = ax1.twinx()
+    
+    ax1.spines['top'].set_visible(False)
+    ax2.spines['top'].set_visible(False)
+    
+    plt.title('Weather and Frequency of each of typical day')
+    ax1.set_xlabel('Clustered Days')
+    ax1.set_ylabel('Temperature in °C')
+    ax2.set_ylabel('Global Irradiance in kW/m^2')
+    
+    ax3 = frequency(ax1)
+    position = [f + 1 for f in Frequence.T[0]]
+    position[2:-2] = [f/2 for f in Frequence.T[0][2:-2]]
+    for i, f in enumerate(Frequence.T[0]):
+        ax3.text(Time_steps[int(len(Hours)/2)::len(Hours)][i], position[i],
+                 int(f), horizontalalignment='center')
+    
+    ax1.step(Time_steps, Ext_T.flatten(), label='Exterior Temperature', 
+             color='blue')    
+    ax2.step(Time_steps, Irradiance.flatten(), label='Irradiance', color='red')
+    ax1.legend(loc='upper left') 
+    ax2.legend(loc='upper right')
+    ax3.legend(loc='upper center')
+    
+    def reduce(ax, percent):
+        ax.set_ylim(ax.get_ylim()[0], ax.get_ylim()[1]*percent)
+    reduce(ax1, 1.2)
+    reduce(ax2, 1.2)
+    reduce(ax3, 1.1)
+
+    
+    
+    """ Unit Temperatures """
+    fig, ax1 = plt.subplots()
+    fig.set_size_inches(fig_width, fig_height)
+    set_x_ticks(ax1, Time_steps)
+    ax1.spines['top'].set_visible(False)
+    ax1.spines['right'].set_visible(False)
+
+    plt.title('Weather and Frequency of each of typical day')
+    ax1.set_xlabel('Clustered Days')
+    ax1.set_ylabel('Temperature in °C')
+    ax3 = frequency(ax1)
+    
+    ax1.step(Time_steps, Ext_T.flatten(), label='Exterior Temperature', 
+             color='blue')  
+    ax1.scatter(Time_steps, Build_T.flatten(), label='Building Tempreature', 
+              color='black', s = 5)
+    ax1.scatter(Time_steps, AD_T.flatten(), label='AD Temperature', 
+              color='green', s = 5)
+    
+    ax1.legend()
+    
+    
+    
     
     """ Electric Consumption in a day """
     Profile = Build_cons['Elec'].T[0]
-    plt.step(Hours, Profile, where='post', c='black')
+    fig, ax1 = plt.subplots()
+    ax1.spines['right'].set_visible(False)
+    ax1.spines['top'].set_visible(False)
+    plt.step(Hours, Profile, where='post', c='blue')
     plt.title('Instant Electric Consumption')
     plt.ylabel('Electric Consumption in kW')
     plt.xlabel('Time of the day in Hours')       
@@ -467,37 +517,53 @@ def inputs():
     plt.ylim(0,250)
     plt.show()
 
-    """ Heat Consumption in a year """
-    
-    Time_steps = list(range(len(Hours)*len(Days)))
-    
-    from read_inputs import Build_cons, AD_cons_Heat
 
-    fig_width, fig_height = 11.7*2, 5.8
-    from matplotlib import pyplot as plt
+
+    """ Heat Consumption in a year """
     def set_x_ticks(ax1, Time_steps):
         day_tics = [f'Day {d+1}' for d in Days]
         ax1.set_xticks(Time_steps[12::24], minor=False)
         ax1.set_xticklabels(day_tics, fontdict=None, minor=False)  
     
-    
     fig, ax1 = plt.subplots()
     fig.set_size_inches(fig_width, fig_height)
     plt.title('Heat Consumption')
-    ax1.set_xlabel('Dates')
+    ax1.spines['top'].set_visible(False)
+    
+    ax1.set_xlabel('Clustered Days')
     ax1.set_ylabel('Building Heat consumption in kW')
     set_x_ticks(ax1, Time_steps)
-    ax2 = ax1.twinx()
-    ax2.set_ylabel('AD Heat Consumption in kW')
-        
-    n = 'Building Heat Consumption'
-    ax1.plot(Time_steps, Build_cons['Heat'].flatten(), label=n, c='black')
-    n = 'AD Heat Consumption'
-    ax2.plot(Time_steps, AD_cons_Heat.flatten(), label=n, c='green')
     
+    # Frequency in background
+    ax3 = frequency(ax1)
+    ax2 = temperature(ax1)
+    n = 'Building Heat Consumption'
+    ax1.step(Time_steps, Build_cons['Heat'].flatten(), label=n, c='red')
+    # n = 'AD Heat Consumption'
+    # ax2.step(Time_steps, AD_cons_Heat.flatten(), label=n, c='green')
+    
+    ax1.legend(loc='upper left')
+    ax2.legend(loc='upper right')
     plt.show()
     
     
+    """ Fuel consumption """
+    title = 'Fuel Consumption'
+    fig, ax1 = plt.subplots()
+    fig.set_size_inches(fig_width, fig_height)
+    plt.title(title)
+    ax1.spines['top'].set_visible(False)
+    ax1.set_xlabel('Clustered Days')
+    ax1.set_ylabel('Fuel consumption in kW')
+    set_x_ticks(ax1, Time_steps)
+    ax2 = temperature(ax1)
+    ax3 = frequency(ax1)
+    n = 'Fuel Consumption'
+    ax1.step(Time_steps, Fueling.flatten(), label=n, c='black')
+    
+    ax1.legend(loc='upper left')
+    ax2.legend(loc='upper right')
+    plt.show()
     
     
 def clustering(Number_of_clusters):
@@ -643,6 +709,9 @@ def unit_labels(unit_name):
     return '{} {} {}'.format(l[1][:-1], l[0], l[2][:-1])
 
 
+def make_patch_spines_invisible(ax):
+    for p in ['top', 'right', 'left']:
+        ax.spines[p].set_visible(False)
 
 ###############################################################################
 ### END

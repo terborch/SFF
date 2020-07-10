@@ -152,11 +152,11 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod, unit_install):
     n = 'Balance_' + r
     C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
     m.addConstrs((unit_prod['AD'][r,d,h] + unit_prod['CGT'][r,d,h] - unused[r,d,h] ==
-                  # sum(unit_cons[uc][r,d,h] if uc != 'SOFC' 
-                  #     else None for uc in U_res['cons'][r])
-                   unit_cons['GCSOFC'][r,d,h] + unit_cons['GBOI'][r,d,h] + 
-                   unit_cons['ICE'][r,d,h] + unit_cons['CGT'][r,d,h] + 
-                   unit_cons['GFS'][r,d,h] 
+                   # sum(unit_cons[uc][r,d,h] for uc in 
+                   #     [u for u in U_res['cons'][r] if u != 'SOFC'])
+                    unit_cons['GCSOFC'][r,d,h] + unit_cons['GBOI'][r,d,h] + 
+                    unit_cons['ICE'][r,d,h] + unit_cons['CGT'][r,d,h] +
+                    unit_cons['GFS'][r,d,h] 
                   for d in Days for h in Hours), n);
     
     r = 'Biogas_cleaned_for_SOFC'
@@ -194,16 +194,16 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod, unit_install):
     r = 'Tractor_fuel'
     n = 'Balance_' + r
     C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
-    m.addConstrs((unit_prod['GFS']['Biogas',d,h] + unit_prod['GFS']['Gas',d,h] 
-                  == Fueling[d,h]*unit_install['GFS'] 
+    m.addConstrs((unit_prod['GFS']['Biogas',d,h] + unit_prod['GFS']['Gas',d,h] == 
+                  Fueling[d,h]*unit_install['GFS'] 
                   for d in Days for h in Hours), n);
     
     # Heat balance
     r = 'Heat'
     n = 'Balance_' + r
     C_meta[n] = ['Heat sinks equal to heat sources', 0]
-    m.addConstrs((unit_cons['AD'][r,d,h] + Build_cons[r][d,h] + unused[r,d,h] ==
-                  sum(unit_prod[up][r,d,h] for up in U_res['prod'][r])
+    m.addConstrs((sum(unit_prod[up][r,d,h] for up in U_res['prod'][r]) ==
+                  unit_cons['AD'][r,d,h] + Build_cons[r][d,h] + unused[r,d,h]                  
                   for d in Days for h in Hours), n);
     
     # Total annual import / export
@@ -278,7 +278,7 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
     C_meta[n] = ['Sum of the OPEX of all resources', 0]
     m.addConstr(opex == sum(grid_import_a[r]*P[r,'Import_cost'] - 
                             grid_export_a[r]*P[r,'Export_cost'] 
-                            for r in G_res) 
+                            for r in G_res)/1000 
                         + sum(unit_capex[u]*P[u,'Maintenance']/
                               annualize(P[u,'Life'], P['Farm','i'])
                               for u in Units), n);
@@ -289,15 +289,15 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
     
     # CO2 emissions
     n = 'emissions'
-    V_meta[n] = ['t-CO2', 'Annual total CO2 emissions', 'unique']
+    V_meta[n] = ['kt-CO2', 'Annual total CO2 emissions', 'unique']
     emissions = m.addVar(lb=-Tight, ub=Tight, name=n)
     
     c = 'Emissions'
     n = 'Emissions'
     C_meta[n] = ['Instant CO2 emissions relative to Elec and Gas imports', 0]
     m.addConstr(emissions == 
-                sum(grid_import_a[r]*P[r,c] for r in G_res) + 
-                sum(unit_size[u]*P[u,'LCA']/P[u,'Life']/1000 for u in Units), n);
+                (sum(grid_import_a[r]*P[r,c] for r in G_res) + 
+                sum(unit_size[u]*P[u,'LCA']/P[u,'Life'] for u in Units))/1000, n);
     
     C_meta['Limit_emissions'] = ['Fix a limit to the emissions, for Pareto only', 0]
     C_meta['Limit_totex'] = ['Fix a limit to the TOTEX, for Pareto only', 0]
@@ -358,36 +358,44 @@ def run(objective, Limit=None, relax=False):
         unit_capex)
 
     
-    def minimize_totex():
-        m.setObjective(totex, GRB.MINIMIZE)
+
     def minimize_opex():
         m.setObjective(opex, GRB.MINIMIZE)
     def minimize_capex():
         m.setObjective(capex, GRB.MINIMIZE)
-    def minimize_emissions():
-        m.setObjective(emissions, GRB.MINIMIZE)
+
     def minimize_totex_tax_co2():
         m.setObjective(totex + emissions*P['CO2']['Tax'], GRB.MINIMIZE)
+    def pareto_constrained_capex(Limit_capex):
+        print('-----------------{}--------------------'.format(Limit_capex))
+        m.addConstr(capex <= Limit_capex, 'Limit_capex');
+        m.setObjective(opex, GRB.MINIMIZE)
+    
+    def minimize_totex():
+        m.setObjective(totex, GRB.MINIMIZE)
+    def minimize_emissions():
+        m.setObjective(emissions, GRB.MINIMIZE)
+        
     def pareto_constrained_totex(Limit_totex):
+        print('-----------------{}--------------------'.format(Limit_totex))
         m.addConstr(totex <= Limit_totex, 'Limit_totex')
         m.setObjective(emissions, GRB.MINIMIZE)
     def pareto_constrained_emissions(Limit_emissions):
         print('-----------------{}--------------------'.format(Limit_emissions))
         m.addConstr(emissions <= Limit_emissions, 'Limit_emissions');
         m.setObjective(totex, GRB.MINIMIZE)
-    def pareto_constrained_capex(Limit_capex):
-        print('-----------------{}--------------------'.format(Limit_capex))
-        m.addConstr(capex <= Limit_capex, 'Limit_capex');
-        m.setObjective(opex, GRB.MINIMIZE)
         
-    switcher = {'totex': minimize_totex,
-            'opex': minimize_opex,
-            'capex': minimize_capex,
-            'emissions': minimize_emissions,
-            'totex_tax_co2': minimize_totex_tax_co2,
-            'pareto_totex': pareto_constrained_totex,
-            'limit_emissions': pareto_constrained_emissions,
-            'limit_capex': pareto_constrained_capex
+    switcher = {
+        'totex': minimize_totex,
+        'emissions': minimize_emissions,
+        'limit_totex': pareto_constrained_totex,
+        'limit_emissions': pareto_constrained_emissions,
+
+        'opex': minimize_opex,
+        'capex': minimize_capex,
+        'totex_tax_co2': minimize_totex_tax_co2,
+        'pareto_totex': pareto_constrained_totex,
+        'limit_capex': pareto_constrained_capex
         }
     
     set_objective(m, switcher, objective, Limit=Limit, relax=False)

@@ -114,12 +114,13 @@ def biomass_prod(file):
     Biomass_prod = Biogas_prod/P['AD','Eff']
     data.make_param('Farm', 'Biomass_prod', Biomass_prod, meta)
 
+
 def tractor_fueling(Days, Hours, Frequence, Ext_T):
     """ Generate a fueling profile based on annual diesel consumption, 
         weather and fueling time. The fueling takes place from 18:00 to
         04:00. Check that the sum of the fueling profile equals annual 
         consumption and cause an error if not.
-    """
+    """ 
     Daily_avg_T = np.mean(Ext_T, axis=1)
     Fueling_days = np.sum(Frequence[Daily_avg_T > P['Farm', 'Temp_tractors']])
     

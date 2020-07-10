@@ -17,9 +17,7 @@ start = time.time()
 # External modules
 import os.path
 from datetime import datetime
-#import pandas as pd
 import matplotlib.pyplot as plt
-#import matplotlib
 import numpy as np
 from importlib import reload
 
@@ -29,13 +27,7 @@ start_construct = time.time()
 import model
 import read_inputs
 import results
-#from param_input import V_meta, V_bounds, P, P_meta, Closest, Hours, Periods, Days
-#from param_calc import Irradiance, Ext_T, Dates
 import plot
-#from plot import fig_width, fig_height
-
-
-#Days = list(range(len(Closest)))
 
 from read_inputs import Periods, Days, Hours
 
@@ -53,7 +45,7 @@ def run(objective, Reload=False, relax=False, Pareto=False, Limit=None,
     # Option to generate a new input.h5 file 
     if Reload:
         import write_inputs
-        write_inputs.write_arrays('default', Cluster=True)
+        write_inputs.write_arrays('default', Cluster=False)
            
     
     start_solve = time.time()
@@ -118,55 +110,85 @@ Objective_description = {
     'pareto_emissions': 'TOTEX minimization with constrained emissions at the minimum',
     }
 
+
 def get_objective_value(objective, path):
     df = results.get_hdf(path, 'single')
     df.set_index('Var_name', drop=True, inplace=True)
     return df['Value'][objective]
 
 
-def pareto(objective_cstr, objective_free, Plot=True, Summary=True):
-    solve_time = []
+def pareto(objective_x, objective_y, N_points, Plot=True, Summary=True):
     
-    # Find the true minimum of objective_cstr
-    path = run(objective_cstr, Pareto=True, Limit=None, Plot=Plot, Summary=Summary)
-    min_obj_cstr = get_objective_value(objective_cstr, path)
-    solve_time.append(time.time() - start)
     
-    # Find the true maximum of objective_cstr
-    path = run(objective_free, Pareto=True, Limit=None, Plot=Plot, Summary=Summary)
-    max_obj_cstr = get_objective_value(objective_cstr, path)
-    solve_time.append(time.time() - start)
+    def disctance(x, y):
+        """ Given x, y coordinates of n points returns the euclidean distance
+            between each set of two points that follows each other.
+        """
+        N_points = len(x)
+        d = []
+        for i in range(N_points - 1):
+            d.append(((x[i] - x[i+1])**2 + (y[i] - y[i+1])**2)**0.5)
+        return d
     
-    # Generate evenly distributed pareto points
-    # nsteps = 10 # Half of the number of pareto points
-    # epsilon = 1e-6
-    # step = (max_obj_cstr - min_obj_cstr)/(nsteps*2)
-    # Limits_lin = np.arange(min_obj_cstr, max_obj_cstr, step)
-    # Limits = np.concatenate((
-    #     np.linspace(min_obj_cstr*(1 + epsilon), Limits_lin[6], num=nsteps), 
-    #     np.linspace(Limits_lin[6], max_obj_cstr*(1 - epsilon), num=nsteps)[1:-1]))
+    def choose_objective(x1, x2, y1, y2):
+        """ Calculates the slope between two points and terun 'x' if it is lower
+            than 1 and 'y' if it is greater than 1. (absolute value)
+        """
+        m = (y2 - y1)/(x2 - x1)
+        if np.abs(m) <= 1:
+            return objective_x
+        else:
+            return objective_y
     
-    nsteps = 18
-    epsilon = 1e-3
-    Limits = np.linspace(min_obj_cstr*(1 + epsilon), max_obj_cstr*(1 - epsilon), 
-                         num=nsteps, endpoint=True)
-    
-    # print('\n')
-    # print('min_obj_cstr', min_obj_cstr)
-    # print('max_obj_cstr', max_obj_cstr)
-    # print('Limits_lin', Limits_lin)
-    # print('Limts', Limits)
-    # print('\n')
-    
-    # Compute pareto points
-    for i in range(1, len(Limits)):
-        objective = 'limit_' + objective_cstr
-        run(objective, Pareto=True, Limit=Limits[i], Plot=Plot, Summary=Summary)
+    def make_point(s, obj, x, y):
+        """ Make a new point in the middle of a segment s, relative to an objective
+            and insert it to the x, y list of points.
+        """
+        objective = 'limit_' + obj
+        
+        if obj == objective_x:
+            limit = (x[s] - x[s-1])/2 + x[s-1]
+        elif obj == objective_y:
+            limit = (y[s-1] - y[s])/2 + y[s]
+   
+        path = run(objective, Pareto=True, Limit=limit, Plot=Plot, Summary=Summary)
         solve_time.append(time.time() - start)
         plt.close('all')
-  
+        x.insert(s, get_objective_value(objective_x, path))
+        y.insert(s, get_objective_value(objective_y, path))
+    
+        
+    solve_time = []
+    # Find the true minimum of objective_x
+    path = run(objective_x, Pareto=True, Limit=None, Plot=Plot, Summary=Summary)
+    min_x = get_objective_value(objective_x, path)
+    max_y = get_objective_value(objective_y, path)
+    solve_time.append(time.time() - start)
+    
+    # Find the true maximum of objective_y
+    path = run(objective_y, Pareto=True, Limit=None, Plot=Plot, Summary=Summary)
+    max_x = get_objective_value(objective_x, path)
+    min_y = get_objective_value(objective_y, path)
+    solve_time.append(time.time() - start)
+    
+    # List of pareto results
+    x = [min_x, max_x]
+    y = [max_y, min_y]
+    
+    # add n new pareto points to the x, y list
+    for i in range(N_points - 2):
+        # Longest segment number
+        s = np.argmax(disctance(x, y)) + 1
+        # Objective according to slope
+        obj = choose_objective(x[s], x[s-1], y[s], y[s-1])
+        # Insert new point in the middle of the longest segment
+        make_point(s, obj, x, y)
+    
+    
     # Plot pareto graphs
     plot.pareto(date=today)
+    
+    # plt.scatter(x,y)
     
     
 def diagnostic(objective):
@@ -194,14 +216,12 @@ def diagnostic(objective):
 if __name__ == "__main__":
     # Execute single run
     # run('emissions', Reload=True)
-    # run('totex')
+    # run('totex', Save_txt=True)
     # run('emissions')
     #run_single('totex', save_fig=True, discard_fig=False)
     
     # Execute multi_run
-    #pareto('capex', 'opex')
-    # pareto('emissions', 'totex', Plot=False, Summary=False)
-    pareto('emissions', 'totex', Plot=True, Summary=True)
+    pareto('totex', 'emissions', 8, Plot=True, Summary=True)
     
     # diagnostic('totex')
     
@@ -244,7 +264,49 @@ plot.all_fig(path, save_fig=True)
 
 
 
-
+# def pareto(objective_cstr, objective_free, Plot=True, Summary=True):
+#     solve_time = []
+    
+#     # Find the true minimum of objective_cstr
+#     path = run(objective_cstr, Pareto=True, Limit=None, Plot=Plot, Summary=Summary)
+#     min_obj_cstr = get_objective_value(objective_cstr, path)
+#     solve_time.append(time.time() - start)
+    
+#     # Find the true maximum of objective_cstr
+#     path = run(objective_free, Pareto=True, Limit=None, Plot=Plot, Summary=Summary)
+#     max_obj_cstr = get_objective_value(objective_cstr, path)
+#     solve_time.append(time.time() - start)
+    
+#     # Generate evenly distributed pareto points
+#     # nsteps = 10 # Half of the number of pareto points
+#     # epsilon = 1e-6
+#     # step = (max_obj_cstr - min_obj_cstr)/(nsteps*2)
+#     # Limits_lin = np.arange(min_obj_cstr, max_obj_cstr, step)
+#     # Limits = np.concatenate((
+#     #     np.linspace(min_obj_cstr*(1 + epsilon), Limits_lin[6], num=nsteps), 
+#     #     np.linspace(Limits_lin[6], max_obj_cstr*(1 - epsilon), num=nsteps)[1:-1]))
+    
+#     nsteps = 6
+#     epsilon = 1e-6
+#     Limits = np.linspace(min_obj_cstr*(1 + epsilon), max_obj_cstr*(1 - epsilon), 
+#                          num=nsteps, endpoint=True)
+    
+#     # print('\n')
+#     # print('min_obj_cstr', min_obj_cstr)
+#     # print('max_obj_cstr', max_obj_cstr)
+#     # print('Limits_lin', Limits_lin)
+#     # print('Limts', Limits)
+#     # print('\n')
+    
+#     # Compute pareto points
+#     for i in range(1, len(Limits)):
+#         objective = 'limit_' + objective_cstr
+#         run(objective, Pareto=True, Limit=Limits[i], Plot=Plot, Summary=Summary)
+#         solve_time.append(time.time() - start)
+#         plt.close('all')
+  
+#     # Plot pareto graphs
+#     plot.pareto(date=today)
 
 
 
