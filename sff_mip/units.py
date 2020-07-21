@@ -24,9 +24,9 @@ def t(*args):
 def gboi(m, Days, Hours, unit_prod, unit_cons, unit_size):
     n = 'GBOI_production'
     C_meta[n] = ['Heat produced relative to Gas and Biogas consumed and Efficiency', 2]
-    m.addConstrs((unit_prod['Heat',d,h] == (unit_cons['Biogas',d,h] + 
-                                            unit_cons['Gas',d,h])*P['GBOI','Eff'] 
-                  for d in Days for h in Hours), n);
+    m.addConstrs((unit_prod['Heat',d,h] == P['GBOI','Eff']*(
+        unit_cons['Biogas',d,h] + unit_cons['Gas',d,h]) 
+        for d in Days for h in Hours), n);
     
     n = 'GBOI_size'
     C_meta[n] = ['Upper limit on Heat produced relative to installed capacity', 1]
@@ -42,7 +42,7 @@ def gboi(m, Days, Hours, unit_prod, unit_cons, unit_size):
 def wboi(m, Days, Hours, unit_prod, unit_cons, unit_size):
     n = 'WBOI_production'
     C_meta[n] = ['Heat produced relative to Gas and Biogas consumed and Efficiency', 3]
-    m.addConstrs((unit_prod['Heat',d,h] == unit_cons['Wood',d,h]*P['WBOI','Eff']  
+    m.addConstrs((unit_prod['Heat',d,h] == P['WBOI','Eff']*unit_cons['Wood',d,h] 
                   for d in Days for h in Hours), n);
     
     n = 'WBOI_size'
@@ -59,7 +59,7 @@ def wboi(m, Days, Hours, unit_prod, unit_cons, unit_size):
 def eh(m, Days, Hours, unit_prod, unit_cons, unit_size):
     n = 'EH_production'
     C_meta[n] = ['Heat produced relative to Electricity consumed and Efficiency', 4]
-    m.addConstrs((unit_prod['Heat',d,h] == unit_cons['Elec',d,h]*P['EH','Eff']
+    m.addConstrs((unit_prod['Heat',d,h] == P['EH','Eff']*unit_cons['Elec',d,h]
                   for d in Days for h in Hours), n);
     
     n = 'EH_size'
@@ -79,12 +79,12 @@ def ahp(m, Days, Hours, unit_prod, unit_cons, unit_size):
     """
     n = 'AHP_Heat_production'
     C_meta[n] = ['Heat produced relative to Elec consumed and COP', 5]
-    m.addConstrs((unit_prod['Heat',d,h] == unit_cons['Elec',d,h]*P['AHP','COP']
+    m.addConstrs((unit_prod['Heat',d,h] == P['AHP','COP']*unit_cons['Elec',d,h]
                    for d in Days for h in Hours), n);    
     
     n = 'AHP_size'
     C_meta[n] = ['Upper limit on Elec produced relative to installed capacity', 1]
-    m.addConstrs((unit_prod['Heat',d,h] <= unit_size for d in Days for h in Hours), n);
+    m.addConstrs((unit_cons['Elec',d,h] <= unit_size for d in Days for h in Hours), n);
     
     
 
@@ -99,15 +99,20 @@ def sofc(m, Days, Hours, unit_prod, unit_cons, unit_size):
     """
     
     c = 'SOFC'
+    Eff_th_b = (1 - P[c,'Eff_elec_biogas'])*P[c,'Eff_thermal']
+    Eff_th_g = (1 - P[c,'Eff_elec_gas'])*P[c,'Eff_thermal']
     n = 'SOFC_Elec_production'
-    C_meta[n] = ['Elec produced relative to Biogas and gas consumed and Elec Efficiency', 7]
-    m.addConstrs((unit_prod['Elec',d,h] == (unit_cons['Biogas',d,h] + unit_cons['Gas',d,h])*
-                  P[c,'Eff_elec'] for d in Days for h in Hours), n);
+    C_meta[n] = ['Elec produced relative to Biogas and gas consumed and Elec Efficiencies', 7]
+    m.addConstrs((unit_prod['Elec',d,h] == 
+                  P[c,'Eff_elec_biogas']*unit_cons['Biogas',d,h] + 
+                  P[c,'Eff_elec_gas']*unit_cons['Gas',d,h]
+                  for d in Days for h in Hours), n);
     
     n = 'SOFC_Heat_production'
-    C_meta[n] = ['Heat produced relative to Biogas and gas consumed and Heat Efficiency', 8]
-    m.addConstrs((unit_prod['Heat',d,h] == (unit_cons['Biogas',d,h] + unit_cons['Gas',d,h])*
-                  (1 - P[c,'Eff_elec'])*P[c,'Eff_thermal'] for d in Days for h in Hours), n);    
+    C_meta[n] = ['Heat produced relative to Biogas and gas consumed and Heat Efficiencies', 8]
+    m.addConstrs((unit_prod['Heat',d,h] == Eff_th_b*unit_cons['Biogas',d,h] + 
+                  Eff_th_g*unit_cons['Gas',d,h]
+                  for d in Days for h in Hours), n);    
     
     n = 'SOFC_size'
     C_meta[n] = ['Upper limit on Elec produced relative to installed capacity', 6]
@@ -235,7 +240,7 @@ def bat(m, Periods, Days, Hours,
     C_meta[n] = ['Cycling constraint on the battery over a year', 0]
     m.addConstr((unit_SOC[0] == unit_SOC[Periods[-1]]), n);
     # n = f'{u}_annual_initial'
-    # C_meta[n] = ['Set the initial State of Charge at 0', 0]
+    # C_meta[n] = ['Set the initial State of Charge at full', 0]
     # m.addConstr((unit_SOC[0] == 900), n);
     
     n = f'{u}_size_SOC'
@@ -293,7 +298,7 @@ def cgt(m, Periods, Days, Hours,
     C_meta[n] = ['Cycling constraint for the State of Charge over the entire modelling Period', 0]
     m.addConstr((unit_SOC[0] == unit_SOC[Periods[-1]]), n);
     # n = f'{u}_annual_initial'
-    # C_meta[n] = ['Set the initial State of Charge at 0', 0]
+    # C_meta[n] = ['Set the initial State of Charge at full', 0]
     # m.addConstr((unit_SOC[0] == 9000), n);
     
     n = f'{u}_size_SOC'
@@ -307,6 +312,56 @@ def cgt(m, Periods, Days, Hours,
     m.addConstrs((unit_cons[r,d,h] <= unit_size for d in Days for h in Hours), n);
 
 
+###############################################################################
+### Biogas Storage - Storage
+###############################################################################
+    
+
+def bs(m, Periods, Days, Hours, 
+        unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge):
+    """ MILP model of Biogas Storage for storing raw biogas. The biogas is 
+        stored close to atmospheric pressure in an expandable vessel. 1% loss 
+        of stored biogas per day.
+    """
+    
+    u = 'BS'
+    r = 'Biogas'
+    
+    # Constraints
+    n = f'{u}_SOC'
+    C_meta[n] = ['State of Charge detla relative to Produced and Consumed Gas', 0]
+    m.addConstrs((unit_SOC[p + 1] - (1 - P[u,'Self_discharge'])*unit_SOC[p] == 
+                  (unit_cons[t(r,p)] - unit_prod[t(r,p)]) for p in Periods), n);
+    n = f'{u}_Fan_Elec'
+    C_meta[n] = ['Electricity requiered to inflate the storage ballon', 0]
+    m.addConstrs((unit_cons['Elec',d,h] == 1e-3 * P[u]['Elec_fan'] * unit_size
+                  for d in Days for h in Hours), n);
+    n = f'{u}_charge_discharge'
+    C_meta[n] = ['Prevent the unit from charging and discharging at the same time', 0]
+    m.addConstrs((unit_charge[d,h] + unit_discharge[d,h] <= 1 
+                  for d in Days for h in Hours), n);
+    n = f'{u}_charge'
+    C_meta[n] = ['M constraint to link the boolean variable Charge with Gas consumption', 0]
+    m.addConstrs((unit_charge[d,h]*Bound >= unit_cons[r,d,h] 
+                  for d in Days for h in Hours), n);
+    n = f'{u}_discharge'
+    C_meta[n] = ['M constraint to link the boolean variable Discharge with Gas production', 0]
+    m.addConstrs((unit_discharge[d,h]*Bound >= unit_prod[r,d,h] 
+                  for d in Days for h in Hours), n);
+    
+    n = f'{u}_annual_cycle'
+    C_meta[n] = ['Cycling constraint for the State of Charge over the entire modelling Period', 0]
+    m.addConstr((unit_SOC[0] == unit_SOC[Periods[-1]]), n);
+    
+    n = f'{u}_size_SOC'
+    C_meta[n] = ['Upper limit on the State of Charge relative to the Installed Capacity', 0]
+    m.addConstrs((unit_SOC[p] <= unit_size for p in Periods), n);
+    n = f'{u}_size_discharge'
+    C_meta[n] = ['Upper limit on Gas produced relative to the Installed Capacity', 0]
+    m.addConstrs((unit_prod[r,d,h] <= unit_size for d in Days for h in Hours), n);
+    n = f'{u}_size_charge'
+    C_meta[n] = ['Upper limit on Gas consumed relative to the Installed Capacity', 0]
+    m.addConstrs((unit_cons[r,d,h] <= unit_size for d in Days for h in Hours), n);
 
 ###############################################################################
 ### Biogas cleaning for SOFC - Utility

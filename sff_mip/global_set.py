@@ -27,6 +27,7 @@ Abbrev = {'GBOI':   'Gas Boiler',
           'ICE':    'Internal Combustion Engine',
           'AD':     'Anaerobic Digester',
           'CGT':    'Compressed Gas Tank',
+          'BS':     'Biogas Storage',
           'GFS':    'Gas Fueling Station',
           'build':  'building',
           'Elec':   'Electricity',
@@ -39,7 +40,7 @@ Abbrev = {'GBOI':   'Gas Boiler',
 Units = ('GBOI', 'WBOI', 'EH', 'AHP',   # Heating
          'ICE', 'SOFC',                 # Cogeneration
          'PV', 'AD',                    # Energy Production
-         'BAT', 'CGT',                  # Energy Storage
+         'BAT', 'CGT', 'BS',            # Energy Storage
          'GCSOFC', 'GFS')               # Utility
 
 # Resources and energy carriers
@@ -58,6 +59,7 @@ U_prod = {
     'ICE':      ('Elec', 'Heat'),
     'AD':       ('Biogas',),
     'CGT':      ('Biogas',),
+    'BS':       ('Biogas',),
     'GFS':      ('Biogas', 'Gas')
     }
 
@@ -73,6 +75,7 @@ U_cons = {
     'ICE':      ('Gas', 'Biogas'),
     'AD':       ('Biomass', 'Elec', 'Heat'),
     'CGT':      ('Biogas', 'Elec'),
+    'BS':       ('Biogas', 'Elec'),
     'GFS':      ('Biogas', 'Gas', 'Elec')
     }
 
@@ -86,7 +89,7 @@ for r in Resources:
         U_res['cons'][r] = tuple(u for u in U_cons if r in U_cons[u])
 
 # Units that store energy
-Units_storage = ('BAT', 'CGT')
+Units_storage = ('BAT', 'CGT', 'BS')
 
 # The buildings and units consuming and producing heat
 Heat_cons = tuple(['build'] + list(U_res['cons']['Heat']))
@@ -116,6 +119,7 @@ Linestyle_code = {'PV':     'dotted',
                   'EH':     'loosely dashed',
                   'AHP':    'loosely dashed',
                   'CGT':    'densely dashdotdotted',
+                  'BS':     'densely dashdotdotted',
                   'GFS':    'solid',
                   'default':'solid'
                   }

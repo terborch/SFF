@@ -19,10 +19,10 @@ P = P.append(P_eco)
 t_op = 8334 # Hours per year
 size, capex = {}, {}
 size['SOFC'] = 6 # kW electric installed capacity
-size['GCSOFC'] = size['SOFC']/P['SOFC', 'Eff_elec']
+size['GCSOFC'] = size['SOFC']/P['SOFC', 'Eff_elec_biogas']
 
 Eff_GCSOFC = P['GCSOFC', 'Elec_cons']   #kW_el/kW_biogas
-Biogas_cons = size['SOFC']/P['SOFC', 'Eff_elec']*t_op/1000      #MWh/an
+Biogas_cons = size['SOFC']/P['SOFC', 'Eff_elec_biogas']*t_op/1000      #MWh/an
 
 SOFC_eff = np.array([0.5, 0.55]) #Electric efficience low estimate, high estimate
 Elec_eff = {'SOFC': SOFC_eff*(1 - P['GCSOFC', 'Elec_cons']), 'ICE': 0.372}

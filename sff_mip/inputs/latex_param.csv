@@ -1,0 +1,64 @@
+Category,Name,Latex_symbol,Latex_value,Latex_unit,Latex_source,Value,Units,Source,Description,Symbol,Uncertainty
+AD,Biomass_water,$f_{AD_{Water/BM}}$,$0.93$,$-$,\cite{S._Fujishima},0.93,-,S. Fujishima,Water fraction of the digestate,f_{AD_{Water/BM}},
+AD,Cap_V_ratio,$f_{AD_{V_{cap}/V_{dig}}$,$0.4$,$-$,\cite{doi:_10.1016/j.cherd.2017.01.007},0.4,-,doi: 10.1016/j.cherd.2017.01.007,Ratio of the cap volume over the digestate volume,f_{AD_{V_{cap}/V_{dig}},
+AD,Cap_abs,$\alpha_{AD_{cap}}$,$0.9$,$-$,\cite{Hreiz},0.9,-,Hreiz,Solar Irradiance absorption coefficient for a black painted cap,\alpha_{AD_{cap}},
+AD,Cap_h_ratio,$f_{AD_{cap_{rad/h}}}$,$2.2$,$-$,\cite{doi:_10.1016/j.cherd.2017.01.007},2.2,-,doi: 10.1016/j.cherd.2017.01.007,Ratio of the cap raius over the cap height,f_{AD_{cap_{rad/h}}},
+AD,Cyl_fill,$f_{AD_{V_{cyl}/V_{dig}}}$,$0.9$,$-$,\cite{doi:_10.1016/j.cherd.2017.01.007},0.9,-,doi: 10.1016/j.cherd.2017.01.007,Ratio of the cylinder volume over the digestate volume,f_{AD_{V_{cyl}/V_{dig}}},
+AD,Eff,$\eta_{AD}$,$0.37$,$-$,\cite{Thees_2017},0.37,-,Thees 2017,AD efficiency,\eta_{AD},0.05
+AD,Elec_cons,$f_{AD_{EL/BG}}$,$0.008$,$-$,\cite{Carlini_2017},0.008,-,Carlini 2017,AD faction of electricity consumed,f_{AD_{EL/BG}},0.1
+AD,Ground_losses,$U_{AD_{ground}}$,$0.06208$,$kW/m^2$,\cite{Hreiz},0.062079999999999996,kW/m^2,Hreiz,Steady state heat losses to the ground,U_{AD_{ground}},
+AD,Heat_cons,$f_{AD_{Q/BG}}$,$0.32$,$-$,\cite{Thees_2017},0.32,-,Thees 2017,Fraction of heat self consumed relative to the biogas procued,f_{AD_{Q/BG}},0.1
+AD,Heating_part_load,"$f_{AD, Q_{min}}$",$0.2$,$-$,\cite{Setting},0.2,-,Setting,Lowest load fraction acceptable before shutting down the heating system,"f_{AD, Q_{min}}",
+AD,LSU,$LSU_{farm}$,$139$,$LSU$,\cite{calc},139.0,LSU,calc,Number of Livestock Units on the farm,LSU_{farm},
+AD,Manure_HHV_dry,$HHV_{BM}$,$3.694444$,$kWh/kg-dry$,\cite{Carlini_2017},3.6944444439999997,kWh/kg-dry,Carlini 2017,Fresh cattle manure energy content HHV dry basis,HHV_{BM},
+AD,Manure_per_cattle,$f_{BM/LSU}$,$7.3$,$kg-dry/day/LSU$,\cite{Carlini_2017},7.3,kg-dry/day/LSU,Carlini 2017,Cattle manure production dry basis,f_{BM/LSU},
+AD,Residence_time,"$t_{AD, resid}$",$30$,$day$,\cite{Hreiz},30.0,day,Hreiz,AD Hydraulic Residence Time,"t_{AD, resid}",
+AD,T_max,"$T_{AD,max}$",$40$,$C^\circ$,\cite{Hreiz},40.0,C,Hreiz,Maximum allowed temperature for the digester,"T_{AD,max}",
+AD,T_min,"$T_{AD,min}$",$39$,$C^\circ$,\cite{Hreiz},39.0,C,Hreiz,Minimum allowed temperature for the digester,"T_{AD,min}",
+AD,U_cap,$U_{AD_{cap}}$,$0.00208$,$kW/C^\circ/m^2$,\cite{doi:_10.12911/22998993/89660},0.0020800000000000003,kW/C/m^2,doi: 10.12911/22998993/89660,AD heat transmittance,U_{AD_{cap}},
+AHP,COP,$COP_{AHP}$,$3$,$-$,\cite{energyscope},3,-,energyscope,Coefficient of Performance,COP_{AHP},0.25
+BAT,Eff,$\eta{BAT}$,$0.9$,$-$,\cite{Paul_PHD},0.9,-,Paul PHD,BAT roundtrip efficiency,\eta{BAT},0.05
+BAT,Self_discharge,$r_{BAT_{self}}$,$0.003$,$-$,None,0.003,-,none,Constant hourly self discharge,r_{BAT_{self}},0.1
+CGT,Elec_comp,$f^{comp}_{CGT_{EL/NG}}$,$0.02$,$-$,\cite{Sinor_1991},0.02,-,Sinor 1991,Fraction of energy requiered to compress natural gas to 2500 psig,f^{comp}_{CGT_{EL/NG}},0.1
+EH,Eff,$\eta_{EH}$,$0.99$,$-$,\cite{Paul_PHD},0.99,-,Paul PHD,Electric Heater efficiency,\eta_{EH},0.01
+Farm,Ground_area,"$A_{b, ground}$",$6601$,$m^2$,\cite{geo.admin.ch},6601,m^2,geo.admin.ch,Building ground surface area,"A_{b, ground}",0.0
+Farm,Temp_tractors,"$T_{ext, tractors}$",$5$,$C^\circ$,None,5,C,none,Temperature treshold for using tractors,"T_{ext, tractors}",0.0
+Farm,cons_Diesel_annual,$\dot{E}^{+ diesel}_{tractors}$,$8000$,$l/year$,\cite{SFF},8000,l/year,SFF,Annual diesel consumption for tractors,\dot{E}^{+ diesel}_{tractors},0.0
+Farm,cons_Elec_annual,$E^{+ el}_{b}$,$787000$,$kWh/year$,\cite{SFF},787000,kWh/year,SFF,Annual electric consumption,E^{+ el}_{b},0.0
+Farm,cons_Heat_annual,"$\dot{Q}^+_{b, real}$",$1650000$,$kWh/year$,\cite{SFF},1650000,kWh/year,SFF,Annual heat consumption,"\dot{Q}^+_{b, real}",0.0
+Farm,i,$i$,$0.025$,$-$,\cite{Nils_PdS},0.025,-,Nils PdS,Annual interest rate,i,0.1
+Farm,nbr_tractors,$N_{tractors}$,$4$,$Tractor$,\cite{SFF},4,Tractor,SFF,Number of tractors in poteration,N_{tractors},0.0
+GBOI,Eff,$\eta_{GBOI}$,$0.98$,$-$,\cite{energyscope},0.98,-,energyscope,Gas Boiler efficiency,\eta_{GBOI},0.01
+GCSOFC,Elec_cons,$f_{GCSOFC_{EL/BG}}$,$0.015$,$-$,\cite{Nils_PdS},0.015,-,Nils PdS,GCSOFC Elec cons relative to Biogas throughput,f_{GCSOFC_{EL/BG}},0.1
+GFS,Conversion_cost,$c^{convert}_{GFS}$,$48$,$kCHF/Tractor$,\cite{omnitekcorp.com},48,kCHF/Tractor,omnitekcorp.com,Conversion cost of one tractor from diesel to cng,c^{convert}_{GFS},0.5
+GFS,Elec_comp,$f^{comp}_{GFS_{EL/NG}}$,$0.03$,$-$,\cite{est_from_Sinor_1991},0.03,-,est from Sinor 1991,Fraction of energy requiered to compress natural gas to 3600 psig,f^{comp}_{GFS_{EL/NG}},0.1
+GFS,Elec_dry,$f^{dry}_{GFS_{EL/BG}}$,$0.0075$,$-$,\cite{est_from_PdS_nils},0.0075,-,est from PdS nils,Fraction of electricity requiered to dry biogas,f^{dry}_{GFS_{EL/BG}},0.1
+GFS,Fueling_Time,$t_{slow-fuel}$,$10$,$h$,\cite{gastsationpaper},10,h,gastsationpaper,Time to refuel 2 to 5 tractors in hours,t_{slow-fuel},0.0
+GFS,Total_cost,$c^{total}_{GFS}$,$41$,$kCHF$,\cite{gastsationpaper},41,kCHF,gastsationpaper,Total invesetemnt cost for a 5 tractor fueling station (without multiplication),c^{total}_{GFS},0.5
+ICE,Eff_elec,"$\eta_{ICE, EL}$",$0.3$,$-$,\cite{Samuel_PdM},0.3,-,Samuel PdM,ICE electric efficiency,"\eta_{ICE, EL}",0.1
+ICE,Eff_thermal,"$\eta_{ICE, Q}$",$0.75$,$-$,\cite{Samuel_PdM},0.75,-,Samuel PdM,ICE thermal efficiency,"\eta_{ICE, Q}",0.1
+PV,Eff,$\eta_{PV}$,$0.14$,$-$,\cite{Paul_PHD},0.14,-,Paul PHD,PV efficiency,\eta_{PV},0.25
+PV,P_density,$\rho_{PV}$,$0.197$,$kW/m^2$,\cite{Panasonic_datasheet},0.19699999999999998,kW/m^2,Panasonic datasheet,PV power density,\rho_{PV},0.1
+PV,max_utilisation,$f_{PV_{A_{PV}/A}}$,$0.5$,$-$,\cite{setting},0.5,-,setting,Maximum utilisation of available rood area,f_{PV_{A_{PV}/A}},0.25
+Physical,Biogas_CH4,$f_{BG_{CH_4/CO_2}}$,$0.6$,$-$,None,0.6,-,none,Fraction of CO2 contained in Biogas,f_{BG_{CH_4/CO_2}},0.0
+Physical,Cp_water,$C^{Water}_p$,$1.162222$,$kWh/C^\circ/m^3$,\cite{nist.gov},1.16222222222222,kWh/C/m^3,nist.gov,Heat capacity of water,C^{Water}_p,0.0
+Physical,Diesel_LHV,$LHV_{Diesel}$,$10$,$kWh/l$,\cite{engineeringtoolbox.com},10,kWh/l,engineeringtoolbox.com,Diesel lower heating value per liter,LHV_{Diesel},0.0
+Physical,Hours_per_year,$t_{op}$,$8760$,$h/year$,\cite{fact},8760,h/year,fact,Hours in a year,t_{op},0.0
+Profile,Elec_cons,$\dot{E}^{+ el}_{b}$,,$-$,None,farm_elec_cons.csv,-,None SIA,Electricity consumption profile,\dot{E}^{+ el}_{b},0.0
+Profile,Irradiance,$I$,,$kWh/m^2$,\cite{agrometeo.ch},Weather,kWh/m^2,agrometeo.ch,Global Irradiance,I,0.0
+Profile,Occupation,$\hat{P}_{occup}$,,$-$,None,farm_occupation.csv,-,None SIA,Occupation profile relating to humain gains,\hat{P}_{occup},0.0
+Profile,Temperature,$T_{ext}$,,$C^\circ$,\cite{agrometeo.ch},Weather,C,agrometeo.ch,External shaded Temperature ,T_{ext},0.0
+SOFC,Eff_elec,"$\eta_{SOFC, EL}$",$0.5$,$-$,\cite{Jan},0.5,-,Jan,SOFC electric efficiency,"\eta_{SOFC, EL}",0.1
+SOFC,Eff_thermal,"$\eta_{SOFC, Q}$",$0.95$,$-$,\cite{Jan},0.95,-,Jan,SOFC thermal efficiency,"\eta_{SOFC, Q}",0.1
+WBOI,Eff,$\eta_{WBOI}$,$0.85$,$-$,\cite{energyscope},0.85,-,energyscope,Wood Boiler efficiency,\eta_{WBOI},0.05
+build,Absorptance,$\alpha_b$,$0.08$,$-$,\cite{guess},0.08,-,guess,Fraction of solar radiation absorbed relative to ground surface,\alpha_b,
+build,C_b,$C_b$,$0.12$,$kWh/C^\circ/m^2$,\cite{Paul_-_SIA_2024},0.12,kWh/C/m^2,Paul - SIA 2024,Building heat capacity,C_b,
+build,Elec_heat_frac,$f_{b_{Q/EL}}$,$0.9$,$-$,\cite{Dirk_MA},0.9,-,Dirk MA,Fraction of heat produced by electricity consumber,f_{b_{Q/EL}},
+build,Gains_ppl_annual,"$Q^{+ ppl}_{b, annual}$",$26$,$kWh/m^2/year$,\cite{Paul_-_SIA_2024},26.0,kWh/m^2/year,Paul - SIA 2024,Heating Gains from People,"Q^{+ ppl}_{b, annual}",
+build,Heated_area,"$A_{b, heated}$",$14705$,$m^2$,\cite{geo.admin.ch},14705.0,m^2,geo.admin.ch,Building heated surface area,"A_{b, heated}",
+build,Heating_part_load,"$f_{b, Q_{min}}$",$0.2$,$-$,\cite{Setting},0.2,-,Setting,Lowest load fraction acceptable before shutting down the heating system,"f_{b, Q_{min}}",
+build,Safety_factor,"$f_{b, safety}$",$1.5$,$-$,None,1.5,-,none,Safety factor for the maximum heating load,"f_{b, safety}",
+build,T_max,"$T_{b,max}$",$34$,$C^\circ$,\cite{setting},34.0,C,setting,Maximum indoor temperature,"T_{b,max}",
+build,T_min,"$T_{b,min}$",$18$,$C^\circ$,\cite{setting},18.0,C,setting,Minimum indoor temperature,"T_{b,min}",
+build,T_open_windows,"$T_{b,open}$",$25$,$C^\circ$,\cite{Setting},25.0,C,Setting,If the minimum building temperature in a day is below this windows stay open,"T_{b,open}",
+build,U_b,$U_b$,$0.00206$,$kW/C^\circ/m^2$,\cite{Paul_-_SIA_2024},0.00206,kW/C/m^2,Paul - SIA 2024,Building heat transmittance,U_b,

@@ -1,10 +1,12 @@
-Category,Name,Value,Units,Description,Source,doi,Latex_symbol,Uncertainty
+Category,Name,Value,Units,Description,Source,doi,Symbol,Uncertainty
 AD,Eff,0.37,-,AD efficiency,Thees 2017,,\eta_{AD},0.05
 AD,Elec_cons,0.008,-,AD faction of electricity consumed,Carlini 2017,10.3390/en10081165,f_{AD_{EL/BG}},0.1
 AD,Heat_cons,0.32,-,Fraction of heat self consumed relative to the biogas procued,Thees 2017,,f_{AD_{Q/BG}},0.1
 AHP,COP,3,-,Coefficient of Performance,energyscope,,COP_{AHP},0.25
 BAT,Eff,0.9,-,BAT roundtrip efficiency,Paul PHD,,\eta{BAT},0.05
-BAT,Self_discharge,0.003,-,Constant hourly self discharge,none,,r_{BAT_{self}},0.1
+BAT,Self_discharge,0.003,-,Constant hourly self discharge,none,,r_{BAT_{sd}},0.1
+BS,Self_discharge,0.000416,-,Biogas loss in per cent of gas stored per hour,Hahn 2014,,r_{BS_{sd}},0.1
+BS,Elec_fan,0.063186,-,Electricity consumed for the fan in kW-el/kW-th storage capacity ,Hahn 2014,,f^{fan}_{BS_{EL/BG}},0.1
 CGT,Elec_comp,0.02,-,Fraction of energy requiered to compress natural gas to 2500 psig,Sinor 1991,,f^{comp}_{CGT_{EL/NG}},0.1
 EH,Eff,0.99,-,Electric Heater efficiency,Paul PHD,,\eta_{EH},0.01
 GBOI,Eff,0.98,-,Gas Boiler efficiency,energyscope,,\eta_{GBOI},0.01
@@ -14,8 +16,9 @@ ICE,Eff_thermal,0.75,-,ICE thermal efficiency,Samuel PdM,,"\eta_{ICE, Q}",0.1
 PV,Eff,0.14,-,PV efficiency,Paul PHD,,\eta_{PV},0.25
 PV,max_utilisation,0.5,-,Maximum utilisation of available rood area,setting,,f_{PV_{A_{PV}/A}},0.25
 PV,P_density,0.197,kW/m^2,PV power density,Panasonic datasheet,,\rho_{PV},0.1
-SOFC,Eff_elec,0.5,-,SOFC electric efficiency,Jan,,"\eta_{SOFC, EL}",0.1
-SOFC,Eff_thermal,0.95,-,SOFC thermal efficiency,Jan,,"\eta_{SOFC, Q}",0.1
+SOFC,Eff_elec_biogas,0.5,-,SOFC electric efficiency when fed with biogas,Jan,,"\eta_{SOFC, EL-BG}",0.1
+SOFC,Eff_elec_gas,0.6,-,SOFC electric efficiency when fed with natural gas,Jan,,"\eta_{SOFC, EL-NG}",0.1
+SOFC,Eff_thermal,0.9,-,SOFC thermal efficiency,Jan,,"\eta_{SOFC, Q}",0.1
 WBOI,Eff,0.85,-,Wood Boiler efficiency,energyscope,,\eta_{WBOI},0.05
 GFS,Conversion_cost,48,kCHF/Tractor,Conversion cost of one tractor from diesel to cng,omnitekcorp.com,,c^{convert}_{GFS},0.5
 GFS,Total_cost,41,kCHF,Total invesetemnt cost for a 5 tractor fueling station (without multiplication),gastsationpaper,,c^{total}_{GFS},0.5

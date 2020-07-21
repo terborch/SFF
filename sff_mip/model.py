@@ -103,6 +103,10 @@ def model_units(m, Days, Hours, Periods, unit_prod, unit_cons, unit_size,
     units.cgt(m, Periods, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], 
               unit_SOC[u], unit_charge[u], unit_discharge[u])
     
+    u = 'BS'
+    units.bs(m, Periods, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], 
+              unit_SOC[u], unit_charge[u], unit_discharge[u])
+    
     u = 'GFS'
     units.gfs(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], U_prod[u])
     
@@ -150,13 +154,14 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod, unit_install):
     
     r = 'Biogas'
     n = 'Balance_' + r
+    MB_prod_biogas = [u for u in U_res['prod'][r] if u != 'GCSOFC']
+    MB_cons_biogas = [u for u in U_res['cons'][r] if u != 'SOFC']
     C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
-    m.addConstrs((unit_prod['AD'][r,d,h] + unit_prod['CGT'][r,d,h] - unused[r,d,h] ==
-                   # sum(unit_cons[uc][r,d,h] for uc in 
-                   #     [u for u in U_res['cons'][r] if u != 'SOFC'])
-                    unit_cons['GCSOFC'][r,d,h] + unit_cons['GBOI'][r,d,h] + 
-                    unit_cons['ICE'][r,d,h] + unit_cons['CGT'][r,d,h] +
-                    unit_cons['GFS'][r,d,h] 
+    m.addConstrs((sum(unit_prod[u][r,d,h] for u in MB_prod_biogas) - unused[r,d,h] ==
+                    sum(unit_cons[u][r,d,h] for u in MB_cons_biogas)
+                    # unit_cons['GCSOFC'][r,d,h] + unit_cons['GBOI'][r,d,h] + 
+                    # unit_cons['ICE'][r,d,h] + unit_cons['CGT'][r,d,h] +
+                    # unit_cons['GFS'][r,d,h] 
                   for d in Days for h in Hours), n);
     
     r = 'Biogas_cleaned_for_SOFC'
@@ -296,7 +301,7 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
     n = 'Emissions'
     C_meta[n] = ['Instant CO2 emissions relative to Elec and Gas imports', 0]
     m.addConstr(emissions == 
-                (sum(grid_import_a[r]*P[r,c] for r in G_res) + 
+                (sum((grid_import_a[r]-grid_export_a[r])*P[r,c] for r in G_res) + 
                 sum(unit_size[u]*P[u,'LCA']/P[u,'Life'] for u in Units))/1000, n);
     
     C_meta['Limit_emissions'] = ['Fix a limit to the emissions, for Pareto only', 0]
