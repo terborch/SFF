@@ -14,8 +14,8 @@ AD,Losses_biomass,inputs.h5,kW,Heat gains from irradiation,calc
 AD,Losses_ground,7.292537599999999,kW,Heat gains from irradiation,calc
 AD,Sludge_volume,435.0,m^3,Sludge volume capacity,calc
 AD,U,0.29484000000000005,kW/C,AD heat conductance,calc
-Farm,Biogas_prod,31.428548616438352,kW,Methane yield from animals,calc
-Farm,Biomass_prod,84.94202328767122,kW,Biomass yield from animals,calc
+Farm,Biogas_prod,31.42854861643836,kW,Methane yield from animals,calc
+Farm,Biomass_prod,84.94202328767125,kW,Biomass yield from animals,calc
 Farm,Fuel_cons,80000,kW/year,Fuel consumed by tractors in a year,calc
 Farm,Fueling_load,31.496062992125985,kW,Fuel consumed by tractors during fueling,calc
 Physical,Nbr_of_time_steps,8760,integer,Number of timesteps,calc

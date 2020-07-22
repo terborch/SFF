@@ -11,7 +11,8 @@ import gurobipy as gp
 from global_set import Units, U_res, G_res, U_prod
 from read_inputs import (P, S, V_meta, C_meta, Bound, Tight, 
                          Periods, Days, Hours, Frequence, 
-                         Irradiance, Ext_T, Build_cons, AD_cons_Heat, Fueling)
+                         Irradiance, Ext_T, Build_cons, AD_cons_Heat, Fueling,
+                         Elec_CO2)
 # Functions
 from data import annualize
 import variables
@@ -150,8 +151,14 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod, unit_install):
     unused_a = m.addVars(Unused_res, lb=0, ub=Bound, name=n)
     
     n = 'grid_inj_install'
-    V_meta[n] = ['MCHF/year', 'total annualized expenses', 'unique']
+    V_meta[n] = ['-', 'Decision var on biomethane grid injection', 'unique']
     grid_inj_install = m.addVar(vtype=GRB.BINARY, name=n)
+    n = 'grid_import_elec'
+    V_meta[n] = ['-', 'Decision var on importing elec', 'unique']
+    grid_import_elec = m.addVars(Days, Hours, vtype=GRB.BINARY, name=n)
+    n = 'grid_export_elec'
+    V_meta[n] = ['-', 'Decision var on exporting elec', 'unique']
+    grid_export_elec = m.addVars(Days, Hours, vtype=GRB.BINARY, name=n)
     
     # Resource balances     
     r = 'Elec'
@@ -267,7 +274,22 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod, unit_install):
     m.addConstrs((grid_import['BM',d,h] == 0
                   for h in Hours for d in Days), n);
     
-    return grid_import_a, grid_export_a, grid_inj_install
+    # Prevent simultaneous import and export of electricity
+    
+    n = 'grid_import_export_elec'
+    C_meta[n] = ['Prevent the sytem from import and export elec at the same time', 0]
+    m.addConstrs((grid_import_elec[d,h] + grid_export_elec[d,h] <= 1 
+                  for d in Days for h in Hours), n);
+    n = 'grid_import_elec'
+    C_meta[n] = ['M constraint to link the boolean var import with elec import', 0]
+    m.addConstrs((grid_import_elec[d,h]*Bound >= grid_import['Elec',d,h] 
+                  for d in Days for h in Hours), n);
+    n = 'grid_export_elec'
+    C_meta[n] = ['M constraint to link the boolean variable export with Elec production', 0]
+    m.addConstrs((grid_export_elec[d,h]*Bound >= grid_export['Elec',d,h] 
+                  for d in Days for h in Hours), n);
+    
+    return grid_import_a, grid_export_a, grid_inj_install, grid_import, grid_export
 
 ###############################################################################
 ### Economic performance indicators
@@ -277,7 +299,8 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod, unit_install):
 ###############################################################################
 
 def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size, 
-                     unit_install, unit_capex, grid_inj_install):
+                     unit_install, unit_capex, grid_inj_install,
+                     grid_import, grid_export):
     # Variable
     n = 'capex'
     V_meta[n] = ['MCHF', 'total CAPEX', 'unique']
@@ -334,14 +357,38 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
     n = 'emissions'
     V_meta[n] = ['kt-CO2', 'Annual total CO2 emissions', 'unique']
     emissions = m.addVar(lb=-Tight, ub=Tight, name=n)
+
+    n = 'resource_emissions'
+    V_meta[n] = ['kt-CO2', 'Annual total CO2 emissions for a given resource', 'unique']
+    r_emissions = m.addVars(G_res, lb=-Tight, ub=Tight, name=n)
     
-    c = 'Emissions'
-    n = 'Emissions'
+    # c = 'Emissions'
+    # n = 'Emissions'
+    # C_meta[n] = ['Instant CO2 emissions relative to Elec and Gas imports', 0]
+    # m.addConstr(emissions == 
+    #             (sum((grid_import_a[r] - P['Farm', 'Export_CO2']*grid_export_a[r])
+    #                  *P[r,c] for r in G_res) + 
+    #             sum(unit_size[u]*P[u,'LCA']/P[u,'Life'] for u in Units))/1000, n);
+    
+    
+    f_CO2 = P['Farm', 'Export_CO2']
+    n = 'Elec_emissions'
+    C_meta[n] = ['Annual CO2 emissions relative to Elec import and export', 0]
+    m.addConstr(r_emissions['Elec'] == 1e-6*sum(sum(
+        Elec_CO2[d,h]*(grid_import['Elec',d,h] - f_CO2*grid_export['Elec',d,h]) 
+        for h in Hours)*Frequence[d] for d in Days), n);
+    
+    for r in [r for r in G_res if r != 'Elec']:
+        n=f'{r}_emissions'
+        C_meta[n] = [f'Annual CO2 emissions relative to {r} import and export', 0]
+        m.addConstr(r_emissions[r] == 1e-3*P[r,'Emissions']*
+                    (grid_import_a[r] - f_CO2*grid_export_a[r]), n);
+    
+    n='Total_emissions'
     C_meta[n] = ['Instant CO2 emissions relative to Elec and Gas imports', 0]
-    m.addConstr(emissions == 
-                (sum((grid_import_a[r] - P['Farm', 'Export_CO2']*grid_export_a[r])
-                     *P[r,c] for r in G_res) + 
-                sum(unit_size[u]*P[u,'LCA']/P[u,'Life'] for u in Units))/1000, n);
+    m.addConstr(emissions == sum(r_emissions[r] for r in G_res) +
+                1e-3*sum(unit_size[u]*P[u,'LCA']/P[u,'Life'] for u in Units), n);
+
     
     C_meta['Limit_emissions'] = ['Fix a limit to the emissions, for Pareto only', 0]
     C_meta['Limit_totex'] = ['Fix a limit to the TOTEX, for Pareto only', 0]
@@ -394,12 +441,12 @@ def run(objective, Limit=None, relax=False):
     model_units(m, Days, Hours, Periods, unit_prod, unit_cons, unit_size, 
                 unit_SOC, unit_charge, unit_discharge, unit_install)
     # Model mass and energy balance
-    grid_import_a, grid_export_a, grid_inj_install = model_energy_balance(
-        m, Days, Hours, unit_cons, unit_prod, unit_install)
+    (grid_import_a, grid_export_a, grid_inj_install, grid_import, grid_export
+     ) = model_energy_balance(m, Days, Hours, unit_cons, unit_prod, unit_install)
     # Calculate objective variables
     totex, capex, opex, emissions = model_objectives(
         m, Days, Hours, grid_import_a, grid_export_a, unit_size, unit_install, 
-        unit_capex, grid_inj_install)
+        unit_capex, grid_inj_install, grid_import, grid_export)
 
     
 

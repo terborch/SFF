@@ -253,7 +253,7 @@ def bat(m, Periods, Days, Hours,
     m.addConstrs((unit_SOC[p+1] - (1 - P[u,'Self_discharge'])*unit_SOC[p] ==  
                   (Eff*unit_cons[t(r,p)] - (1/Eff)*unit_prod[t(r,p)]) 
                   for p in Periods), n);
-    P[u]['Self_discharge']
+    
     n = f'{u}_charge_discharge'
     C_meta[n] = ['Prevent the unit from charging and discharging at the same time', 0]
     m.addConstrs((unit_charge[d,h] + unit_discharge[d,h] <= 1 for d in Days for h in Hours), n);

@@ -71,9 +71,9 @@ def read_json(file_path):
 ###############################################################################
  
 
-def to_date_time(df, column):
+def to_date_time(df, column, dt_format='%d.%m.%Y %H:%M'):
     """ Convert a dataframe column to datetime and set it as index. """
-    df[[column]] = pd.DataFrame(pd.to_datetime(df[column], format='%d.%m.%Y %H:%M'))
+    df[[column]] = pd.DataFrame(pd.to_datetime(df[column], format=dt_format))
     df.set_index(column, inplace = True)
 
 

@@ -3,7 +3,8 @@ import os
 import numpy as np
 
 # Internal modules
-from data import get_param, time_param, get_hdf
+from data import (get_param, time_param, get_hdf, open_csv, to_date_time, 
+                  reshape_day_hour)
 
 
 
@@ -41,6 +42,7 @@ path = os.path.join('inputs', 'inputs.h5')
 # path = os.path.join('inputs', 'no_clusters.h5')
 dic = get_hdf(path)
 
+
 Build_cons = {}
 Build_cons['Elec'] = dic['Build_cons_Elec'].values
 Build_cons['Heat'] = dic['build_Q'].values
@@ -50,6 +52,7 @@ Ext_T = dic['Ext_T'].values
 AD_cons_Heat = dic['AD_Q'].values
 Frequence = dic['Frequence'].values
 Irradiance = dic['Irradiance'].values
+Elec_CO2 = dic['Elec_CO2'].values
 Fueling = dic['Fueling_profile'].values
 
 AD_T = dic['AD_T'].values

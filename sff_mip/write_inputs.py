@@ -165,16 +165,24 @@ def write_arrays(path, Cluster=True):
     P_write['Time_period_map'] = Time_period_map
     P_write['Days'] = Days
         
-    # Hoourly weather parameters for a year at Liebensberg
+    # Hourly weather parameters for a year at Liebensberg
     filename = 'meteo_Liebensberg_10min.csv'
     epsilon = 1e-6
     Ext_T, Irradiance, Index = data.weather_param(filename, epsilon, 
                                                   (Days_all, Hours), S['Time'])
-
+    
+    # Hourly electricity emissions profile for the swiss grid
+    file = 'swiss_grid_elec_emissions_2015.csv'
+    df = data.open_csv(file, 'profiles', ',')
+    df.drop(columns=['info'], inplace=True)
+    data.to_date_time(df, 'Date', dt_format='%m/%d/%y %I:%M %p')
+    Elec_CO2 = data.reshape_day_hour((df.values), *(range(365),range(24)))
+    
     # Cluster weather parameters
     if Cluster:
         Ext_T = data.cluster(Ext_T, Clustered_days, Hours)
         Irradiance = data.cluster(Irradiance, Clustered_days, Hours)
+        Elec_CO2 = data.cluster(Elec_CO2, Clustered_days, Hours)
     
     # List of dates modelled
     Dates, Dates_pd = [], Index
@@ -194,6 +202,7 @@ def write_arrays(path, Cluster=True):
     P_write['Ext_T'] = Ext_T
     P_write['Irradiance'] = Irradiance
     P_write['Build_cons_Elec'] = Build_cons['Elec']
+    P_write['Elec_CO2'] = Elec_CO2
     
     # Load profile for tractor fueling
     P_write['Fueling_profile'] = tractor_fueling(Days, Hours, Frequence, Ext_T)
