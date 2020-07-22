@@ -9,7 +9,7 @@ Time,Period_end,2020-01-01,date,Period lasting until this date
 Time,Period_start_time,00:00:00,time,Period start and end time
 Time,Date_format,%Y-%m-%d,string,Date format
 Time,Time_format,%H:%M:%S,string,Time format
-PV,max_capacity,10000,kW,Maximum PV installed capacity
+PV,max_capacity,1500,kW,Maximum PV installed capacity
 PV,min_capacity,0,kW,Minimum PV installed capacity
 BAT,max_capacity,1500,kWh,Maximum BAT installed capacity
 BAT,min_capacity,0,kWh,Minimum BAT installed capacity
@@ -29,9 +29,13 @@ EH,max_capacity,1500,kW,Maximum EH installed capacity
 EH,min_capacity,0,kW,Minimum EH installed capacity
 AHP,max_capacity,1500,kW,Maximum AHP installed capacity
 AHP,min_capacity,0,kW,Minimum AHP installed capacity
-CGT,max_capacity,0,kWh,Minimum CGT installed capacity
+GHP,max_capacity,1500,kW,Maximum GHP installed capacity
+GHP,min_capacity,0,kW,Minimum GHP installed capacity
+CGT,max_capacity,10000,kWh,Maximum CGT installed capacity
 CGT,min_capacity,0,kWh,Minimum CGT installed capacity
-GFS,max_capacity,1500,kW,Minimum GFS installed capacity
+GFS,max_capacity,1500,kW,Maximum GFS installed capacity
 GFS,min_capacity,0,kW,Minimum GFS installed capacity
-BS,max_capacity,5000,kWh,Minimum BS installed capacity
+BS,max_capacity,5000,kWh,Maximum BS installed capacity
 BS,min_capacity,0,kWh,Minimum BS installed capacity
+BU,max_capacity,1500,kW,Maximum BU installed capacity
+BU,min_capacity,0,kW,Minimum BU installed capacity

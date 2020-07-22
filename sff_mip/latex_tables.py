@@ -36,7 +36,7 @@ Symbols = {
 SymbolsR = {
 'Import_cost':      'c^{buy}',
 'Export_cost':      'c^{sell}',
-'Emissions':        'CO_2'
+'Emissions':        'm^{buy}_{CO_2'
 }
 
 df = P_meta
@@ -61,7 +61,10 @@ for u in Units:
 
 for r in G_res:
     for name in SymbolsR.keys():
-        df2.loc[(r, name), 'Latex_symbol'] = '$'+SymbolsR[name] + '_{'+r+'}'+'$'
+        if name != 'Emissions':
+            df2.loc[(r, name), 'Latex_symbol'] = '$'+SymbolsR[name] + '_{'+r+'}'+'$'
+        else:
+            df2.loc[(r, name), 'Latex_symbol'] = '$'+SymbolsR[name] + ','+r+'}'+'$'
  
 def latex_value(p):
     try:

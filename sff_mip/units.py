@@ -25,7 +25,7 @@ def gboi(m, Days, Hours, unit_prod, unit_cons, unit_size):
     n = 'GBOI_production'
     C_meta[n] = ['Heat produced relative to Gas and Biogas consumed and Efficiency', 2]
     m.addConstrs((unit_prod['Heat',d,h] == P['GBOI','Eff']*(
-        unit_cons['Biogas',d,h] + unit_cons['Gas',d,h]) 
+        unit_cons['Biogas',d,h] + unit_cons['Gas',d,h] + unit_cons['BM',d,h]) 
         for d in Days for h in Hours), n);
     
     n = 'GBOI_size'
@@ -74,8 +74,9 @@ def eh(m, Days, Hours, unit_prod, unit_cons, unit_size):
 
 
 def ahp(m, Days, Hours, unit_prod, unit_cons, unit_size):
-    """ MILP model of a Air Heat Pump with constant efficiency
-        and fixed operating point. 
+    """ LP model of a Air Heat Pump with constant efficiency
+        and fixed operating point. Domestic unit operating between external and
+        internal air.
     """
     n = 'AHP_Heat_production'
     C_meta[n] = ['Heat produced relative to Elec consumed and COP', 5]
@@ -89,6 +90,31 @@ def ahp(m, Days, Hours, unit_prod, unit_cons, unit_size):
     
 
 ###############################################################################
+### Gothermal Heat Pump - Heater
+###############################################################################
+
+
+def ghp(m, Days, Hours, unit_prod, unit_cons, unit_size):
+    """ LP model of a Gothermal Heat Pump with constant efficiency
+        and fixed operating point. Disctric unit for a small housing apartement
+        operating with a closed loop ground water heating system. Aprox.
+        100m deep in Switzerland in the plateau region (500m altitude).
+    """
+    
+    u = 'GHP'
+    n = f'{u}_Heat_production'
+    C_meta[n] = ['Heat produced relative to Elec consumed and COP', 5]
+    m.addConstrs((unit_prod['Heat',d,h] == P[u,'COP']*unit_cons['Elec',d,h]
+                   for d in Days for h in Hours), n);    
+    
+    n =  f'{u}_size'
+    C_meta[n] = ['Upper limit on Elec produced relative to installed capacity', 1]
+    m.addConstrs((unit_prod['Heat',d,h] <= unit_size for d in Days for h in Hours), n);
+    
+    
+
+
+###############################################################################
 ### Solid Oxide Fuel Cell - Cogeneration
 ###############################################################################
 
@@ -100,18 +126,18 @@ def sofc(m, Days, Hours, unit_prod, unit_cons, unit_size):
     
     c = 'SOFC'
     Eff_th_b = (1 - P[c,'Eff_elec_biogas'])*P[c,'Eff_thermal']
-    Eff_th_g = (1 - P[c,'Eff_elec_gas'])*P[c,'Eff_thermal']
+    Eff_th_ng = (1 - P[c,'Eff_elec_gas'])*P[c,'Eff_thermal']
     n = 'SOFC_Elec_production'
     C_meta[n] = ['Elec produced relative to Biogas and gas consumed and Elec Efficiencies', 7]
     m.addConstrs((unit_prod['Elec',d,h] == 
                   P[c,'Eff_elec_biogas']*unit_cons['Biogas',d,h] + 
-                  P[c,'Eff_elec_gas']*unit_cons['Gas',d,h]
+                  P[c,'Eff_elec_gas']*(unit_cons['Gas',d,h] + unit_cons['BM',d,h])
                   for d in Days for h in Hours), n);
     
     n = 'SOFC_Heat_production'
     C_meta[n] = ['Heat produced relative to Biogas and gas consumed and Heat Efficiencies', 8]
     m.addConstrs((unit_prod['Heat',d,h] == Eff_th_b*unit_cons['Biogas',d,h] + 
-                  Eff_th_g*unit_cons['Gas',d,h]
+                  Eff_th_ng*(unit_cons['Gas',d,h] + unit_cons['BM',d,h])
                   for d in Days for h in Hours), n);    
     
     n = 'SOFC_size'
@@ -132,12 +158,14 @@ def ice(m, Days, Hours, unit_prod, unit_cons, unit_size):
     c = 'ICE'
     n = 'ICE_Elec_production'
     C_meta[n] = ['Elec produced relative to Biogas and gas consumed and Elec Efficiency', 9]
-    m.addConstrs((unit_prod['Elec',d,h] == (unit_cons['Biogas',d,h] + unit_cons['Gas',d,h])*
+    m.addConstrs((unit_prod['Elec',d,h] == (
+        unit_cons['Biogas',d,h] + unit_cons['Gas',d,h] + unit_cons['BM',d,h])*
                   P[c,'Eff_elec'] for d in Days for h in Hours), n);
     
     n = 'ICE_Heat_production'
     C_meta[n] = ['Heat produced relative to Biogas and gas consumed and Heat Efficiency', 10]
-    m.addConstrs((unit_prod['Heat',d,h] == (unit_cons['Biogas',d,h] + unit_cons['Gas',d,h])*
+    m.addConstrs((unit_prod['Heat',d,h] == (
+        unit_cons['Biogas',d,h] + unit_cons['Gas',d,h] + unit_cons['BM',d,h])*
                   (1 - P[c,'Eff_elec'])*P[c,'Eff_thermal'] for d in Days for h in Hours), n);    
     
     n = 'ICE_size'
@@ -268,17 +296,16 @@ def cgt(m, Periods, Days, Hours,
     """
     
     u = 'CGT'
-    r = 'Biogas'
+    r = 'BM'
     
     # Constraints
     n = f'{u}_SOC'
     C_meta[n] = ['State of Charge detla relative to Produced and Consumed Gas', 0]
-    m.addConstrs((unit_SOC[p + 1] - unit_SOC[p] == (unit_cons[t(r,p)] - unit_prod[t(r,p)])/
-                  P['Physical']['Biogas_CH4'] for p in Periods), n);
+    m.addConstrs((unit_SOC[p + 1] - unit_SOC[p] == (unit_cons[t(r,p)] - unit_prod[t(r,p)])
+                  for p in Periods), n);
     n = f'{u}_Compression_Elec'
     C_meta[n] = ['Electricity requiered to compress the Gas', 0]
-    m.addConstrs((unit_cons['Elec',d,h] == unit_cons[r,d,h]*
-                  P[u]['Elec_comp']/P['Physical']['Biogas_CH4'] 
+    m.addConstrs((unit_cons['Elec',d,h] == unit_cons[r,d,h]*P[u]['Elec_comp'] 
                   for d in Days for h in Hours), n);
     
     n = f'{u}_charge_discharge'
@@ -363,6 +390,35 @@ def bs(m, Periods, Days, Hours,
     C_meta[n] = ['Upper limit on Gas consumed relative to the Installed Capacity', 0]
     m.addConstrs((unit_cons[r,d,h] <= unit_size for d in Days for h in Hours), n);
 
+
+
+###############################################################################
+### Biogas Upgrading - Utility
+###############################################################################
+
+def bu(m, Days, Hours, unit_prod, unit_cons, unit_size):
+    """ LP model of a Biogas Upgrading system using membranes. Product has a 95
+        to 99% methane content and is called biomethane (BM). Electricity is
+        consumed for compression. Most of the metahen is recodevers (some losses)
+    """
+    u = 'BU'
+    
+    n = f'{u}_production'
+    C_meta[n] = ['Biogas prod relative to Biogas cons', 0]
+    m.addConstrs((unit_prod['BM',d,h] == P[u,'Eff']*unit_cons['Biogas',d,h] 
+                  for d in Days for h in Hours), n);
+    
+    n = f'{u}_Elec_cons'
+    C_meta[n] = ['Electricity consumption relative to Biogas production', 0]
+    m.addConstrs((unit_cons['Elec',d,h] == P[u,'Elec_comp']*unit_prod['BM',d,h]
+                  for d in Days for h in Hours), n);
+    
+    n = f'{u}_size'
+    C_meta[n] = ['Upper limit on prod relative to installed capacity', 0]
+    m.addConstrs((unit_prod['BM',d,h] <= unit_size for d in Days for h in Hours), n);
+    
+    
+    
 ###############################################################################
 ### Biogas cleaning for SOFC - Utility
 ###############################################################################
@@ -372,21 +428,24 @@ def gcsofc(m, Days, Hours, unit_prod, unit_cons, unit_size):
         installation is a stack of filters to be replaced regularly, losses
         represent the electricity consumed by the fan and the chiller (drying).
     """
-    n = 'GCSOFC_production'
+    x_BG = P['Physical','Biogas_CH4'] 
+    
+    u = 'GCSOFC'
+    n = f'{u}_production'
     C_meta[n] = ['Biogas prod relative to Biogas cons', 0]
-    m.addConstrs((unit_prod['Biogas',d,h] == unit_cons['Biogas',d,h] 
-                  for d in Days for h in Hours), n);
+    m.addConstrs((unit_prod[r,d,h] == unit_cons[r,d,h] 
+                  for r in ['Biogas', 'BM'] for d in Days for h in Hours), n);
     
-    n = 'GCSOFC_Elec_cons'
+    n = f'{u}_Elec_cons'
     C_meta[n] = ['Electricity consumption relative to Biogas production', 0]
-    m.addConstrs((unit_cons['Elec',d,h] == unit_prod['Biogas',d,h]*P['GCSOFC','Elec_cons']
+    m.addConstrs((unit_cons['Elec',d,h] == P[u,'Elec_cons']*
+                  (unit_prod['Biogas',d,h] + unit_prod['BM',d,h]*x_BG)
                   for d in Days for h in Hours), n);
     
-    n = 'GCSOFC_size'
+    n = f'{u}_size'
     C_meta[n] = ['Upper limit on prod relative to installed capacity', 0]
-    m.addConstrs((unit_prod['Biogas',d,h] <= unit_size for d in Days for h in Hours), n);
-
-
+    m.addConstrs((unit_prod['Biogas',d,h] + unit_prod['BM',d,h]*x_BG
+                  <= unit_size for d in Days for h in Hours), n);
 
 ###############################################################################
 ### Compressed Gas Tank - Utility
@@ -395,19 +454,17 @@ def gcsofc(m, Days, Hours, unit_prod, unit_cons, unit_size):
 
 def gfs(m, Days, Hours, unit_prod, unit_cons, unit_size, U_prod):
     """ MILP model of Gas Fueling Station for the slow refueling of utility
-        vehicles. Takes Natural Gas or Biogas as inputs. No gas is stored.
+        vehicles. Takes Natural Gas or Biomethane as inputs. No gas is stored.
         The gas is dried and compressed to 3600 PSI. The vehicles are refueld
         overnight once a day.
     """
     u = 'GFS'
-    Elec_gfs = {}
-    Elec_gfs['Biogas'] = P[u]['Elec_comp']/P['Physical']['Biogas_CH4'] + P[u]['Elec_dry']
-    Elec_gfs['Gas'] = P[u]['Elec_comp'] + P[u]['Elec_dry']*P['Physical']['Biogas_CH4']
+    Elec_gfs = P[u]['Elec_comp'] + P[u]['Elec_dry']*P['Physical']['Biogas_CH4']
 
     n = f'{u}_Comp_Dry_Elec'
     C_meta[n] = ['Electricity requiered to compress and dry the Gas', 0]
-    m.addConstrs((unit_cons['Elec',d,h] == sum(unit_cons[r,d,h]*Elec_gfs[r] 
-                                               for r in U_prod) 
+    m.addConstrs((unit_cons['Elec',d,h] == 
+                  sum(unit_cons[r,d,h]*Elec_gfs for r in U_prod) 
                   for d in Days for h in Hours), n);
     
     for r in U_prod:

@@ -20,6 +20,7 @@ Abbrev = {'GBOI':   'Gas Boiler',
           'WBOI':   'Wood Boiler', 
           'EH':     'Electric Heater',
           'AHP':    'Air-Air Heat Pump',
+          'GHP':    'Geothermal Heat Pump',
           'PV':     'Photovoltaic Panels', 
           'BAT':    'Battery',
           'GCSOFC': 'Gas Cleaning for SOFC',
@@ -28,23 +29,25 @@ Abbrev = {'GBOI':   'Gas Boiler',
           'AD':     'Anaerobic Digester',
           'CGT':    'Compressed Gas Tank',
           'BS':     'Biogas Storage',
+          'BU':     'Biogas Upgrading',
           'GFS':    'Gas Fueling Station',
           'build':  'building',
           'Elec':   'Electricity',
           'Gas':    'Natural Gas or Syntetic NG',
           'Biogas': '60% CH4, 40% CO2',
-          'Heat':   'Heat'
+          'Heat':   'Heat',
+          'BM':     'Bio-methane'
           }
 
 # Eneregy conversion units
-Units = ('GBOI', 'WBOI', 'EH', 'AHP',   # Heating
-         'ICE', 'SOFC',                 # Cogeneration
-         'PV', 'AD',                    # Energy Production
-         'BAT', 'CGT', 'BS',            # Energy Storage
-         'GCSOFC', 'GFS')               # Utility
+Units = ('GBOI', 'WBOI', 'EH', 'AHP', 'GHP',    # Heating
+         'ICE', 'SOFC',                         # Cogeneration
+         'PV', 'AD',                            # Energy Production
+         'BAT', 'CGT', 'BS',                    # Energy Storage
+         'GCSOFC', 'GFS', 'BU')                 # Utility
 
 # Resources and energy carriers
-Resources = ('Elec', 'Gas', 'Wood', 'Biogas', 'Biomass', 'Heat', 'Diesel')
+Resources = ('Elec', 'Gas', 'Wood', 'Biogas', 'BM', 'Biomass', 'Heat', 'Diesel')
 
 # The resources each unit produce
 U_prod = {
@@ -52,31 +55,35 @@ U_prod = {
     'WBOI':     ('Heat',),
     'EH':       ('Heat',),
     'AHP':      ('Heat',),
+    'GHP':      ('Heat',),
     'PV':       ('Elec',),
     'BAT':      ('Elec',),
-    'GCSOFC':   ('Biogas',),
+    'GCSOFC':   ('Biogas', 'BM'),
     'SOFC':     ('Elec', 'Heat'),
     'ICE':      ('Elec', 'Heat'),
     'AD':       ('Biogas',),
-    'CGT':      ('Biogas',),
+    'CGT':      ('BM',),
     'BS':       ('Biogas',),
-    'GFS':      ('Biogas', 'Gas')
+    'BU':       ('BM',),
+    'GFS':      ('BM', 'Gas')
     }
 
 # The resources each unit consumes
 U_cons = {
-    'GBOI':     ('Gas', 'Biogas'),
+    'GBOI':     ('Gas', 'Biogas', 'BM'),
     'WBOI':     ('Wood',),
     'EH':       ('Elec',),
     'AHP':      ('Elec',),
+    'GHP':      ('Elec',),
     'BAT':      ('Elec',),
-    'GCSOFC':   ('Elec', 'Biogas',),
-    'SOFC':     ('Gas', 'Biogas'),
-    'ICE':      ('Gas', 'Biogas'),
+    'GCSOFC':   ('Elec', 'Biogas', 'BM'),
+    'SOFC':     ('Gas', 'Biogas', 'BM'),
+    'ICE':      ('Gas', 'Biogas', 'BM'),
     'AD':       ('Biomass', 'Elec', 'Heat'),
-    'CGT':      ('Biogas', 'Elec'),
+    'CGT':      ('BM', 'Elec'),
     'BS':       ('Biogas', 'Elec'),
-    'GFS':      ('Biogas', 'Gas', 'Elec')
+    'BU':       ('Biogas', 'Elec'),
+    'GFS':      ('BM', 'Gas', 'Elec')
     }
 
 # The units producing and consuming a given resource
@@ -96,7 +103,7 @@ Heat_cons = tuple(['build'] + list(U_res['cons']['Heat']))
 Heat_prod = U_res['prod']['Heat']
 
 # Resources that can be exchanged with the grids
-G_res = ('Elec', 'Gas', 'Wood', 'Diesel')
+G_res = ('Elec', 'Gas', 'Wood', 'Diesel', 'BM')
 
 # Linestyles for differentiating units
 Linestyles = {'loosely dotted': (0, (1, 10)),
@@ -112,12 +119,14 @@ Linestyle_code = {'PV':     'dotted',
                   'SOFC':   'dashed',
                   'ICE':    'dashed',
                   'GCSOFC': 'solid',
+                  'BU':     'solid',
                   'AD':     'dashdotted', 
                   'build':  'densely dashdotted', 
                   'GBOI':   'loosely dashed',
                   'WBOI':   'loosely dashed',
                   'EH':     'loosely dashed',
                   'AHP':    'loosely dashed',
+                  'GHP':    'loosely dashed',
                   'CGT':    'densely dashdotdotted',
                   'BS':     'densely dashdotdotted',
                   'GFS':    'solid',
@@ -126,7 +135,8 @@ Linestyle_code = {'PV':     'dotted',
 
 # Colors for differentiating resources
 Color_code = {'Elec':       'royalblue', 
-              'Biogas':     'limegreen', 
+              'Biogas':     'limegreen',
+              'BM':         'green',
               'Biomass':    'khaki', 
               'Gas':        'gray',
               'Wood':       'brown',

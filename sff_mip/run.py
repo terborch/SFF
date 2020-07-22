@@ -216,12 +216,12 @@ def diagnostic(objective):
 if __name__ == "__main__":
     # Execute single run
     # run('emissions', Reload=True)
-    # run('totex', Save_txt=True)
-    run('emissions')
-    #run_single('totex', save_fig=True, discard_fig=False)
+    # run('totex')
+    # run('emissions')
+
     
     # Execute multi_run
-    # pareto('totex', 'emissions', 9, Plot=True, Summary=True)
+    pareto('totex', 'emissions', 21, Plot=True, Summary=True)
     
     # diagnostic('totex')
     
