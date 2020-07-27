@@ -2,7 +2,8 @@ Category,Name,Value,Units,Description
 Model,Solver_time_limit,30000,s,Maximum solving time allowed
 Model,Var_bound,10000,-,Default upper bound for all variables
 Model,Var_bound_tight,10,-,Default upper bound for small variables
-Model,Clusters,30,clusters,"Number of clusters (10, 20, 30, 50 or 100)"
+Model,Clusters,10,clusters,"Number of clusters (10, 20, 30, 50 or 100)"
+WBOI,Is_renewable,1,-,1 if wood is considered renewable 0 if not
 Time,Time_step,01:00:00,time,Number of minutes in a time step
 Time,Period_start,2019-01-01,date,Period starting from this date
 Time,Period_end,2020-01-01,date,Period lasting until this date
@@ -39,3 +40,5 @@ BS,max_capacity,5000,kWh,Maximum BS installed capacity
 BS,min_capacity,0,kWh,Minimum BS installed capacity
 BU,max_capacity,1500,kW,Maximum BU installed capacity
 BU,min_capacity,0,kW,Minimum BU installed capacity
+GI,max_capacity,1500,kW,Maximum GI installed capacity
+GI,min_capacity,0,kW,Minimum GI installed capacity

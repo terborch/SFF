@@ -96,7 +96,10 @@ def typical_days(Periods, Hours, Cluster=True, Number_of_clusters=20):
 
 
 def biomass_prod(file):
-    """ Given an number of cows and pigs, calculate the biomass potential in kW"""
+    """ Given an number of cows and pigs, calculate: 
+        1. The biomass potential in kW
+        2. The CO2 from untreated manure
+    """
     
     A, A_meta = data.get_param(file)
     
@@ -113,6 +116,12 @@ def biomass_prod(file):
     C_meta['Biomass_prod'] = ['Biomass relative to methane yield and AD eff', 1, 'P']
     Biomass_prod = Biogas_prod/P['AD','Eff']
     data.make_param('Farm', 'Biomass_prod', Biomass_prod, meta)
+    
+    meta = ['kt-CO2/year', 'Emissions from untreated manure', 'calc']
+    C_meta['Biomass_emissions'] = ['Tonne of manure times emissions for one tonne of pig manure', 1, 'P']
+    Biomass_emissions = 1e-6*sum((A[a,'Nbr_at_farm']/A[a,'LSU'])*A[a,'Manure']
+                      for a in animals)*P['Physical', 'Manure_emissions']
+    data.make_param('Farm', 'Biomass_emissions', Biomass_emissions, meta)
 
 
 def tractor_fueling(Days, Hours, Frequence, Ext_T):

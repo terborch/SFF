@@ -14,7 +14,7 @@ from read_inputs import (P, S, V_meta, C_meta, Bound, Tight,
                          Irradiance, Ext_T, Build_cons, AD_cons_Heat, Fueling,
                          Elec_CO2)
 # Functions
-from data import annualize
+from data import annualize, get_param
 import variables
 import units
 
@@ -114,6 +114,9 @@ def model_units(m, Days, Hours, Periods, unit_prod, unit_cons, unit_size,
     u = 'BU'
     units.bu(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
     
+    u = 'GI'
+    units.gi(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
+    
     u = 'GFS'
     units.gfs(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], U_prod[u])
     
@@ -150,9 +153,6 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod, unit_install):
     V_meta[n] = ['MWh', 'Annual total resources unused or flared by the farm', 'unique']
     unused_a = m.addVars(Unused_res, lb=0, ub=Bound, name=n)
     
-    n = 'grid_inj_install'
-    V_meta[n] = ['-', 'Decision var on biomethane grid injection', 'unique']
-    grid_inj_install = m.addVar(vtype=GRB.BINARY, name=n)
     n = 'grid_import_elec'
     V_meta[n] = ['-', 'Decision var on importing elec', 'unique']
     grid_import_elec = m.addVars(Days, Hours, vtype=GRB.BINARY, name=n)
@@ -183,23 +183,22 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod, unit_install):
     
     r = 'BM'
     n = 'Balance_' + r
-    U_prod_bm = [u for u in U_res['prod'][r] if u != 'GCSOFC']
-    U_cons_bm = [u for u in U_res['cons'][r] if u != 'SOFC']
+    U_prod_bm = [u for u in U_res['prod'][r] if u not in ('GCSOFC', 'GI', 'GFS')]
+    U_cons_bm = [u for u in U_res['cons'][r] if u not in ('SOFC',)]
     C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
     m.addConstrs((grid_import[r,d,h] - grid_export[r,d,h] - unused[r,d,h] + 
                   sum(unit_prod[up][r,d,h] for up in U_prod_bm) == 
                   sum(unit_cons[uc][r,d,h] for uc in U_cons_bm)
                   for d in Days for h in Hours), n);
     
-    r = 'Biogas_cleaned_for_SOFC'
-    n = 'Balance_' + r
+    n = 'Balance_Biogas_cleaned_for_SOFC'
     C_meta[n] = ['SOFC only consumed Biogas and BM that is pre-cleaned', 0]
     m.addConstrs((unit_prod['GCSOFC'][r,d,h] == unit_cons['SOFC'][r,d,h] 
                   for r in ['Biogas', 'BM'] for d in Days for h in Hours), n);
     
     n = 'Exporting_biomethane'
-    C_meta[n] = ['M constraint to link the boolean var grid_inj_install with the BM export', 0]
-    m.addConstrs((grid_inj_install*Bound >= grid_export['BM',d,h] 
+    C_meta[n] = ['Everything produced by GI is exported', 0]
+    m.addConstrs((unit_prod['GI']['BM',d,h] == grid_export['BM',d,h] 
                   for d in Days for h in Hours), n);
     
     r = 'Biomass'
@@ -275,7 +274,6 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod, unit_install):
                   for h in Hours for d in Days), n);
     
     # Prevent simultaneous import and export of electricity
-    
     n = 'grid_import_export_elec'
     C_meta[n] = ['Prevent the sytem from import and export elec at the same time', 0]
     m.addConstrs((grid_import_elec[d,h] + grid_export_elec[d,h] <= 1 
@@ -289,7 +287,17 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod, unit_install):
     m.addConstrs((grid_export_elec[d,h]*Bound >= grid_export['Elec',d,h] 
                   for d in Days for h in Hours), n);
     
-    return grid_import_a, grid_export_a, grid_inj_install, grid_import, grid_export
+    # Limit the Elec export in any given time by the production of renewable Elec
+    # To prevent the battery from stockpiling and seling everything at peak CO2 cost
+    n = 'grid_export_elec_limit'
+    U_prod_elec = [u for u in U_res['prod']['Elec'] if u not in ('BAT',)]
+    C_meta[n] = ['Limit the export of renewable Elec to the renewable elec prod', 0]
+    m.addConstrs((grid_export['Elec',d,h] <= 
+                  sum(unit_prod[up]['Elec',d,h] for up in U_prod_elec)
+                  for d in Days for h in Hours), n);
+    
+    
+    return grid_import_a, grid_export_a, grid_import, grid_export
 
 ###############################################################################
 ### Economic performance indicators
@@ -299,8 +307,7 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod, unit_install):
 ###############################################################################
 
 def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size, 
-                     unit_install, unit_capex, grid_inj_install,
-                     grid_import, grid_export):
+                     unit_install, unit_capex, grid_import, grid_export):
     # Variable
     n = 'capex'
     V_meta[n] = ['MCHF', 'total CAPEX', 'unique']
@@ -323,6 +330,7 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
     C_meta[n] = ['Additional big-M constraint to eliminate CAPEX error', 0]
     m.addConstrs((unit_install[u]*Tight >= unit_capex[u] for u in Units), n);
     
+    n = 'Minimum_size'
     for u in Units:
         C_meta[n + f'[u]'] = [f'Lower limit on installed capacity if the unit is installed']
     m.addConstrs((unit_size[u] >= P[u, 'Min_size']*unit_install[u] for u in Units), n);
@@ -350,15 +358,14 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
     
     n = 'totex_sum'
     C_meta[n] = ['TOTEX relative to the OPEX, the CAPEX and the annualization factor', 0]
-    m.addConstr(totex == opex + capex + 
-                P['Farm', 'Grid_injection']*annualize(20, P['Farm','i']), n);
+    m.addConstr(totex == opex + capex, n);
     
     # CO2 emissions
     n = 'emissions'
     V_meta[n] = ['kt-CO2', 'Annual total CO2 emissions', 'unique']
     emissions = m.addVar(lb=-Tight, ub=Tight, name=n)
 
-    n = 'resource_emissions'
+    n = 'r_emissions'
     V_meta[n] = ['kt-CO2', 'Annual total CO2 emissions for a given resource', 'unique']
     r_emissions = m.addVars(G_res, lb=-Tight, ub=Tight, name=n)
     
@@ -387,13 +394,12 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
     n='Total_emissions'
     C_meta[n] = ['Instant CO2 emissions relative to Elec and Gas imports', 0]
     m.addConstr(emissions == sum(r_emissions[r] for r in G_res) +
-                1e-3*sum(unit_size[u]*P[u,'LCA']/P[u,'Life'] for u in Units), n);
-
+                1e-3*sum(unit_size[u]*P[u,'LCA']/P[u,'Life'] for u in Units) +
+                (1 - P['Physical','Manure_AD']*unit_install['AD'])*
+                P['Farm','Biomass_emissions'], n);
     
     C_meta['Limit_emissions'] = ['Fix a limit to the emissions, for Pareto only', 0]
     C_meta['Limit_totex'] = ['Fix a limit to the TOTEX, for Pareto only', 0]
-    
-    
     
     return totex, capex, opex, emissions
 
@@ -403,7 +409,28 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
 ##################################################################################################
 
 
+def extreme_case(m, unit_size):
+    """ Represent an extreme case scenario for which the building heating 
+        system has to remain operational. Hypothesis include:
+            1. -20C sustained outside temperature (T_ext_min in parameters.csv)
+            2. 18C sustained inside temperature (T_min in heat_load_param.csv)
+            3. No gains
+            4. The WBOI is deactivated - No wood pellets
+            5. The AHP is deactivated - Too cold T_ext
+            6. The CHP units are deactivated - Maintenace 
+            7. No AD heat load
+            
+        The GBOI, EH and GHP alone have to be big enough to answer this load.
+    """
+    
+    P, _ = get_param('heat_load_param.csv')
 
+    b = 'build'
+    n='Extreme_case'
+    C_meta[n] = ['Extreme case, high heat load only GBOI, EH and GHP active', 0]
+    m.addConstr(P[b, 'Heated_area']*P[b, 'U_b']*
+                (P[b, 'T_min'] - P[b, 'T_ext_extreme']) ==
+                sum(unit_size[u] for u in ['GBOI', 'EH', 'GHP']), n);
 
 
 
@@ -429,6 +456,7 @@ def print_highlight(string):
     
     
 def run(objective, Limit=None, relax=False):
+    """ Run each function to effectivel build the MILP """
     # Reset old model and creat a new model
     m = initialize_model()
     # Create most variables
@@ -441,26 +469,30 @@ def run(objective, Limit=None, relax=False):
     model_units(m, Days, Hours, Periods, unit_prod, unit_cons, unit_size, 
                 unit_SOC, unit_charge, unit_discharge, unit_install)
     # Model mass and energy balance
-    (grid_import_a, grid_export_a, grid_inj_install, grid_import, grid_export
+    (grid_import_a, grid_export_a, grid_import, grid_export
      ) = model_energy_balance(m, Days, Hours, unit_cons, unit_prod, unit_install)
     # Calculate objective variables
     totex, capex, opex, emissions = model_objectives(
         m, Days, Hours, grid_import_a, grid_export_a, unit_size, unit_install, 
-        unit_capex, grid_inj_install, grid_import, grid_export)
+        unit_capex, grid_import, grid_export)
+    # Constraint for extreme case scenario
+    extreme_case(m, unit_size)
 
-    
-
+    """ Definie objective function """
     def minimize_opex():
         m.setObjective(opex, GRB.MINIMIZE)
     def minimize_capex():
         m.setObjective(capex, GRB.MINIMIZE)
 
-    def minimize_totex_tax_co2():
-        m.setObjective(totex + emissions*P['CO2']['Tax'], GRB.MINIMIZE)
+    def pareto_constrained_opex(Limit_opex):
+        print('-----------------{}--------------------'.format(Limit_opex))
+        m.addConstr(opex <= Limit_opex, 'Limit_opex')
+        m.setObjective(capex, GRB.MINIMIZE)
     def pareto_constrained_capex(Limit_capex):
         print('-----------------{}--------------------'.format(Limit_capex))
         m.addConstr(capex <= Limit_capex, 'Limit_capex');
         m.setObjective(opex, GRB.MINIMIZE)
+
     
     def minimize_totex():
         m.setObjective(totex, GRB.MINIMIZE)
@@ -476,6 +508,9 @@ def run(objective, Limit=None, relax=False):
         m.addConstr(emissions <= Limit_emissions, 'Limit_emissions');
         m.setObjective(totex, GRB.MINIMIZE)
         
+    def minimize_totex_tax_co2():
+        m.setObjective(totex + emissions*P['CO2']['Tax'], GRB.MINIMIZE)
+        
     switcher = {
         'totex': minimize_totex,
         'emissions': minimize_emissions,
@@ -484,9 +519,10 @@ def run(objective, Limit=None, relax=False):
 
         'opex': minimize_opex,
         'capex': minimize_capex,
+        'limit_opex': pareto_constrained_opex,
+        'limit_capex': pareto_constrained_capex,
+        
         'totex_tax_co2': minimize_totex_tax_co2,
-        'pareto_totex': pareto_constrained_totex,
-        'limit_capex': pareto_constrained_capex
         }
     
     set_objective(m, switcher, objective, Limit=Limit, relax=False)

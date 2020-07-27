@@ -171,6 +171,20 @@ def pareto(objective_x, objective_y, N_points, Plot=True, Summary=True):
     min_y = get_objective_value(objective_y, path)
     solve_time.append(time.time() - start)
     
+    # Relaxation 1%
+    r = 0.01
+    # Find the true minimum of objective_x
+    path = run('limit_' + objective_y, Pareto=True, Limit=min_y*(1 + r), Plot=Plot, Summary=Summary)
+    min_y = get_objective_value(objective_y, path)
+    max_x = get_objective_value(objective_x, path)
+    solve_time.append(time.time() - start)
+    
+    # Find the true maximum of objective_y
+    path = run('limit_' + objective_x, Pareto=True, Limit=min_x*(1 + r), Plot=Plot, Summary=Summary)
+    min_x = get_objective_value(objective_x, path)
+    max_y = get_objective_value(objective_y, path)
+    solve_time.append(time.time() - start)
+    
     # List of pareto results
     x = [min_x, max_x]
     y = [max_y, min_y]
@@ -186,7 +200,7 @@ def pareto(objective_x, objective_y, N_points, Plot=True, Summary=True):
     
     
     # Plot pareto graphs
-    plot.pareto(date=today)
+    plot.pareto(date=today, Xaxis=objective_x, Yaxis=objective_y)
     
     # plt.scatter(x,y)
     
@@ -222,6 +236,7 @@ if __name__ == "__main__":
     
     # Execute multi_run
     pareto('totex', 'emissions', 21, Plot=True, Summary=True)
+    # pareto('capex', 'opex', 11, Plot=True, Summary=True)
     
     # diagnostic('totex')
     

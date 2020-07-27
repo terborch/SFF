@@ -300,7 +300,7 @@ def all_fig(path, save_fig=True):
     #print_fig(save_fig, os.path.join(cd, 'Heat_flows.png'))
 
 
-def pareto(*args, date=None, print_it=False):
+def pareto(*args, date=None, print_it=False, Xaxis='totex', Yaxis='emissions'):
     if args:
         path = args[0]
     else:
@@ -322,24 +322,28 @@ def pareto(*args, date=None, print_it=False):
         file_path = os.path.join(path, file_name, 'results.h5')
         df = get_hdf(file_path, 'single')
         df.set_index('Var_name', inplace=True)
-        totex, emissions = float(df.loc['totex']), float(df.loc['emissions'])
-        Pareto.append([file_name, totex, emissions])
+        X, Y = float(df.loc[Xaxis]), float(df.loc[Yaxis])
+        Pareto.append([file_name, X, Y])
         
-    # Sort the Pareto list along totex
+    # Sort the Pareto list along Xaxis
     Pareto.sort(key=lambda x: x[1])
-    Totex = [sublist[1] for sublist in Pareto]
-    Emissions = [sublist[2] for sublist in Pareto]
+    X = [sublist[1] for sublist in Pareto]
+    Y = [sublist[2] for sublist in Pareto]
+    unit = {'totex': '[MCHF/year]',
+            'opex': '[MCHF/year]',
+            'capex': '[MCHF/year]',
+            'emissions': '[kt-CO2/year]'}
     
     # Plot options
     plt.title('Pareto possibility frontiere')
-    plt.xlabel('TOTEX in [MCHF/year]')
-    plt.ylabel('emissions in [kt-CO2/year]')
-    plt.ylim(min(Emissions)*0.95, max(Emissions)*1.05)
+    plt.xlabel(f'{Xaxis} in ' + str(unit[Xaxis]))
+    plt.ylabel(f'{Yaxis} in ' + str(unit[Yaxis]))
+    plt.ylim(min(Y)*0.95, max(Y)*1.05)
     
     # Plot pareto point number
-    for i, _ in enumerate(Totex):
+    for i, _ in enumerate(X):
         # Text on graph
-        plt.text(Totex[i] + 0.0015, Emissions[i] + 0.0015, f'{i + 1}')
+        plt.text(X[i] + 0.0015, Y[i] + 0.0015, f'{i + 1}')
         
         # Rename directories according to the pareto points
         l = Pareto[i][0].split('_')
@@ -353,7 +357,7 @@ def pareto(*args, date=None, print_it=False):
     list_of_files = [f for f in os.listdir(path)]
     
     # Pareto scatter plot
-    plt.scatter(Totex, Emissions, label='emissions', marker='o')
+    plt.scatter(X, Y, marker='o')
     
     # Save figure
     fig_path = os.path.join(path, 'pareto.png')

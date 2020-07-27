@@ -1,118 +1,153 @@
-Category,Name,Latex_symbol,Latex_value,Latex_unit,Latex_source,Value,Units,Source,Description,Symbol,Uncertainty
-AD,Cost_multiplier,$c^{mult}_{AD}$,$1.8$,$-$,"\cite{Nils_PdS,IEA}",1.8,-,Nils PdS and IEA,Cost multiplier for Switzerland,,0.5
-AD,Cost_per_size,$c^{size}_{AD}$,$1.5$,$kCHF/kW$,"\cite{Nils_PdS,IEA}",1.5,kCHF/kW,Nils PdS and IEA,Cost retalive to installed capacity,,0
-AD,Cost_per_unit,$c^{fixe}_{AD}$,$5$,$kCHF$,"\cite{Nils_PdS,IEA}",5,kCHF,Nils PdS and IEA,Cost per unit installed,,0
-AD,LCA,$LCA_{AD}$,$0.02$,$tCO_2/kW$,,0.02,tCO2/kW,,LCA emissions from construction,,0
-AD,Life,$n_{AD}$,$20$,$Years$,"\cite{Nils_PdS,IEA}",20,Years,Nils PdS and IEA,Lifetime,,0
-AD,Maintenance,$c^{maint}_{AD}$,$0.1$,$-$,"\cite{Nils_PdS,IEA}",0.1,-,Nils PdS and IEA,Yearly maintenance cost in percent CAPEX,,0
-AD,Min_size,$S^{min}_{AD}$,$20$,$kW$,\cite{Paper_on_small_biogas},20,kW,Paper on small biogas,Smallest possible installed capacity,,0
-AD,Ref_size,$S^{ref}_{AD}$,$100$,$kW$,\cite{Nils_PdS},100,kW,Nils PdS,Reference size for which costs are calculated,,0
-AHP,Cost_multiplier,$c^{mult}_{AHP}$,$1.8$,$-$,\cite{Paul_PHD},1.8,-,Paul PHD,Cost multiplier for Switzerland,,0.5
-AHP,Cost_per_size,$c^{size}_{AHP}$,$1.24$,$kCHF/kW$,\cite{Paul_PHD},1.24,kCHF/kW,Paul PHD,Cost retalive to installed capacity,,0
-AHP,Cost_per_unit,$c^{fixe}_{AHP}$,$5.68$,$kCHF$,\cite{Paul_PHD},5.68,kCHF,Paul PHD,Cost per unit installed,,0
-AHP,LCA,$LCA_{AHP}$,$0.02$,$tCO_2/kW$,,0.02,tCO2/kW,,LCA emissions from construction,,0
-AHP,Life,$n_{AHP}$,$20$,$Years$,\cite{Paul_PHD},20,Years,Paul PHD,Lifetime,,0
-AHP,Maintenance,$c^{maint}_{AHP}$,$0.02$,$-$,\cite{Paul_PHD},0.02,-,Paul PHD,Yearly maintenance cost in percent CAPEX,,0
-AHP,Min_size,$S^{min}_{AHP}$,$10$,$kW$,\cite{Guess},10,kW,Guess,Smallest possible installed capacity,,0
-AHP,Ref_size,$S^{ref}_{AHP}$,$100$,$kW$,\cite{Guess},100,kW,Guess,Reference size for which costs are calculated,,0
-BAT,Cost_multiplier,$c^{mult}_{BAT}$,$1.33$,$-$,\cite{Paul_PHD},1.33,-,Paul PHD,Cost multiplier for Switzerland,,0.5
-BAT,Cost_per_size,$c^{size}_{BAT}$,$0.97$,$kCHF/kWh$,\cite{Paul_PHD},0.97,kCHF/kWh,Paul PHD,Cost retalive to installed capacity,,0
-BAT,Cost_per_unit,$c^{fixe}_{BAT}$,$0.62$,$kCHF$,\cite{Paul_PHD},0.62,kCHF,Paul PHD,Cost per unit installed,,0
-BAT,LCA,$LCA_{BAT}$,$0.1$,$tCO_2/kWh$,\cite{https://4thgeneration.energy/emissions-of-grid-scale-storage/},0.1,tCO2/kWh,https://4thgeneration.energy/emissions-of-grid-scale-storage/,LCA emissions from construction,,0
-BAT,Life,$n_{BAT}$,$10$,$Years$,\cite{Paul_PHD},10,Years,Paul PHD,Lifetime,,0
-BAT,Maintenance,$c^{maint}_{BAT}$,$0.02$,$-$,\cite{Paul_PHD},0.02,-,Paul PHD,Yearly maintenance cost in percent CAPEX,,0
-BAT,Min_size,$S^{min}_{BAT}$,$10$,$kW$,\cite{Guess},10,kW,Guess,Smallest possible installed capacity,,0
-BAT,Ref_size,$S^{ref}_{BAT}$,$100$,$kW$,\cite{Guess},100,kW,Guess,Reference size for which costs are calculated,,0
-CGT,Cost_multiplier,$c^{mult}_{CGT}$,$1.8$,$-$,\cite{DOI:_10.2172/1156975},1.8,-,DOI: 10.2172/1156975,Cost multiplier for Switzerland,,0.5
-CGT,Cost_per_size,$c^{size}_{CGT}$,$0.000923$,$kCHF/kWh$,\cite{DOI:_10.2172/1156975},0.000923,kCHF/kWh,DOI: 10.2172/1156975,Cost retalive to installed capacity,,0
-CGT,Cost_per_unit,$c^{fixe}_{CGT}$,$71.6$,$kCHF$,\cite{DOI:_10.2172/1156975},71.6,kCHF,DOI: 10.2172/1156975,Cost per unit installed,,0
-CGT,LCA,$LCA_{CGT}$,$0.02$,$tCO_2/kWh$,,0.02,tCO2/kWh,,LCA emissions from construction,,0
-CGT,Life,$n_{CGT}$,$25$,$Years$,\cite{DOI:_10.2172/1156975},25,Years,DOI: 10.2172/1156975,Lifetime,,0
-CGT,Maintenance,$c^{maint}_{CGT}$,$0.02$,$-$,\cite{DOI:_10.2172/1156975},0.02,-,DOI: 10.2172/1156975,Yearly maintenance cost in percent CAPEX,,0
-CGT,Min_size,$S^{min}_{CGT}$,$10$,$kW$,\cite{Guess},10,kW,Guess,Smallest possible installed capacity,,0
-CGT,Ref_size,$S^{ref}_{CGT}$,$100$,$kW$,\cite{Guess},100,kW,Guess,Reference size for which costs are calculated,,0
-EH,Cost_multiplier,$c^{mult}_{EH}$,$1$,$-$,\cite{Paul_PHD},1,-,Paul PHD,Cost multiplier for Switzerland,,0.5
-EH,Cost_per_size,$c^{size}_{EH}$,$0.013$,$kCHF/kW$,\cite{Paul_PHD},0.013,kCHF/kW,Paul PHD,Cost retalive to installed capacity,,0
-EH,Cost_per_unit,$c^{fixe}_{EH}$,$0.968$,$kCHF$,\cite{Paul_PHD},0.968,kCHF,Paul PHD,Cost per unit installed,,0
-EH,LCA,$LCA_{EH}$,$0.02$,$tCO_2/kW$,,0.02,tCO2/kW,,LCA emissions from construction,,0
-EH,Life,$n_{EH}$,$20$,$Years$,\cite{Paul_PHD},20,Years,Paul PHD,Lifetime,,0
-EH,Maintenance,$c^{maint}_{EH}$,$0.02$,$-$,\cite{Paul_PHD},0.02,-,Paul PHD,Yearly maintenance cost in percent CAPEX,,0
-EH,Min_size,$S^{min}_{EH}$,$10$,$kW$,\cite{Guess},10,kW,Guess,Smallest possible installed capacity,,0
-EH,Ref_size,$S^{ref}_{EH}$,$100$,$kW$,\cite{Guess},100,kW,Guess,Reference size for which costs are calculated,,0
-GBOI,Cost_multiplier,$c^{mult}_{GBOI}$,$1.8$,$-$,\cite{Paul_PHD},1.8,-,Paul PHD,Cost multiplier for Switzerland,,0.5
-GBOI,Cost_per_size,$c^{size}_{GBOI}$,$0.105$,$kCHF/kW$,\cite{Paul_PHD},0.105,kCHF/kW,Paul PHD,Cost retalive to installed capacity,,0
-GBOI,Cost_per_unit,$c^{fixe}_{GBOI}$,$3.8$,$kCHF$,\cite{Paul_PHD},3.8,kCHF,Paul PHD,Cost per unit installed,,0
-GBOI,LCA,$LCA_{GBOI}$,$0.02109$,$tCO_2/kW$,\cite{energyscope},0.02109,tCO2/kW,energyscope,LCA emissions from construction,,0
-GBOI,Life,$n_{GBOI}$,$20$,$Years$,\cite{Paul_PHD},20,Years,Paul PHD,Lifetime,,0
-GBOI,Maintenance,$c^{maint}_{GBOI}$,$0.0508$,$-$,\cite{energyscope},0.0508,-,energyscope,Yearly maintenance cost in percent CAPEX,,0
-GBOI,Min_size,$S^{min}_{GBOI}$,$10$,$kW$,\cite{Guess},10,kW,Guess,Smallest possible installed capacity,,0
-GBOI,Ref_size,$S^{ref}_{GBOI}$,$100$,$kW$,\cite{Guess},100,kW,Guess,Reference size for which costs are calculated,,0
-GCSOFC,Cost_multiplier,$c^{mult}_{GCSOFC}$,$1$,$-$,\cite{Nils_PdS},1,-,Nils PdS,Cost multiplier for Switzerland,,0.5
-GCSOFC,Cost_per_size,$c^{size}_{GCSOFC}$,$0.558$,$kCHF/kW$,\cite{Nils_PdS},0.558,kCHF/kW,Nils PdS,Cost retalive to installed capacity,,0
-GCSOFC,Cost_per_unit,$c^{fixe}_{GCSOFC}$,$2.8$,$kCHF$,\cite{Nils_PdS},2.8,kCHF,Nils PdS,Cost per unit installed,,0
-GCSOFC,LCA,$LCA_{GCSOFC}$,$0.02$,$tCO_2/kW$,,0.02,tCO2/kW,,LCA emissions from construction,,0
-GCSOFC,Life,$n_{GCSOFC}$,$10$,$Years$,\cite{Nils_PdS},10,Years,Nils PdS,Lifetime,,0
-GCSOFC,Maintenance,$c^{maint}_{GCSOFC}$,$0.185$,$-$,\cite{Nils_PdS},0.185,-,Nils PdS,Yearly maintenance cost in percent CAPEX,,0
-GCSOFC,Min_size,$S^{min}_{GCSOFC}$,$1$,$kW$,\cite{Guess},1,kW,Guess,Smallest possible installed capacity,,0
-GCSOFC,Ref_size,$S^{ref}_{GCSOFC}$,$100$,$kW$,\cite{Guess},100,kW,Guess,Reference size for which costs are calculated,,0
-ICE,Cost_multiplier,$c^{mult}_{ICE}$,$1$,$-$,\cite{Samuel_PdM},1,-,Samuel PdM,Cost multiplier for Switzerland,,0.5
-ICE,Cost_per_size,$c^{size}_{ICE}$,$1.4$,$kCHF/kW$,\cite{Samuel_PdM},1.4,kCHF/kW,Samuel PdM,Cost retalive to installed capacity,,0
-ICE,Cost_per_unit,$c^{fixe}_{ICE}$,$6$,$kCHF$,\cite{Samuel_PdM},6,kCHF,Samuel PdM,Cost per unit installed,,0
-ICE,LCA,$LCA_{ICE}$,$0.02$,$tCO_2/kW$,,0.02,tCO2/kW,,LCA emissions from construction,,0
-ICE,Life,$n_{ICE}$,$20$,$Years$,\cite{Samuel_PdM},20,Years,Samuel PdM,Lifetime,,0
-ICE,Maintenance,$c^{maint}_{ICE}$,$0.085$,$-$,\cite{Data_PalÃ©zieux},0.085,-,Data PalÃ©zieux,Yearly maintenance cost in percent CAPEX,,0
-ICE,Min_size,$S^{min}_{ICE}$,$5$,$kW$,\cite{Guess},5,kW,Guess,Smallest possible installed capacity,,0
-ICE,Ref_size,$S^{ref}_{ICE}$,$100$,$kW$,\cite{Guess},100,kW,Guess,Reference size for which costs are calculated,,0
-PV,Cost_multiplier,$c^{mult}_{PV}$,$1.33$,$-$,\cite{Paul_PHD},1.33,-,Paul PHD,Cost multiplier for Switzerland,,0.5
-PV,Cost_per_size,$c^{size}_{PV}$,$2.656$,$kCHF/kW$,\cite{Paul_PHD},2.656,kCHF/kW,Paul PHD,Cost retalive to installed capacity,,0
-PV,Cost_per_unit,$c^{fixe}_{PV}$,$2.495$,$kCHF$,\cite{Paul_PHD},2.495,kCHF,Paul PHD,Cost per unit installed,,0
-PV,LCA,$LCA_{PV}$,$0.02$,$tCO_2/kW$,,0.02,tCO2/kW,,LCA emissions from construction,,0
-PV,Life,$n_{PV}$,$20$,$Years$,\cite{Paul_PHD},20,Years,Paul PHD,Lifetime,,0
-PV,Maintenance,$c^{maint}_{PV}$,$0.02$,$-$,\cite{Paul_PHD},0.02,-,Paul PHD,Yearly maintenance cost in percent CAPEX,,0
-PV,Min_size,$S^{min}_{PV}$,$5$,$kW$,\cite{Guess},5,kW,Guess,Smallest possible installed capacity,,0
-PV,Ref_size,$S^{ref}_{PV}$,$100$,$kW$,\cite{Guess},100,kW,Guess,Reference size for which costs are calculated,,0
-SOFC,Cost_multiplier,$c^{mult}_{SOFC}$,$1.8$,$-$,\cite{Paul_PHD},1.8,-,Paul PHD,Cost multiplier for Switzerland,,0.5
-SOFC,Cost_per_size,$c^{size}_{SOFC}$,$2.1$,$kCHF/kW$,\cite{Paul_PHD},2.1,kCHF/kW,Paul PHD,Cost retalive to installed capacity,,0
-SOFC,Cost_per_unit,$c^{fixe}_{SOFC}$,$15.542$,$kCHF$,\cite{Paul_PHD},15.542,kCHF,Paul PHD,Cost per unit installed,,0
-SOFC,LCA,$LCA_{SOFC}$,$0.02$,$tCO_2/kW$,,0.02,tCO2/kW,,LCA emissions from construction,,0
-SOFC,Life,$n_{SOFC}$,$10$,$Years$,\cite{Paul_PHD},10,Years,Paul PHD,Lifetime,,0
-SOFC,Maintenance,$c^{maint}_{SOFC}$,$0.05$,$-$,\cite{Paul_PHD},0.05,-,Paul PHD,Yearly maintenance cost in percent CAPEX,,0
-SOFC,Min_size,$S^{min}_{SOFC}$,$1$,$kW$,\cite{Guess},1,kW,Guess,Smallest possible installed capacity,,0
-SOFC,Ref_size,$S^{ref}_{SOFC}$,$100$,$kW$,\cite{Guess},100,kW,Guess,Reference size for which costs are calculated,,0
-WBOI,Cost_multiplier,$c^{mult}_{WBOI}$,$1.8$,$-$,,1.8,-,,Cost multiplier for Switzerland,,0.5
-WBOI,Cost_per_size,$c^{size}_{WBOI}$,$0.148$,$kCHF/kW$,\cite{energyscope},0.148,kCHF/kW,energyscope,Cost retalive to installed capacity,,0
-WBOI,Cost_per_unit,$c^{fixe}_{WBOI}$,$5.359$,$kCHF$,\cite{energyscope},5.359,kCHF,energyscope,Cost per unit installed,,0
-WBOI,LCA,$LCA_{WBOI}$,$0.02109$,$tCO_2/kW$,\cite{energyscope},0.02109,tCO2/kW,energyscope,LCA emissions from construction,,0
-WBOI,Life,$n_{WBOI}$,$17$,$Years$,\cite{energyscope},17,Years,energyscope,Lifetime,,0
-WBOI,Maintenance,$c^{maint}_{WBOI}$,$0.017$,$-$,\cite{energyscope},0.017,-,energyscope,Yearly maintenance cost in percent CAPEX,,0
-WBOI,Min_size,$S^{min}_{WBOI}$,$10$,$kW$,\cite{Guess},10,kW,Guess,Smallest possible installed capacity,,0
-WBOI,Ref_size,$S^{ref}_{WBOI}$,$100$,$kW$,\cite{Guess},100,kW,Guess,Reference size for which costs are calculated,,0
-GFS,Cost_multiplier,$c^{mult}_{GFS}$,$1.8$,$-$,,1.8,-,,Cost multiplier for Switzerland,,0.5
-GFS,Cost_per_size,$c^{size}_{GFS}$,$1.03$,$kCHF/kW$,\cite{DOI:_10.2172/1156975},1.03,kCHF/kW,DOI: 10.2172/1156975,Cost retalive to installed capacity,,0
-GFS,Cost_per_unit,$c^{fixe}_{GFS}$,$12.3$,$kCHF$,\cite{DOI:_10.2172/1156975},12.3,kCHF,DOI: 10.2172/1156975,Cost per unit installed,,0
-GFS,LCA,$LCA_{GFS}$,$0.02$,$tCO_2/kW$,,0.02,tCO2/kW,,LCA emissions from construction,,0
-GFS,Life,$n_{GFS}$,$25$,$Years$,\cite{DOI:_10.2172/1156975},25,Years,DOI: 10.2172/1156975,Lifetime,,0
-GFS,Maintenance,$c^{maint}_{GFS}$,$0.02$,$-$,,0.02,-,,Yearly maintenance cost in percent CAPEX,,0
-GFS,Min_size,$S^{min}_{GFS}$,$10$,$kW$,\cite{GFS_paper},10,kW,GFS paper,Smallest possible installed capacity,,0
-GFS,Ref_size,$S^{ref}_{GFS}$,$30$,$kW$,\cite{GFS_paper},30,kW,GFS paper,Reference size for which costs are calculated,,0
-Biogas,Export_cost,,$0$,$CHF/kWh$,\cite{Assumption},0,CHF/kWh,Assumption,Price at which Biogas is sold,,0
-Biogas,Import_cost,,$10$,$CHF/kWh$,\cite{Assumption},10,CHF/kWh,Assumption,Cost to import Biogas,,0
-Biogas,Emissions,,$0$,$tCO_2/MWh$,\cite{Assumption},0,tCO2/MWh,Assumption,Emissions from importing biogas,,0
-Elec,Export_cost,$c^{sell}_{Elec}$,$0.06$,$CHF/kWh$,\cite{Paul_PHD},0.06,CHF/kWh,Paul PHD,Price at which Elec is sold,,0.5
-Elec,Import_cost,$c^{buy}_{Elec}$,$0.2107$,$CHF/kWh$,\cite{OFS},0.2107,CHF/kWh,OFS,Cost to import Elec ,,0.15
-Elec,Emissions,$CO_2_{Elec}$,$0.13$,$tCO_2/MWh$,\cite{Ecovient},0.13,tCO2/MWh,Ecovient,Emissions from importing Electricity in Switzerland,,0
-Gas,Export_cost,$c^{sell}_{Gas}$,$0.06$,$CHF/kWh$,\cite{Paul_PHD},0.06,CHF/kWh,Paul PHD,Price at which Gas is sold,,0
-Gas,Import_cost,$c^{buy}_{Gas}$,$0.0978$,$CHF/kWh$,\cite{OFS},0.0978,CHF/kWh,OFS,Cost to import Gas,,0.15
-Gas,Emissions,$CO_2_{Gas}$,$0.181083$,$tCO_2/MWh$,\cite{EIA},0.181083170605,tCO2/MWh,EIA,Emissions from importing natural gas,,0
-Wood,Export_cost,$c^{sell}_{Wood}$,$0$,$CHF/kWh$,\cite{Assumption},0,CHF/kWh,Assumption,Price at which Wood Pellets are sold,,0
-Wood,Import_cost,$c^{buy}_{Wood}$,$0.07417$,$CHF/kWh$,\cite{OFS_+_energie-bois.ch(4.8kwh/kg)_www.propellets.ch},0.07417,CHF/kWh,OFS + energie-bois.ch(4.8kwh/kg) www.propellets.ch,Cost to import Wood Pellets,,0.15
-Wood,Emissions,$CO_2_{Wood}$,$0.01$,$tCO_2/MWh$,\cite{Assumption},0.01,tCO2/MWh,Assumption,Emissions from importing wood pellets,,0
-Diesel,Import_cost,$c^{buy}_{Diesel}$,$0.148$,$CHF/kWh$,\cite{OFS_+_engineering_toolbox_(10kwh/l)},0.148,CHF/kWh,OFS + engineering toolbox (10kwh/l),Cost to import diesel,,0.25
-Diesel,Export_cost,$c^{sell}_{Diesel}$,$0$,$CHF/kWh$,\cite{assumption},0,CHF/kWh,assumption,Price at wich diesel is sold,,0
-Diesel,Emissions,$CO_2_{Diesel}$,$0.267$,$tCO_2/MWh$,\cite{energyscope_+_engineering_toolbox_(10kwh/l)},0.267,tCO2/MWh,energyscope + engineering toolbox (10kwh/l),Emissions from importing diesel,,0
-Biomass,Import_cost,,$10$,$CHF/kWh$,\cite{assumption},10,CHF/kWh,assumption,Cost to import biomass,,0
-Biomass,Export_cost,,$-0.1$,$CHF/kWh$,\cite{assumption},-0.1,CHF/kWh,assumption,Price at wich biomass is sold,,0
-Biomass,Emissions,,$0$,$tCO_2/MWh$,\cite{assumption},0,tCO2/MWh,assumption,Emissions from importing biomass,,0
-Heat,Import_cost,,$10$,$CHF/kWh$,\cite{assumption},10,CHF/kWh,assumption,Cost to import heat,,0
-Heat,Export_cost,,$0$,$CHF/kWh$,\cite{assumption},0,CHF/kWh,assumption,Price at wich heat is sold,,0
-Heat,Emissions,,$0$,$tCO_2/MWh$,\cite{assumption},0,tCO2/MWh,assumption,Emissions from importing heat,,0
+Category,Name,Latex_name,Latex_symbol,Latex_value,Latex_unit,Latex_source,Value,Units,Source,Description,Symbol,Uncertainty
+AD,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$1.8$,$-$,\cite{Nils_PdS},1.8,-,Nils PdS,Cost multiplier for Switzerland,,0.5
+AD,Cost_per_size,Specific investement cost,$c^{size}_u$,$1.5$,$kCHF/kW$,\cite{Nils_PdS},1.5,kCHF/kW,Nils PdS,Cost retalive to installed capacity,,0.0
+AD,Cost_per_unit,Fixed investement cost,$c^{fixe}_u$,$5$,$kCHF$,\cite{Nils_PdS},5.0,kCHF,Nils PdS,Cost per unit installed,,0.0
+AD,LCA,LCA emissions,"$m^{LCA}_{CO_2,u}$",$0.02$,$tCO_2/kW$,Default,0.02,tCO2/kW,Default,LCA emissions from construction,,0.0
+AD,Life,Life,$n_u$,$20$,$Years$,\cite{Nils_PdS},20.0,Years,Nils PdS,Lifetime,,0.0
+AD,Maintenance,Maintenance,$c^{maint}_u$,$0.1$,$-$,\cite{Nils_PdS},0.1,-,Nils PdS,Yearly maintenance cost in percent CAPEX,,0.0
+AD,Min_size,Smallest size,$S^{min}_u$,$20$,$kW$,\cite{dobbelaere_2015},20.0,kW,dobbelaere 2015,Smallest possible installed capacity,,0.0
+AD,Ref_size,Reference size,$S^{ref}_u$,$100$,$kW$,\cite{Nils_PdS},100.0,kW,Nils PdS,Reference size for which costs are calculated,,0.0
+AHP,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$1.8$,$-$,\cite{Paul_PHD},1.8,-,Paul PHD,Cost multiplier,,0.5
+AHP,Cost_per_size,Specific investement cost,$c^{size}_u$,$1.24$,$kCHF/kW$,\cite{Paul_PHD},1.24,kCHF/kW,Paul PHD,Cost retalive to installed capacity,,0.0
+AHP,Cost_per_unit,Fixed investement cost,$c^{fixe}_u$,$5.68$,$kCHF$,\cite{Paul_PHD},5.68,kCHF,Paul PHD,Cost per unit installed,,0.0
+AHP,LCA,LCA emissions,"$m^{LCA}_{CO_2,u}$",$0.02$,$tCO_2/kW$,Default,0.02,tCO2/kW,Default,LCA emissions from construction,,0.0
+AHP,Life,Life,$n_u$,$20$,$Years$,\cite{Paul_PHD},20.0,Years,Paul PHD,Lifetime,,0.0
+AHP,Maintenance,Maintenance,$c^{maint}_u$,$0.02$,$-$,\cite{Paul_PHD},0.02,-,Paul PHD,Yearly maintenance cost in percent CAPEX,,0.0
+AHP,Min_size,Smallest size,$S^{min}_u$,$5$,$kW$,Setting,5.0,kW,Setting,Smallest possible installed capacity,,0.0
+AHP,Ref_size,Reference size,$S^{ref}_u$,$10$,$kW$,\cite{Paul_PHD},10.0,kW,Paul PHD,Reference size for which costs are calculated,,0.0
+GHP,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$1$,$-$,\cite{Perego_2019},1.0,-,Perego 2019,Cost multiplier,,0.5
+GHP,Cost_per_size,Specific investement cost,$c^{size}_u$,$2.1$,$kCHF/kW$,\cite{Perego_2019},2.1,kCHF/kW,Perego 2019,Cost retalive to installed capacity,,0.0
+GHP,Cost_per_unit,Fixed investement cost,$c^{fixe}_u$,$22.5$,$kCHF$,\cite{Perego_2019},22.5,kCHF,Perego 2019,Cost per unit installed,,0.0
+GHP,LCA,LCA emissions,"$m^{LCA}_{CO_2,u}$",$0.02$,$tCO_2/kW$,Default,0.02,tCO2/kW,Default,LCA emissions from construction,,0.0
+GHP,Life,Life,$n_u$,$33$,$Years$,"\cite{Calc,dandelionenergy.com}",33.0,Years,"Calc, dandelionenergy.com",Lifetime,,0.0
+GHP,Maintenance,Maintenance,$c^{maint}_u$,$0.01$,$-$,"\cite{Blum_2011,_Paul_PHD}",0.01,-,"Blum 2011, Paul PHD",Yearly maintenance cost in percent CAPEX,,0.0
+GHP,Min_size,Smallest size,$S^{min}_u$,$25$,$kW$,\cite{Perego_2019},25.0,kW,Perego 2019,Smallest possible installed capacity,,0.0
+GHP,Ref_size,Reference size,$S^{ref}_u$,$25$,$kW$,\cite{Perego_2019},25.0,kW,Perego 2019,Reference size for which costs are calculated,,0.0
+BAT,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$1.33$,$-$,\cite{Paul_PHD},1.33,-,Paul PHD,Cost multiplier,,0.5
+BAT,Cost_per_size,Specific investement cost,$c^{size}_u$,$0.97$,$kCHF/kWh$,\cite{Paul_PHD},0.97,kCHF/kWh,Paul PHD,Cost retalive to installed capacity,,0.0
+BAT,Cost_per_unit,Fixed investement cost,$c^{fixe}_u$,$0.62$,$kCHF$,\cite{Paul_PHD},0.62,kCHF,Paul PHD,Cost per unit installed,,0.0
+BAT,LCA,LCA emissions,"$m^{LCA}_{CO_2,u}$",$0.1$,$tCO_2/kWh$,\cite{emilsson_2019},0.1,tCO2/kWh,emilsson 2019,LCA emissions from construction,,0.0
+BAT,Life,Life,$n_u$,$10$,$Years$,\cite{Paul_PHD},10.0,Years,Paul PHD,Lifetime,,0.0
+BAT,Maintenance,Maintenance,$c^{maint}_u$,$0.02$,$-$,\cite{Paul_PHD},0.02,-,Paul PHD,Yearly maintenance cost in percent CAPEX,,0.0
+BAT,Min_size,Smallest size,$S^{min}_u$,$1$,$kWh$,Setting,1.0,kWh,Setting,Smallest possible installed capacity,,0.0
+BAT,Ref_size,Reference size,$S^{ref}_u$,$10$,$kWh$,\cite{Paul_PHD},10.0,kWh,Paul PHD,Reference size for which costs are calculated,,0.0
+BS,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$5.2$,$-$,\cite{Scaling},5.2,-,Scaling,Cost multiplier,,0.5
+BS,Cost_per_size,Specific investement cost,$c^{size}_u$,$0.0125$,$kCHF/kWh$,\cite{Hahn_2014},0.0125,kCHF/kWh,Hahn 2014,Cost retalive to installed capacity,,0.0
+BS,Cost_per_unit,Fixed investement cost,$c^{fixe}_u$,$1.6$,$kCHF$,\cite{Hahn_2014},1.6,kCHF,Hahn 2014,Cost per unit installed,,0.0
+BS,LCA,LCA emissions,"$m^{LCA}_{CO_2,u}$",$0.02$,$tCO_2/kWh$,Default,0.02,tCO2/kWh,Default,LCA emissions from construction,,0.0
+BS,Life,Life,$n_u$,$20$,$Years$,\cite{Hahn_2014},20.0,Years,Hahn 2014,Lifetime,,0.0
+BS,Maintenance,Maintenance,$c^{maint}_u$,$0.024$,$-$,\cite{Hahn_2014},0.024,-,Hahn 2014,Yearly maintenance cost in percent CAPEX,,0.0
+BS,Min_size,Smallest size,$S^{min}_u$,$30$,$kWh$,Setting,30.0,kWh,Setting,Smallest possible installed capacity,,0.0
+BS,Ref_size,Reference size,$S^{ref}_u$,$18700$,$kWh$,\cite{Hahn_2014},18700.0,kWh,Hahn 2014,Reference size for which costs are calculated,,0.0
+BU,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$5.1$,$-$,\cite{Scaling},5.1,-,Scaling,Cost multiplier,,0.5
+BU,Cost_per_size,Specific investement cost,$c^{size}_u$,$0.886$,$kCHF/kW$,\cite{Chen_2015},0.8859999999999999,kCHF/kW,Chen 2015,Cost retalive to installed capacity,,0.0
+BU,Cost_per_unit,Fixed investement cost,$c^{fixe}_u$,$11.4$,$kCHF$,\cite{Chen_2015},11.4,kCHF,Chen 2015,Cost per unit installed,,0.0
+BU,LCA,LCA emissions,"$m^{LCA}_{CO_2,u}$",$0.02$,$tCO_2/kW$,Default,0.02,tCO2/kW,Default,LCA emissions from construction,,0.0
+BU,Life,Life,$n_u$,$15$,$Years$,\cite{He_2018},15.0,Years,He 2018,Lifetime,,0.0
+BU,Maintenance,Maintenance,$c^{maint}_u$,$0.02$,$-$,\cite{Chen_2015},0.02,-,Chen 2015,Yearly maintenance cost in percent CAPEX,,0.0
+BU,Min_size,Smallest size,$S^{min}_u$,$10$,$kW$,Setting,10.0,kW,Setting,Smallest possible installed capacity,,0.0
+BU,Ref_size,Reference size,$S^{ref}_u$,$1000$,$kW$,\cite{Chen_2015},1000.0,kW,Chen 2015,Reference size for which costs are calculated,,0.0
+GI,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$1$,$-$,\cite{Biollaz_2017},1.0,-,Biollaz 2017,Cost multiplier,,0.5
+GI,Cost_per_size,Specific investement cost,$c^{size}_u$,$0.548$,$kCHF/kW$,\cite{Biollaz_2017},0.5479999999999999,kCHF/kW,Biollaz 2017,Cost retalive to installed capacity,,0.0
+GI,Cost_per_unit,Fixed investement cost,$c^{fixe}_u$,$7.05$,$kCHF$,\cite{Biollaz_2017},7.05,kCHF,Biollaz 2017,Cost per unit installed,,0.0
+GI,LCA,LCA emissions,"$m^{LCA}_{CO_2,u}$",$0.02$,$tCO_2/kW$,Default,0.02,tCO2/kW,Default,LCA emissions from construction,,0.0
+GI,Life,Life,$n_u$,$20$,$Years$,Default,20.0,Years,Default,Lifetime,,0.0
+GI,Maintenance,Maintenance,$c^{maint}_u$,$0.02$,$-$,Default,0.02,-,Default,Yearly maintenance cost in percent CAPEX,,0.0
+GI,Min_size,Smallest size,$S^{min}_u$,$10$,$kW$,Setting,10.0,kW,Setting,Smallest possible installed capacity,,0.0
+GI,Ref_size,Reference size,$S^{ref}_u$,$1300$,$kW$,\cite{Biollaz_2017},1300.0,kW,Biollaz 2017,Reference size for which costs are calculated,,0.0
+CGT,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$1.8$,$-$,Default,1.8,-,Default,Cost multiplier,,0.5
+CGT,Cost_per_size,Specific investement cost,$c^{size}_u$,$0.000923$,$kCHF/kWh$,\cite{smith_2014},0.000923,kCHF/kWh,smith 2014,Cost retalive to installed capacity,,0.0
+CGT,Cost_per_unit,Fixed investement cost,$c^{fixe}_u$,$71.6$,$kCHF$,\cite{smith_2014},71.6,kCHF,smith 2014,Cost per unit installed,,0.0
+CGT,LCA,LCA emissions,"$m^{LCA}_{CO_2,u}$",$0.02$,$tCO_2/kWh$,Default,0.02,tCO2/kWh,Default,LCA emissions from construction,,0.0
+CGT,Life,Life,$n_u$,$25$,$Years$,\cite{smith_2014},25.0,Years,smith 2014,Lifetime,,0.0
+CGT,Maintenance,Maintenance,$c^{maint}_u$,$0.02$,$-$,\cite{smith_2014},0.02,-,smith 2014,Yearly maintenance cost in percent CAPEX,,0.0
+CGT,Min_size,Smallest size,$S^{min}_u$,$100$,$kWh$,Setting,100.0,kWh,Setting,Smallest possible installed capacity,,0.0
+CGT,Ref_size,Reference size,$S^{ref}_u$,$4300$,$kWh$,\cite{smith_2014},4300.0,kWh,smith 2014,Reference size for which costs are calculated,,0.0
+EH,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$1$,$-$,\cite{Paul_PHD},1.0,-,Paul PHD,Cost multiplier,,0.5
+EH,Cost_per_size,Specific investement cost,$c^{size}_u$,$0.013$,$kCHF/kW$,\cite{Paul_PHD},0.013000000000000001,kCHF/kW,Paul PHD,Cost retalive to installed capacity,,0.0
+EH,Cost_per_unit,Fixed investement cost,$c^{fixe}_u$,$0.968$,$kCHF$,\cite{Paul_PHD},0.968,kCHF,Paul PHD,Cost per unit installed,,0.0
+EH,LCA,LCA emissions,"$m^{LCA}_{CO_2,u}$",$0.02$,$tCO_2/kW$,Default,0.02,tCO2/kW,Default,LCA emissions from construction,,0.0
+EH,Life,Life,$n_u$,$20$,$Years$,\cite{Paul_PHD},20.0,Years,Paul PHD,Lifetime,,0.0
+EH,Maintenance,Maintenance,$c^{maint}_u$,$0.02$,$-$,\cite{Paul_PHD},0.02,-,Paul PHD,Yearly maintenance cost in percent CAPEX,,0.0
+EH,Min_size,Smallest size,$S^{min}_u$,$5$,$kW$,Setting,5.0,kW,Setting,Smallest possible installed capacity,,0.0
+EH,Ref_size,Reference size,$S^{ref}_u$,$100$,$kW$,\cite{Paul_PHD},100.0,kW,Paul PHD,Reference size for which costs are calculated,,0.0
+GBOI,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$1.8$,$-$,\cite{Paul_PHD},1.8,-,Paul PHD,Cost multiplier,,0.5
+GBOI,Cost_per_size,Specific investement cost,$c^{size}_u$,$0.105$,$kCHF/kW$,\cite{Paul_PHD},0.105,kCHF/kW,Paul PHD,Cost retalive to installed capacity,,0.0
+GBOI,Cost_per_unit,Fixed investement cost,$c^{fixe}_u$,$3.8$,$kCHF$,\cite{Paul_PHD},3.8,kCHF,Paul PHD,Cost per unit installed,,0.0
+GBOI,LCA,LCA emissions,"$m^{LCA}_{CO_2,u}$",$0.02109$,$tCO_2/kW$,\cite{energyscope},0.02109,tCO2/kW,energyscope,LCA emissions from construction,,0.0
+GBOI,Life,Life,$n_u$,$20$,$Years$,\cite{Paul_PHD},20.0,Years,Paul PHD,Lifetime,,0.0
+GBOI,Maintenance,Maintenance,$c^{maint}_u$,$0.0508$,$-$,\cite{energyscope},0.0508,-,energyscope,Yearly maintenance cost in percent CAPEX,,0.0
+GBOI,Min_size,Smallest size,$S^{min}_u$,$5$,$kW$,Setting,5.0,kW,Setting,Smallest possible installed capacity,,0.0
+GBOI,Ref_size,Reference size,$S^{ref}_u$,$50$,$kW$,\cite{Paul_PHD},50.0,kW,Paul PHD,Reference size for which costs are calculated,,0.0
+GCSOFC,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$1$,$-$,\cite{Nils_PdS},1.0,-,Nils PdS,Cost multiplier,,0.5
+GCSOFC,Cost_per_size,Specific investement cost,$c^{size}_u$,$0.558$,$kCHF/kW$,\cite{Nils_PdS},0.5579999999999999,kCHF/kW,Nils PdS,Cost retalive to installed capacity,,0.0
+GCSOFC,Cost_per_unit,Fixed investement cost,$c^{fixe}_u$,$2.8$,$kCHF$,\cite{Nils_PdS},2.8,kCHF,Nils PdS,Cost per unit installed,,0.0
+GCSOFC,LCA,LCA emissions,"$m^{LCA}_{CO_2,u}$",$0.02$,$tCO_2/kW$,Default,0.02,tCO2/kW,Default,LCA emissions from construction,,0.0
+GCSOFC,Life,Life,$n_u$,$10$,$Years$,\cite{Nils_PdS},10.0,Years,Nils PdS,Lifetime,,0.0
+GCSOFC,Maintenance,Maintenance,$c^{maint}_u$,$0.185$,$-$,\cite{Nils_PdS},0.185,-,Nils PdS,Yearly maintenance cost in percent CAPEX,,0.0
+GCSOFC,Min_size,Smallest size,$S^{min}_u$,$1$,$kW$,Setting,1.0,kW,Setting,Smallest possible installed capacity,,0.0
+GCSOFC,Ref_size,Reference size,$S^{ref}_u$,$100$,$kW$,\cite{Nils_PdS},100.0,kW,Nils PdS,Reference size for which costs are calculated,,0.0
+ICE,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$1$,$-$,\cite{Samuel_PdM},1.0,-,Samuel PdM,Cost multiplier,,0.5
+ICE,Cost_per_size,Specific investement cost,$c^{size}_u$,$1.4$,$kCHF/kW$,\cite{Samuel_PdM},1.4,kCHF/kW,Samuel PdM,Cost retalive to installed capacity,,0.0
+ICE,Cost_per_unit,Fixed investement cost,$c^{fixe}_u$,$6$,$kCHF$,\cite{Samuel_PdM},6.0,kCHF,Samuel PdM,Cost per unit installed,,0.0
+ICE,LCA,LCA emissions,"$m^{LCA}_{CO_2,u}$",$0.02$,$tCO_2/kW$,Default,0.02,tCO2/kW,Default,LCA emissions from construction,,0.0
+ICE,Life,Life,$n_u$,$20$,$Years$,\cite{Samuel_PdM},20.0,Years,Samuel PdM,Lifetime,,0.0
+ICE,Maintenance,Maintenance,$c^{maint}_u$,$0.085$,$-$,\cite{Palezieux},0.085,-,Palezieux,Yearly maintenance cost in percent CAPEX,,0.0
+ICE,Min_size,Smallest size,$S^{min}_u$,$10$,$kW$,Setting,10.0,kW,Setting,Smallest possible installed capacity,,0.0
+ICE,Ref_size,Reference size,$S^{ref}_u$,$20$,$kW$,\cite{Samuel_PdM},20.0,kW,Samuel PdM,Reference size for which costs are calculated,,0.0
+PV,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$1.33$,$-$,\cite{Paul_PHD},1.33,-,Paul PHD,Cost multiplier,,0.5
+PV,Cost_per_size,Specific investement cost,$c^{size}_u$,$2.656$,$kCHF/kW$,\cite{Paul_PHD},2.656,kCHF/kW,Paul PHD,Cost retalive to installed capacity,,0.0
+PV,Cost_per_unit,Fixed investement cost,$c^{fixe}_u$,$2.495$,$kCHF$,\cite{Paul_PHD},2.495,kCHF,Paul PHD,Cost per unit installed,,0.0
+PV,LCA,LCA emissions,"$m^{LCA}_{CO_2,u}$",$0.02$,$tCO_2/kW$,Default,0.02,tCO2/kW,Default,LCA emissions from construction,,0.0
+PV,Life,Life,$n_u$,$20$,$Years$,\cite{Paul_PHD},20.0,Years,Paul PHD,Lifetime,,0.0
+PV,Maintenance,Maintenance,$c^{maint}_u$,$0.02$,$-$,\cite{Paul_PHD},0.02,-,Paul PHD,Yearly maintenance cost in percent CAPEX,,0.0
+PV,Min_size,Smallest size,$S^{min}_u$,$5$,$kW$,Setting,5.0,kW,Setting,Smallest possible installed capacity,,0.0
+PV,Ref_size,Reference size,$S^{ref}_u$,$10$,$kW$,\cite{Paul_PHD},10.0,kW,Paul PHD,Reference size for which costs are calculated,,0.0
+SOFC,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$1.8$,$-$,\cite{Paul_PHD},1.8,-,Paul PHD,Cost multiplier,,0.5
+SOFC,Cost_per_size,Specific investement cost,$c^{size}_u$,$2.1$,$kCHF/kW$,\cite{Paul_PHD},2.1,kCHF/kW,Paul PHD,Cost retalive to installed capacity,,0.0
+SOFC,Cost_per_unit,Fixed investement cost,$c^{fixe}_u$,$15.542$,$kCHF$,\cite{Paul_PHD},15.542,kCHF,Paul PHD,Cost per unit installed,,0.0
+SOFC,LCA,LCA emissions,"$m^{LCA}_{CO_2,u}$",$0.02$,$tCO_2/kW$,Default,0.02,tCO2/kW,Default,LCA emissions from construction,,0.0
+SOFC,Life,Life,$n_u$,$10$,$Years$,\cite{Paul_PHD},10.0,Years,Paul PHD,Lifetime,,0.0
+SOFC,Maintenance,Maintenance,$c^{maint}_u$,$0.05$,$-$,\cite{Paul_PHD},0.05,-,Paul PHD,Yearly maintenance cost in percent CAPEX,,0.0
+SOFC,Min_size,Smallest size,$S^{min}_u$,$1$,$kW$,\cite{Paul_PHD},1.0,kW,Paul PHD,Smallest possible installed capacity,,0.0
+SOFC,Ref_size,Reference size,$S^{ref}_u$,$5$,$kW$,\cite{Paul_PHD},5.0,kW,Paul PHD,Reference size for which costs are calculated,,0.0
+WBOI,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$1.8$,$-$,Default,1.8,-,Default,Cost multiplier,,0.5
+WBOI,Cost_per_size,Specific investement cost,$c^{size}_u$,$0.148$,$kCHF/kW$,\cite{energyscope},0.14800000000000002,kCHF/kW,energyscope,Cost retalive to installed capacity,,0.0
+WBOI,Cost_per_unit,Fixed investement cost,$c^{fixe}_u$,$5.359$,$kCHF$,\cite{energyscope},5.359,kCHF,energyscope,Cost per unit installed,,0.0
+WBOI,LCA,LCA emissions,"$m^{LCA}_{CO_2,u}$",$0.02109$,$tCO_2/kW$,\cite{energyscope},0.02109,tCO2/kW,energyscope,LCA emissions from construction,,0.0
+WBOI,Life,Life,$n_u$,$17$,$Years$,\cite{energyscope},17.0,Years,energyscope,Lifetime,,0.0
+WBOI,Maintenance,Maintenance,$c^{maint}_u$,$0.017$,$-$,\cite{energyscope},0.017,-,energyscope,Yearly maintenance cost in percent CAPEX,,0.0
+WBOI,Min_size,Smallest size,$S^{min}_u$,$5$,$kW$,Setting,5.0,kW,Setting,Smallest possible installed capacity,,0.0
+WBOI,Ref_size,Reference size,$S^{ref}_u$,$100$,$kW$,\cite{energyscope},100.0,kW,energyscope,Reference size for which costs are calculated,,0.0
+GFS,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$1.8$,$-$,Default,1.8,-,Default,Cost multiplier,,0.5
+GFS,Cost_per_size,Specific investement cost,$c^{size}_u$,$1.03$,$kCHF/kW$,\cite{smith_2014},1.03,kCHF/kW,smith 2014,Cost retalive to installed capacity,,0.0
+GFS,Cost_per_unit,Fixed investement cost,$c^{fixe}_u$,$12.3$,$kCHF$,\cite{smith_2014},12.3,kCHF,smith 2014,Cost per unit installed,,0.0
+GFS,LCA,LCA emissions,"$m^{LCA}_{CO_2,u}$",$0.02$,$tCO_2/kW$,Default,0.02,tCO2/kW,Default,LCA emissions from construction,,0.0
+GFS,Life,Life,$n_u$,$25$,$Years$,\cite{smith_2014},25.0,Years,smith 2014,Lifetime,,0.0
+GFS,Maintenance,Maintenance,$c^{maint}_u$,$0.02$,$-$,Default,0.02,-,Default,Yearly maintenance cost in percent CAPEX,,0.0
+GFS,Min_size,Smallest size,$S^{min}_u$,$10$,$kW$,\cite{smith_2014},10.0,kW,smith 2014,Smallest possible installed capacity,,0.0
+GFS,Ref_size,Reference size,$S^{ref}_u$,$30$,$kW$,\cite{smith_2014},30.0,kW,smith 2014,Reference size for which costs are calculated,,0.0
+Biogas,Export_cost,,,$0$,$CHF/kWh$,Setting,0.0,CHF/kWh,Setting,Price at which Biogas is sold,,0.0
+Biogas,Import_cost,,,$0$,$CHF/kWh$,Setting,0.0,CHF/kWh,Setting,Cost to import Biogas,,0.0
+Biogas,Emissions,,,$0$,$tCO_2/MWh$,Setting,0.0,tCO2/MWh,Setting,Emissions from importing biogas,,0.0
+Elec,Export_cost,Selling price,$c^{sell}_{Elec}$,$0.1175$,$CHF/kWh$,\cite{vese.ch},0.1175,CHF/kWh,vese.ch,Price at which Elec is sold,,0.5
+Elec,Import_cost,Purchase cost,$c^{buy}_{Elec}$,$0.2107$,$CHF/kWh$,\cite{OFS},0.2107,CHF/kWh,OFS,Cost to import Elec ,,0.15
+Elec,Emissions,Associated emissions,"$m^{buy}_{CO_2\,Elec}$",$0.2$,$tCO_2/MWh$,\cite{vuarnoz_2018},0.2,tCO2/MWh,vuarnoz 2018,Emissions from importing Electricity in Switzerland,,0.0
+Gas,Export_cost,Selling price,$c^{sell}_{Gas}$,$0.07824$,$CHF/kWh$,Setting,0.07824,CHF/kWh,Setting,Price at which Gas is sold,,0.0
+Gas,Import_cost,Purchase cost,$c^{buy}_{Gas}$,$0.0978$,$CHF/kWh$,\cite{OFS},0.0978,CHF/kWh,OFS,Cost to import Gas,,0.15
+Gas,Emissions,Associated emissions,"$m^{buy}_{CO_2\,Gas}$",$0.21336$,$tCO_2/MWh$,\cite{iea.org},0.21336,tCO2/MWh,iea.org,Emissions from importing natural gas,,0.0
+Wood,Export_cost,Selling price,$c^{sell}_{Wood}$,$0$,$CHF/kWh$,Setting,0.0,CHF/kWh,Setting,Price at which Wood Pellets are sold,,0.0
+Wood,Import_cost,Purchase cost,$c^{buy}_{Wood}$,$0.07417$,$CHF/kWh$,\cite{OFS},0.07417,CHF/kWh,OFS,Cost to import Wood Pellets,,0.15
+Wood,Emissions,Associated emissions,"$m^{buy}_{CO_2\,Wood}$",$0.01075$,$tCO_2/MWh$,\cite{Sikkeman_2010},0.01075,tCO2/MWh,Sikkeman 2010,Emissions from importing wood pellets,,0.0
+Diesel,Import_cost,Purchase cost,$c^{buy}_{Diesel}$,$0.148$,$CHF/kWh$,\cite{OFS},0.14800000000000002,CHF/kWh,OFS,Cost to import diesel,,0.25
+Diesel,Export_cost,Selling price,$c^{sell}_{Diesel}$,$0$,$CHF/kWh$,Setting,0.0,CHF/kWh,Setting,Price at wich diesel is sold,,0.0
+Diesel,Emissions,Associated emissions,"$m^{buy}_{CO_2\,Diesel}$",$0.267$,$tCO_2/MWh$,\cite{energyscope},0.267,tCO2/MWh,energyscope,Emissions from importing diesel,,0.0
+Biomass,Import_cost,,,$0$,$CHF/kWh$,Setting,0.0,CHF/kWh,Setting,Cost to import biomass,,0.0
+Biomass,Export_cost,,,$0$,$CHF/kWh$,Setting,0.0,CHF/kWh,Setting,Price at wich biomass is sold,,0.0
+Biomass,Emissions,,,$0$,$tCO_2/MWh$,Setting,0.0,tCO2/MWh,Setting,Emissions from importing biomass,,0.0
+Heat,Import_cost,,,$0$,$CHF/kWh$,Setting,0.0,CHF/kWh,Setting,Cost to import heat,,0.0
+Heat,Export_cost,,,$0$,$CHF/kWh$,Setting,0.0,CHF/kWh,Setting,Price at wich heat is sold,,0.0
+Heat,Emissions,,,$0$,$tCO_2/MWh$,Setting,0.0,tCO2/MWh,Setting,Emissions from importing heat,,0.0
+BM,Import_cost,Purchase cost,$c^{buy}_{BM}$,$0$,$CHF/kWh$,Setting,0.0,CHF/kWh,Setting,Cost to import biomethane,,0.0
+BM,Export_cost,Selling price,$c^{sell}_{BM}$,$0.07824$,$CHF/kWh$,Setting,0.07824,CHF/kWh,Setting,Price at wich biomethane is sold,,0.25
+BM,Emissions,Associated emissions,"$m^{buy}_{CO_2\,BM}$",$0.21336$,$tCO_2/MWh$,Setting,0.21336,tCO2/MWh,Setting,Emissions reduction from exporting biomethane,,0.0

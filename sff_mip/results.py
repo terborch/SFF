@@ -45,7 +45,10 @@ def make_path(objective=None, Limit=None, Pareto=False):
     os.makedirs(os.path.dirname(os.path.join(cd, '')), exist_ok=True)
     
     result_name = 'run_nbr' if not Pareto else 'Pareto'
-    last_run = get_last_run_nbr(cd, result_name)
+    try:
+        last_run = get_last_run_nbr(cd, result_name)
+    except:
+        last_run = 99
     
     # Make result sub-folders for Pareto results
     if Pareto:

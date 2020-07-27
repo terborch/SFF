@@ -1,26 +1,27 @@
-Category,Name,Value,Units,Description,Source,doi,Symbol
-AD,T_max,40,C,Maximum allowed temperature for the digester,Hreiz,,"T_{AD,max}"
-AD,T_min,39,C,Minimum allowed temperature for the digester,Hreiz,,"T_{AD,min}"
-AD,Biomass_water,0.93,-,Water fraction of the digestate,S. Fujishima,,f_{AD_{Water/BM}}
-AD,Cap_V_ratio,0.4,-,Ratio of the cap volume over the digestate volume,doi: 10.1016/j.cherd.2017.01.007, 10.1016/j.cherd.2017.01.007,f_{AD_{V_{cap}/V_{dig}}
-AD,Cap_abs,0.9,-,Solar Irradiance absorption coefficient for a black painted cap,Hreiz,,\alpha_{AD_{cap}}
-AD,Cap_h_ratio,2.2,-,Ratio of the cap raius over the cap height,doi: 10.1016/j.cherd.2017.01.007, 10.1016/j.cherd.2017.01.007,f_{AD_{cap_{rad/h}}}
-AD,Cyl_fill,0.9,-,Ratio of the cylinder volume over the digestate volume,doi: 10.1016/j.cherd.2017.01.007, 10.1016/j.cherd.2017.01.007,f_{AD_{V_{cyl}/V_{dig}}}
-AD,Residence_time,30,day,AD Hydraulic Residence Time,Hreiz,,"t_{AD, resid}"
-AD,Ground_losses,0.06208,kW/m^2,Steady state heat losses to the ground,Hreiz,,U_{AD_{ground}}
-AD,Heating_part_load,0.2,-,Lowest load fraction acceptable before shutting down the heating system,Setting,,"f_{AD, Q_{min}}"
-AD,U_cap,0.00208,kW/C/m^2,AD heat transmittance,doi: 10.12911/22998993/89660,10.12911/22998993/89660,U_{AD_{cap}}
-AD,Manure_per_cattle,7.3,kg-dry/day/LSU,Cattle manure production dry basis,Carlini 2017,10.3390/c5020027,f_{BM/LSU}
-AD,Manure_HHV_dry,3.694444444,kWh/kg-dry,Fresh cattle manure energy content HHV dry basis,Carlini 2017,10.3390/c5020027,HHV_{BM}
-AD,LSU,139,LSU,Number of Livestock Units on the farm,calc,,LSU_{farm}
-build,Absorptance,0.08,-,Fraction of solar radiation absorbed relative to ground surface,guess,,\alpha_b
-build,Heating_part_load,0.2,-,Lowest load fraction acceptable before shutting down the heating system,Setting,,"f_{b, Q_{min}}"
-build,Gains_ppl_annual,26,kWh/m^2/year,Heating Gains from People,Paul - SIA 2024,,"Q^{+ ppl}_{b, annual}"
-build,Elec_heat_frac,0.9,-,Fraction of heat produced by electricity consumber,Dirk MA,,f_{b_{Q/EL}}
-build,U_b,0.00206,kW/C/m^2,Building heat transmittance,Paul - SIA 2024,,U_b
-build,C_b,0.12,kWh/C/m^2,Building heat capacity,Paul - SIA 2024,,C_b
-build,T_open_windows,25,C,If the minimum building temperature in a day is below this windows stay open,Setting,,"T_{b,open}"
-build,T_min,18,C,Minimum indoor temperature,setting,,"T_{b,min}"
-build,T_max,34,C,Maximum indoor temperature,setting,,"T_{b,max}"
-build,Heated_area,14705,m^2,Building heated surface area,geo.admin.ch,,"A_{b, heated}"
-build,Safety_factor,1.5,-,Safety factor for the maximum heating load,none,,"f_{b, safety}"
+Category,Name,Value,Units,Description,Source,Symbol,Full name
+AD,T_max,40,C,Maximum allowed temperature for the digester,hreiz 2017,"T_{AD,max}",Max temperature
+AD,T_min,39,C,Minimum allowed temperature for the digester,hreiz 2017,"T_{AD,min}",Min temperature
+AD,Biomass_water,0.93,-,Water fraction of the digestate,fujishima 2000,f_{AD_{Water/BM}},Biomass water content
+AD,Cap_V_ratio,0.4,-,Ratio of the cap volume over the digestate volume,hreiz 2017,f_{AD_{V_{cap}/V_{dig}},Cap volume ratio
+AD,Cap_abs,0.9,-,Solar Irradiance absorption coefficient for a black painted cap,hreiz 2017,\alpha_{AD_{cap}},Cap absorptance
+AD,Cap_h_ratio,2.2,-,Ratio of the cap raius over the cap height,hreiz 2017,f_{AD_{cap_{rad/h}}},Cap height ratio
+AD,Cyl_fill,0.9,-,Ratio of the cylinder volume over the digestate volume,hreiz 2017,f_{AD_{V_{cyl}/V_{dig}}},Cylinder fill
+AD,Residence_time,30,day,AD Hydraulic Residence Time,hreiz 2017,"t_{AD, resid}",Residence time
+AD,Ground_losses,0.06208,kW/m^2,Steady state heat losses to the ground,hreiz 2017,U_{AD_{ground}},Ground heat losses
+AD,Heating_part_load,0.2,-,Lowest load fraction acceptable before shutting down the heating system,Setting,"f_{AD, Q_{min}}",Heater part load
+AD,U_cap,0.00208,kW/C/m^2,AD heat transmittance,teleszewski 2018,U_{AD_{cap}},Cap heat conductivity
+AD,Manure_per_cattle,7.3,kg-dry/day/LSU,Cattle manure production dry basis,Carlini 2017,f_{BM/LSU},Manure per cattle
+AD,Manure_HHV_dry,3.694444444,kWh/kg-dry,Fresh cattle manure energy content HHV dry basis,Carlini 2017,HHV_{BM},Manure HHV
+AD,LSU,139,LSU,Number of Livestock Units on the farm,SFF,LSU_{farm},Number of LSU
+build,Absorptance,0.08,-,Fraction of solar radiation absorbed relative to ground surface,Tuned,\alpha_b,Absorptance
+build,Heating_part_load,0.2,-,Lowest load fraction acceptable before shutting down the heating system,Setting,"f_{b, Q_{min}}",Heater part load
+build,Gains_ppl_annual,26,kWh/m^2/year,Heating Gains from People,SIA 2024,"Q^{+ ppl}_{b, annual}",Human heat gains
+build,Elec_heat_frac,0.9,-,Fraction of heat produced by electricity consumber,Dirk MA,f_{b_{Q/EL}},Electric heat gains
+build,U_b,0.00206,kW/C/m^2,Building heat transmittance,SIA 2024,U_b,Heat conductivity
+build,C_b,0.12,kWh/C/m^2,Building heat capacity,SIA 2024,C_b,Heat capacity
+build,T_open_windows,25,C,If the minimum building temperature in a day is below this windows stay open,Setting,"T_{b,open}",open windows temperature
+build,T_min,18,C,Minimum indoor temperature,Setting,"T_{b,min}",Min interior temperature
+build,T_max,34,C,Maximum indoor temperature,Setting,"T_{b,max}",Max interior temperature
+build,Heated_area,14705,m^2,Building heated surface area,geo.admin.ch,"A_{b, heated}",Heated area
+build,Safety_factor,1,-,Safety factor for the extreme heating load - Direct method for extreme case,Setting,"f_{b, safety}",Heat load safety factor
+build,T_ext_extreme,-20,C,Minimum outside temperature - Indirect method for extreme case,Setting,T^{extreme}_{ext},Extreme exterior temperature

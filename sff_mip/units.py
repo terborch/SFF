@@ -389,33 +389,6 @@ def bs(m, Periods, Days, Hours,
     n = f'{u}_size_charge'
     C_meta[n] = ['Upper limit on Gas consumed relative to the Installed Capacity', 0]
     m.addConstrs((unit_cons[r,d,h] <= unit_size for d in Days for h in Hours), n);
-
-
-
-###############################################################################
-### Biogas Upgrading - Utility
-###############################################################################
-
-def bu(m, Days, Hours, unit_prod, unit_cons, unit_size):
-    """ LP model of a Biogas Upgrading system using membranes. Product has a 95
-        to 99% methane content and is called biomethane (BM). Electricity is
-        consumed for compression. Most of the metahen is recodevers (some losses)
-    """
-    u = 'BU'
-    
-    n = f'{u}_production'
-    C_meta[n] = ['Biogas prod relative to Biogas cons', 0]
-    m.addConstrs((unit_prod['BM',d,h] == P[u,'Eff']*unit_cons['Biogas',d,h] 
-                  for d in Days for h in Hours), n);
-    
-    n = f'{u}_Elec_cons'
-    C_meta[n] = ['Electricity consumption relative to Biogas production', 0]
-    m.addConstrs((unit_cons['Elec',d,h] == P[u,'Elec_comp']*unit_prod['BM',d,h]
-                  for d in Days for h in Hours), n);
-    
-    n = f'{u}_size'
-    C_meta[n] = ['Upper limit on prod relative to installed capacity', 0]
-    m.addConstrs((unit_prod['BM',d,h] <= unit_size for d in Days for h in Hours), n);
     
     
     
@@ -479,6 +452,55 @@ def gfs(m, Days, Hours, unit_prod, unit_cons, unit_size, U_prod):
                   for d in Days for h in Hours), n);    
 
 
+
+###############################################################################
+### Biogas Upgrading - Utility
+###############################################################################
+
+def bu(m, Days, Hours, unit_prod, unit_cons, unit_size):
+    """ LP model of a Biogas Upgrading system using membranes. Product has a 95
+        to 99% methane content and is called biomethane (BM). Electricity is
+        consumed for compression. Most of the metahen is recodevers (some losses)
+    """
+    u = 'BU'
+    
+    n = f'{u}_production'
+    C_meta[n] = ['Biogas prod relative to Biogas cons', 0]
+    m.addConstrs((unit_prod['BM',d,h] == P[u,'Eff']*unit_cons['Biogas',d,h] 
+                  for d in Days for h in Hours), n);
+    
+    n = f'{u}_Elec_cons'
+    C_meta[n] = ['Electricity consumption relative to Biogas production', 0]
+    m.addConstrs((unit_cons['Elec',d,h] == P[u,'Elec_comp']*unit_prod['BM',d,h]
+                  for d in Days for h in Hours), n);
+    
+    n = f'{u}_size'
+    C_meta[n] = ['Upper limit on prod relative to installed capacity', 0]
+    m.addConstrs((unit_prod['BM',d,h] <= unit_size for d in Days for h in Hours), n);
+    
+    
+    
+###############################################################################
+### Grid Injection (of biomethane) - Utility
+###############################################################################
+
+def gi(m, Days, Hours, unit_prod, unit_cons, unit_size):
+    """ LP model of a biomethane grid injection system. For injection into the
+        swiss distribution grid (5 bar). The biomethane from the upgrading unit
+        is already at 5 to 7 bar. No further compression is considered.
+    """
+    u = 'GI'
+    
+    n = f'{u}_production'
+    C_meta[n] = ['BM prod relative to BM cons', 0]
+    m.addConstrs((unit_prod['BM',d,h] == unit_cons['BM',d,h] 
+                  for d in Days for h in Hours), n);
+    
+    n = f'{u}_size'
+    C_meta[n] = ['Upper limit on prod relative to installed capacity', 0]
+    m.addConstrs((unit_prod['BM',d,h] <= unit_size 
+                  for d in Days for h in Hours), n);
+    
 ###############################################################################
 ### END
 ###############################################################################

@@ -63,3 +63,8 @@ P['GFS', 'Cost_per_unit'] = P['GFS', 'Total_cost']*0.3
 P['GFS', 'Cost_per_size'] = P['GFS', 'Total_cost']*0.7/np.max(Fueling)
 P['GFS', 'Cost_per_unit'] += P['GFS', 'Conversion_cost']*P['Farm', 'nbr_tractors']
 
+# Whether or not Wood is considered a reneable resource
+if S['WBOI', 'Is_renewable']:
+    pass
+else:
+    P['Wood', 'Emissions'] = P['Gas', 'Emissions']

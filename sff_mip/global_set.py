@@ -30,6 +30,7 @@ Abbrev = {'GBOI':   'Gas Boiler',
           'CGT':    'Compressed Gas Tank',
           'BS':     'Biogas Storage',
           'BU':     'Biogas Upgrading',
+          'GI':     'Grid Injection',
           'GFS':    'Gas Fueling Station',
           'build':  'building',
           'Elec':   'Electricity',
@@ -44,7 +45,7 @@ Units = ('GBOI', 'WBOI', 'EH', 'AHP', 'GHP',    # Heating
          'ICE', 'SOFC',                         # Cogeneration
          'PV', 'AD',                            # Energy Production
          'BAT', 'CGT', 'BS',                    # Energy Storage
-         'GCSOFC', 'GFS', 'BU')                 # Utility
+         'GCSOFC', 'GFS', 'BU', 'GI')           # Utility
 
 # Resources and energy carriers
 Resources = ('Elec', 'Gas', 'Wood', 'Biogas', 'BM', 'Biomass', 'Heat', 'Diesel')
@@ -65,6 +66,7 @@ U_prod = {
     'CGT':      ('BM',),
     'BS':       ('Biogas',),
     'BU':       ('BM',),
+    'GI':       ('BM',),
     'GFS':      ('BM', 'Gas')
     }
 
@@ -83,6 +85,7 @@ U_cons = {
     'CGT':      ('BM', 'Elec'),
     'BS':       ('Biogas', 'Elec'),
     'BU':       ('Biogas', 'Elec'),
+    'GI':       ('BM',),
     'GFS':      ('BM', 'Gas', 'Elec')
     }
 
@@ -120,6 +123,7 @@ Linestyle_code = {'PV':     'dotted',
                   'ICE':    'dashed',
                   'GCSOFC': 'solid',
                   'BU':     'solid',
+                  'GI':     'solid',
                   'AD':     'dashdotted', 
                   'build':  'densely dashdotted', 
                   'GBOI':   'loosely dashed',

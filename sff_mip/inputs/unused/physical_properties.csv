@@ -1,0 +1,5 @@
+Name,Value,Units,Source
+Deisel LHV,10,kWh/liter,engineeringtoolbox.com
+Wood LHV,4.8,kWh/kg,"energie-bois.ch, Sikkeman 2010"
+1ktoe,41.868,PJ,eia.org
+1kWh,3.6,MJ,calc
