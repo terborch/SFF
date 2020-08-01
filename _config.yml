@@ -9,10 +9,7 @@ baseurl: ""
 url: "https://terborch.github.io/SFF/"
 
 
-# BIG TEXT
+
 
 
 theme: jekyll-theme-cayman
-
-
-# baseurl: "" # the subpath of your site, e.g. /blog
