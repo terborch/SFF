@@ -1,11 +1,20 @@
 # EPFL Master Thesis - spring 2020
 Energetic, Environmental and Economic Model of a Farm: Case study Swiss Future Farm
+Developement of a Farm Energy System
 
 Optimization tool: Gurobi - Academic Licencs
 
-Support for writing the optimization problem: Gurobipy - Jupyter Notebook - Spyer 4
+Support for writing the optimization problem: Gurobipy - Python - Anaconda - Spyer 4
 
-Recommended jupyter extension: ndextensions - collapsable headings
+![FES flow diagram](/sff_mip/shared_results/SFF_Flow_Diagram_v1.8.png)
+
+# Results visualization
+
+Results of the OPEX - CAPEX optimization for the base case scenario using 10 typical days
+https://terborch.github.io/SFF/sff_mip/sff_mip/Visualization/opex_10_cls_parcords
+
+Results of the ENVEX - TOTEX optimization for the base case scenario using 10 typical days
+https://terborch.github.io/SFF/sff_mip/sff_mip/Visualization/envex_10_cls_parcords
 
 ## sff_mip module structure
 
