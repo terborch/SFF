@@ -5,7 +5,13 @@ description: >- # Included in Google sear
   Energetic Environmental Economic Optimization of a Farm 
   Case study: Swiss Future Farm 
   by Nils Ter-borch 2020
+baseurl: ""
 url: "https://terborch.github.io/SFF/"
+
+
+# BIG TEXT
+
+
 theme: jekyll-theme-cayman
 
 
