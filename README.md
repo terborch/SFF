@@ -11,10 +11,12 @@ Support for writing the optimization problem: Gurobipy - Python - Anaconda - Spy
 # Results visualization
 
 Results of the OPEX - CAPEX optimization for the base case scenario using 10 typical days
-https://terborch.github.io/SFF/sff_mip/sff_mip/Visualization/opex_10_cls_parcords
+
+[links](https://terborch.github.io/SFF/sff_mip/sff_mip/Visualization/opex_10_cls_parcords)
 
 Results of the ENVEX - TOTEX optimization for the base case scenario using 10 typical days
-https://terborch.github.io/SFF/sff_mip/sff_mip/Visualization/envex_10_cls_parcords
+
+[links](https://terborch.github.io/SFF/sff_mip/sff_mip/Visualization/envex_10_cls_parcords)
 
 ## sff_mip module structure
 
