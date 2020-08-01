@@ -107,13 +107,13 @@ def biomass_prod(file):
     animals = set(A.index.get_level_values(0))
     
     meta = ['kW', 'Methane yield from animals', 'calc']
-    C_meta['Biogas_prod'] = ['Methane yield relative to animals', 1, 'P']
+    C_meta['Biogas_prod'] = ['Methane potential relative to animals', 13]
     Biogas_prod = sum((A[a,'Nbr_at_farm']/A[a,'LSU'])*A[a,'Methane_yield']
                       for a in animals)/P['Physical','Hours_per_year']
     data.make_param('Farm', 'Biogas_prod', Biogas_prod, meta)
     
     meta = ['kW', 'Biomass yield from animals', 'calc']
-    C_meta['Biomass_prod'] = ['Biomass relative to methane yield and AD eff', 1, 'P']
+    C_meta['Biomass_prod'] = ['Biomass potential relative to AD eff', 13]
     Biomass_prod = Biogas_prod/P['AD','Eff']
     data.make_param('Farm', 'Biomass_prod', Biomass_prod, meta)
     

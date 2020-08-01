@@ -45,7 +45,7 @@ epsilon = 1e-6
 Days = list(range(365))
 Hours = list(range(24))
 Ext_T, Irradiance, Index = weather_param(filename, epsilon, (Days, Hours), S['Time'])
-
+C_meta = {}
 # # Add coldest day in the 10 last year
 # file = 'meteo_Liebensberg_10years.csv'
 # Coldest_day = extreme_day(file, S['Time'])
@@ -75,7 +75,14 @@ def heat_load_model(Ext_T, Gains, U, C, T_min, T_max, part_load,
     """ MILP thermodynamic model. The same model is used for the building and
         the AD. Constrain the temperature between a minimum and a maximum, 
         Constrain the lowest heat load to part_load. Minimize the total
-        heat consumption and the maximum heat load."""
+        heat consumption and the maximum heat load.
+        
+        Note that in the C_meta dictionnary of constraints metadata, the last
+        value is a number referencing the equation numbers in the project
+        report titled Energetic Environment Economic Optimization of a Farm 
+        Case study:Swiss Future Farm
+        in 2020 by nils ter-borch.
+    """
     m = initialize_model()
     
     n = 'temperature'
@@ -85,21 +92,27 @@ def heat_load_model(Ext_T, Gains, U, C, T_min, T_max, part_load,
     Q_max = m.addVar(lb=0, ub=Bound, name=n)
     
     n = 'heat_load'
+    C_meta['part_load'] = ['Building and AD minimum part load', 3]
     Q = m.addVars(Days, Hours, vtype='S', lb=part_load, ub=Bound, name=n)
     
     n = 'Temperature'
+    C_meta[n] = ['Building and AD 1R1C thermal model', 1]
     m.addConstrs((C*(T[next_p(d,h)] - T[d,h]) == U[d]*(Ext_T[d,h] - T[d,h]) + 
                   Gains[d,h] + Q[d,h] for d in Days for h in Hours), n);
     
     n = 'Sizing'
+    C_meta[n] = ['Building and AD maximum heat load', 1]
     m.addConstrs((Q[d,h] <= Q_max for d in Days for h in Hours), n);         
     
     n = 'Temperature_min'
+    C_meta[n] = ['Building and AD minimum temperature', 2]
     m.addConstrs((T[d,h] >= T_min for d in Days for h in Hours), n);
 
     n = 'Temperature_max'
+    C_meta[n] = ['Building and AD maximum temperature', 2]
     m.addConstrs((T[d,h] <= T_max for d in Days for h in Hours), n);
 
+    C_meta['Objective'] = ['Building and AD heating control', 4]
     m.setObjective(Q_max*len(Days)*len(Hours) + 
                    sum(Q[d,h] for h in Hours for d in Days), GRB.MINIMIZE)
     
@@ -200,6 +213,7 @@ def heat_load_precalc(part_load, measured_heat_load, Gains, U, C, T_min, T_max,
     max_heat_load_cls = np.max(heat_load_cls)
     
     # Corrected values to match real data
+    C_meta['Heat_load_correct'] = ['Building and AD heat load correction', 11]
     correction_factor = measured_heat_load/total_heat_load_cls
     q_norm = heat_load_cls/(np.max(heat_load_cls) - np.min(heat_load_cls))
     heat_load_max_modeled = max_heat_load_cls*correction_factor
@@ -239,23 +253,20 @@ def heat_load_precalc(part_load, measured_heat_load, Gains, U, C, T_min, T_max,
 def building_gains():
     """ Building gains based on building parameters and weather """
     c = 'build'
-    meta = ['kW/m^2', 'Heat gains from people', 4]
-    C_meta['Gains_ppl'] = ['Building people gains', 4, 'P']
+    meta = ['kW/m^2', 'Heat gains from people', 5]
     Gains_ppl = annual_to_daily(P[c, 'Gains_ppl_annual'], Occupation)
     make_param(c, 'Gains_ppl', 'inputs.h5', meta)
     
-    meta = ['kW/m^2', 'Heat gains from appliances', 3]
-    C_meta['Gains_elec'] = ['Building electric gains', 3, 'P']
-    Gains_elec = P[c, 'Elec_heat_frac'] * Elec_cons / P['build', 'Heated_area']
+    meta = ['kW/m^2', 'Heat gains from appliances', 7]
+    Gains_elec = (P[c, 'Elec_heat_frac'] * Elec_cons / 
+                  P['build', 'Heated_area'])
     make_param(c, 'Gains_elec', 'inputs.h5', meta)
     
-    meta = ['kW/m^2', 'Heat gains from irradiation', 3]
-    C_meta['Gains_solar'] = ['Building solar gains', 3, 'P']
+    meta = ['kW/m^2', 'Heat gains from irradiation', 9]
     Gains_solar = P[c, 'Absorptance'] * Irradiance
     make_param(c, 'Gains_solar', 'inputs.h5', meta)
-   
-    meta = ['kW/m^2', 'Sum of all heat gains', 3]
-    C_meta['Gains'] = ['Sum of all building heating gains', 3, 'P']
+    
+    meta = ['kW/m^2', 'Sum of all heat gains', 10]
     Gains = Gains_ppl + Gains_elec + Gains_solar
     make_param(c, 'Gains', 'inputs.h5', meta)
     
@@ -264,6 +275,11 @@ def building_gains():
     # for d in Days:
     #     Gains[d] = Gains_ppl + Gains_elec + Gains_solar[d]
     
+    
+    # C_meta['Gains_ppl'] = ['Building people gains', 4, 'P']
+    # C_meta['Gains_elec'] = ['Building electric gains', 3, 'P']
+    # C_meta['Gains_solar'] = ['Building solar gains', 3, 'P']
+    # C_meta['Gains'] = ['Sum of all building heating gains', 3, 'P']
     return Gains
 
 

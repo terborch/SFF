@@ -42,10 +42,10 @@ Abbrev = {'GBOI':   'Gas Boiler',
 
 # Eneregy conversion units
 Units = ('GBOI', 'WBOI', 'EH', 'AHP', 'GHP',    # Heating
-         'ICE', 'SOFC',                         # Cogeneration
-         'PV', 'AD',                            # Energy Production
-         'BAT', 'CGT', 'BS',                    # Energy Storage
-         'GCSOFC', 'GFS', 'BU', 'GI')           # Utility
+         'SOFC', 'ICE',                         # Cogeneration
+         'AD', 'PV',                            # Energy Production
+         'GCSOFC', 'GFS', 'BU', 'GI',           # Utility
+         'BAT', 'CGT', 'BS')                    # Energy Storage
 
 # Resources and energy carriers
 Resources = ('Elec', 'Gas', 'Wood', 'Biogas', 'BM', 'Biomass', 'Heat', 'Diesel')
@@ -151,3 +151,25 @@ Color_code = {'Elec':       'royalblue',
               'default':    'purple'
               }
 
+# Colors to differentiate units in the pareto plots
+Unit_color = {# Heating
+        'GBOI': 'crimson', 
+        'WBOI': 'sandybrown', 
+        'EH':   'darkred', 
+        'AHP':  'brown', 
+        'GHP':  'lightcoral',
+        # Cogeneration
+        'SOFC': 'yellow', 
+        'ICE':  'black',
+        # Energy Production                         
+        'AD':   'mediumseagreen', 
+        'PV':   'skyblue',
+        # Utility                            
+        'GCSOFC':   'moccasin', 
+        'GFS':      'darkviolet', 
+        'BU':       'violet', 
+        'GI':       'magenta',
+        # Energy Storage           
+        'BAT':      'steelblue', 
+        'CGT':      'blueviolet', 
+        'BS':       'seagreen'}

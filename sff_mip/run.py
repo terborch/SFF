@@ -87,11 +87,14 @@ def run(objective, Reload=False, relax=False, Pareto=False, Limit=None,
             1: f'Limit:         {Limit}',
             2: f'Solve Time:    {end_solve - start_solve}',
             3: f'Write Time:    {end_write - start_write}',
-            4: f'Plot Time:     {end_plot - start_plot}'}
+            4: f'Plot Time:     {end_plot - start_plot}'}            
     with open(os.path.join(cd, file_name), 'w') as f:
         for k in info.keys():
             print(info[k], file=f)
-
+            for v in m.getVars():
+                if v.x > 2000:
+                    print('Warning high variable value', file=f)
+                    print('{}: {:.0f}'.format(v.VarName, v.x), file=f)
     return path
     
 """
@@ -173,24 +176,27 @@ def pareto(objective_x, objective_y, N_points, Plot=True, Summary=True):
     
     # Relaxation 1%
     r = 0.01
+
     # Find the true minimum of objective_x
     path = run('limit_' + objective_y, Pareto=True, Limit=min_y*(1 + r), Plot=Plot, Summary=Summary)
     min_y = get_objective_value(objective_y, path)
     max_x = get_objective_value(objective_x, path)
     solve_time.append(time.time() - start)
     
-    # Find the true maximum of objective_y
-    path = run('limit_' + objective_x, Pareto=True, Limit=min_x*(1 + r), Plot=Plot, Summary=Summary)
-    min_x = get_objective_value(objective_x, path)
-    max_y = get_objective_value(objective_y, path)
-    solve_time.append(time.time() - start)
-    
+    if objective_x != 'capex':
+        # Find the true maximum of objective_y
+        path = run('limit_' + objective_x, Pareto=True, Limit=min_x*(1 + r), Plot=Plot, Summary=Summary)
+        min_x = get_objective_value(objective_x, path)
+        max_y = get_objective_value(objective_y, path)
+        solve_time.append(time.time() - start)
+        N_points = N_points + 1
+        
     # List of pareto results
     x = [min_x, max_x]
     y = [max_y, min_y]
     
     # add n new pareto points to the x, y list
-    for i in range(N_points - 2):
+    for i in range(N_points - 4):
         # Longest segment number
         s = np.argmax(disctance(x, y)) + 1
         # Objective according to slope
@@ -235,10 +241,11 @@ if __name__ == "__main__":
 
     
     # Execute multi_run
-    pareto('totex', 'emissions', 21, Plot=True, Summary=True)
-    # pareto('capex', 'opex', 11, Plot=True, Summary=True)
-    
+    # pareto('totex', 'emissions', 10, Plot=True, Summary=True)
+    # pareto('capex', 'opex', 21, Plot=False, Summary=False)
+    pareto('totex', 'emissions', 21, Plot=False, Summary=False)
     # diagnostic('totex')
+    
     
     #solve_time.append([time.time() - solve_time[i]])
     end = time.time()
@@ -246,6 +253,19 @@ if __name__ == "__main__":
     print('global runtime: ', end - start, 's')
     # for i in range(10):
     #     print(f'Pareto_{i}_solve_time', solve_time[i] )
+
+
+def reload_all_inputs():
+    """ Reload inputs """
+    import write_inputs
+    write_inputs.write_arrays('default', Cluster=True)
+    
+    
+def make_results():
+    """ Goes through all results in a folder and generate pareto results """
+    for p in range(1, 6):
+        print(p)
+        plot.pareto2(f'results\\2020-07-28\\Pareto_{p}')
 
 """
 path = run('opex', Pareto=True, Limit=None)

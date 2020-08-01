@@ -1,7 +1,11 @@
 """ This module contains all functions necessary to build the Mixed Interger Linear Programming
     Model (MILP) of SFF using Gurobipy and given inputs (parameter.csv, setting.csv, data folder)
 
-    #   TODO: remove the variables named 'unused'
+    Note that in the C_meta dictionnary of constraints metadata, the last
+    value is a number referencing the equation numbers in the project
+    report titled Energetic Environment Economic Optimization of a Farm 
+    Case study:Swiss Future Farm
+    in 2020 by nils ter-borch.
 """
 
 # External modules
@@ -163,7 +167,7 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod, unit_install):
     # Resource balances     
     r = 'Elec'
     n = 'Balance_' + r
-    C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
+    C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 59]
     m.addConstrs((
         grid_import[r,d,h] + sum(unit_prod[up][r,d,h] for up in U_res['prod'][r]) == 
         grid_export[r,d,h] + sum(unit_cons[uc][r,d,h] for uc in U_res['cons'][r]) + 
@@ -173,7 +177,7 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod, unit_install):
     n = 'Balance_' + r
     U_prod_biogas = [u for u in U_res['prod'][r] if u != 'GCSOFC']
     U_cons_biogas = [u for u in U_res['cons'][r] if u != 'SOFC']
-    C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
+    C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 64]
     m.addConstrs((sum(unit_prod[u][r,d,h] for u in U_prod_biogas) - unused[r,d,h] ==
                     sum(unit_cons[u][r,d,h] for u in U_cons_biogas)
                     # unit_cons['GCSOFC'][r,d,h] + unit_cons['GBOI'][r,d,h] + 
@@ -185,51 +189,51 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod, unit_install):
     n = 'Balance_' + r
     U_prod_bm = [u for u in U_res['prod'][r] if u not in ('GCSOFC', 'GI', 'GFS')]
     U_cons_bm = [u for u in U_res['cons'][r] if u not in ('SOFC',)]
-    C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
+    C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 66]
     m.addConstrs((grid_import[r,d,h] - grid_export[r,d,h] - unused[r,d,h] + 
                   sum(unit_prod[up][r,d,h] for up in U_prod_bm) == 
                   sum(unit_cons[uc][r,d,h] for uc in U_cons_bm)
                   for d in Days for h in Hours), n);
     
     n = 'Balance_Biogas_cleaned_for_SOFC'
-    C_meta[n] = ['SOFC only consumed Biogas and BM that is pre-cleaned', 0]
+    C_meta[n] = ['SOFC only consumed Biogas and BM that is pre-cleaned', 65]
     m.addConstrs((unit_prod['GCSOFC'][r,d,h] == unit_cons['SOFC'][r,d,h] 
                   for r in ['Biogas', 'BM'] for d in Days for h in Hours), n);
     
     n = 'Exporting_biomethane'
-    C_meta[n] = ['Everything produced by GI is exported', 0]
+    C_meta[n] = ['Everything produced by GI is exported', 67]
     m.addConstrs((unit_prod['GI']['BM',d,h] == grid_export['BM',d,h] 
                   for d in Days for h in Hours), n);
     
     r = 'Biomass'
     n = 'Balance_' + r
-    C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
+    C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 70]
     m.addConstrs((P['Farm','Biomass_prod'] - unused[r,d,h] == unit_cons['AD'][r,d,h]
                   for d in Days for h in Hours), n);
 
     r = 'Gas'
     n = 'Balance_' + r
-    C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
+    C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 71]
     m.addConstrs((grid_import[r,d,h] - grid_export[r,d,h] - unused[r,d,h] == 
                   sum(unit_cons[uc][r,d,h] for uc in U_res['cons'][r]) 
                   for d in Days for h in Hours), n);
     
     r = 'Wood'
     n = 'Balance_' + r
-    C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
+    C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 72]
     m.addConstrs((grid_import[r,d,h] - grid_export[r,d,h] - unused[r,d,h] == 
                   unit_cons['WBOI'][r,d,h] for d in Days for h in Hours), n);
     
     r = 'Diesel'
     n = 'Balance_' + r
-    C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
+    C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 73]
     m.addConstrs((grid_import[r,d,h] - grid_export[r,d,h] - unused[r,d,h] == 
                   Fueling[d,h]*(1 - unit_install['GFS'])
                   for d in Days for h in Hours), n);
     
     r = 'Tractor_fuel'
     n = 'Balance_' + r
-    C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 0]
+    C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 68]
     m.addConstrs((unit_prod['GFS']['BM',d,h] + unit_prod['GFS']['Gas',d,h] == 
                   Fueling[d,h]*unit_install['GFS'] 
                   for d in Days for h in Hours), n);
@@ -237,26 +241,26 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod, unit_install):
     # Heat balance
     r = 'Heat'
     n = 'Balance_' + r
-    C_meta[n] = ['Heat sinks equal to heat sources', 0]
+    C_meta[n] = ['Heat sinks equal to heat sources', 69]
     m.addConstrs((sum(unit_prod[up][r,d,h] for up in U_res['prod'][r]) ==
                   unit_cons['AD'][r,d,h] + Build_cons[r][d,h] + unused[r,d,h]                  
                   for d in Days for h in Hours), n);
     
     # Total annual import / export
     n = f'{r}_grid_import'
-    C_meta[n] = [f'Annual {r} import relative to instant {r} imports', 0]
+    C_meta[n] = [f'Annual {r} import relative to instant {r} imports', 74]
     m.addConstrs((grid_import_a[r] == 1/1000*sum(sum(
         grid_import[r,d,h] for h in Hours)*Frequence[d] for d in Days)
         for r in G_res), n);
     
     n = f'{r}_grid_export'
-    C_meta[n] = [f'Annual {r} export relative to instant {r} exports', 0]
+    C_meta[n] = [f'Annual {r} export relative to instant {r} exports', 74]
     m.addConstrs((grid_export_a[r] == 1/1000*sum(sum(
         grid_export[r,d,h] for h in Hours)*Frequence[d] for d in Days) 
         for r in G_res), n);
     
     n = 'Unused_resources'
-    C_meta[n] = ['Annual unused resource relative to instant unused resources', 0]
+    C_meta[n] = ['Annual unused resource relative to instant values', 74]
     m.addConstrs((unused_a[r] == 1/1000*sum(sum(
         unused[r,d,h] for h in Hours)*Frequence[d] 
         for d in Days) for r in Unused_res), n);
@@ -275,15 +279,15 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod, unit_install):
     
     # Prevent simultaneous import and export of electricity
     n = 'grid_import_export_elec'
-    C_meta[n] = ['Prevent the sytem from import and export elec at the same time', 0]
+    C_meta[n] = ['Prevent the sytem to buy and sell EL at the same time', 61]
     m.addConstrs((grid_import_elec[d,h] + grid_export_elec[d,h] <= 1 
                   for d in Days for h in Hours), n);
     n = 'grid_import_elec'
-    C_meta[n] = ['M constraint to link the boolean var import with elec import', 0]
+    C_meta[n] = ['M constraint to link IS importing with elec import', 63]
     m.addConstrs((grid_import_elec[d,h]*Bound >= grid_import['Elec',d,h] 
                   for d in Days for h in Hours), n);
     n = 'grid_export_elec'
-    C_meta[n] = ['M constraint to link the boolean variable export with Elec production', 0]
+    C_meta[n] = ['M constraint to link IS exporting with Elec production', 62]
     m.addConstrs((grid_export_elec[d,h]*Bound >= grid_export['Elec',d,h] 
                   for d in Days for h in Hours), n);
     
@@ -291,7 +295,7 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod, unit_install):
     # To prevent the battery from stockpiling and seling everything at peak CO2 cost
     n = 'grid_export_elec_limit'
     U_prod_elec = [u for u in U_res['prod']['Elec'] if u not in ('BAT',)]
-    C_meta[n] = ['Limit the export of renewable Elec to the renewable elec prod', 0]
+    C_meta[n] = ['Limit the export of renewable EL to the renewable EL prod', 60]
     m.addConstrs((grid_export['Elec',d,h] <= 
                   sum(unit_prod[up]['Elec',d,h] for up in U_prod_elec)
                   for d in Days for h in Hours), n);
@@ -323,20 +327,20 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
     
     # Constraints
     n = 'Is_installed'
-    C_meta[n] = ['M constraint to link the boolean var unit_install with the installed capacity', 0]
+    C_meta[n] = ['M constraint to link IS installed with the installed size', 75]
     m.addConstrs((unit_install[u]*Bound >= unit_size[u] for u in Units), n);
     
     n = 'Is_installed_capex'
-    C_meta[n] = ['Additional big-M constraint to eliminate CAPEX error', 0]
+    C_meta[n] = ['Additional big-M constraint to eliminate CAPEX error', 76]
     m.addConstrs((unit_install[u]*Tight >= unit_capex[u] for u in Units), n);
     
     n = 'Minimum_size'
     for u in Units:
-        C_meta[n + f'[u]'] = [f'Lower limit on installed capacity if the unit is installed']
+        C_meta[n + f'[u]'] = [f'Lower limit on installed capacity IF installed', 77]
     m.addConstrs((unit_size[u] >= P[u, 'Min_size']*unit_install[u] for u in Units), n);
     
     n = 'Capex'
-    C_meta[n] = ['Unit CAPEX relative to unit size and cost parameters', 0]
+    C_meta[n] = ['Unit CAPEX relative to unit size and cost parameters', 78]
     m.addConstrs((unit_capex[u] == P[u,'Cost_multiplier']*
                   (unit_size[u]*P[u,'Cost_per_size'] + 
                    unit_install[u]*P[u,'Cost_per_unit'])*
@@ -344,11 +348,11 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
                   for u in Units), n);
     
     n = 'capex_sum'
-    C_meta[n] = ['Sum of the CAPEX of all units', 0]
+    C_meta[n] = ['Sum of the CAPEX of all units', 79]
     m.addConstr(capex == sum(unit_capex[u] for u in Units), n);
     
     n = 'opex_sum'
-    C_meta[n] = ['Sum of the OPEX of all resources', 0]
+    C_meta[n] = ['Sum of the OPEX of all resources', 80]
     m.addConstr(opex == sum(grid_import_a[r]*P[r,'Import_cost'] - 
                             grid_export_a[r]*P[r,'Export_cost'] 
                             for r in G_res)/1000 
@@ -357,7 +361,7 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
                               for u in Units), n);
     
     n = 'totex_sum'
-    C_meta[n] = ['TOTEX relative to the OPEX, the CAPEX and the annualization factor', 0]
+    C_meta[n] = ['TOTEX relative to the OPEX, the annual CAPEX', 81]
     m.addConstr(totex == opex + capex, n);
     
     # CO2 emissions
@@ -380,14 +384,14 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
     
     f_CO2 = P['Farm', 'Export_CO2']
     n = 'Elec_emissions'
-    C_meta[n] = ['Annual CO2 emissions relative to Elec import and export', 0]
+    C_meta[n] = ['Annual CO2 emissions relative to Elec import and export', 83]
     m.addConstr(r_emissions['Elec'] == 1e-6*sum(sum(
         Elec_CO2[d,h]*(grid_import['Elec',d,h] - f_CO2*grid_export['Elec',d,h]) 
         for h in Hours)*Frequence[d] for d in Days), n);
     
     for r in [r for r in G_res if r != 'Elec']:
         n=f'{r}_emissions'
-        C_meta[n] = [f'Annual CO2 emissions relative to {r} import and export', 0]
+        C_meta[n] = [f'Annual CO2 emissions relative to {r} import and export', 84]
         m.addConstr(r_emissions[r] == 1e-3*P[r,'Emissions']*
                     (grid_import_a[r] - f_CO2*grid_export_a[r]), n);
     
@@ -427,7 +431,7 @@ def extreme_case(m, unit_size):
 
     b = 'build'
     n='Extreme_case'
-    C_meta[n] = ['Extreme case, high heat load only GBOI, EH and GHP active', 0]
+    C_meta[n] = ['Extreme scenario, only GBOI, EH and GHP active', 12]
     m.addConstr(P[b, 'Heated_area']*P[b, 'U_b']*
                 (P[b, 'T_min'] - P[b, 'T_ext_extreme']) ==
                 sum(unit_size[u] for u in ['GBOI', 'EH', 'GHP']), n);

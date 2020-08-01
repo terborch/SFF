@@ -35,8 +35,8 @@ Symbols = {
 
 Names = {
 'Cost_multiplier':  'Cost multiplier',
-'Cost_per_size':    'Specific investement cost',
-'Cost_per_unit':    'Fixed investement cost',
+'Cost_per_size':    'Specific investment cost',
+'Cost_per_unit':    'Fixed investment cost',
 'LCA':              'LCA emissions',
 'Life':             'Life',
 'Maintenance':      'Maintenance',

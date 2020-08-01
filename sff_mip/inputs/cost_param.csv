@@ -26,7 +26,7 @@ GHP,Ref_size,25,kW,Reference size for which costs are calculated,Perego 2019,0
 BAT,Cost_multiplier,1.33,-,Cost multiplier,Paul PHD,0.5
 BAT,Cost_per_size,0.97,kCHF/kWh,Cost retalive to installed capacity,Paul PHD,0
 BAT,Cost_per_unit,0.62,kCHF,Cost per unit installed,Paul PHD,0
-BAT,LCA,0.1,tCO2/kWh,LCA emissions from construction,emilsson 2019,0
+BAT,LCA,0.2,tCO2/kWh,LCA emissions from construction,emilsson 2019,0
 BAT,Life,10,Years,Lifetime,Paul PHD,0
 BAT,Maintenance,0.02,-,Yearly maintenance cost in percent CAPEX,Paul PHD,0
 BAT,Min_size,1,kWh,Smallest possible installed capacity,Setting,0
@@ -86,7 +86,7 @@ GCSOFC,LCA,0.02,tCO2/kW,LCA emissions from construction,Default,0
 GCSOFC,Life,10,Years,Lifetime,Nils PdS,0
 GCSOFC,Maintenance,0.185,-,Yearly maintenance cost in percent CAPEX,Nils PdS,0
 GCSOFC,Min_size,1,kW,Smallest possible installed capacity,Setting,0
-GCSOFC,Ref_size,100,kW,Reference size for which costs are calculated,Nils PdS,0
+GCSOFC,Ref_size,50,kW,Reference size for which costs are calculated,Nils PdS,0
 ICE,Cost_multiplier,1,-,Cost multiplier,Samuel PdM,0.5
 ICE,Cost_per_size,1.4,kCHF/kW,Cost retalive to installed capacity,Samuel PdM,0
 ICE,Cost_per_unit,6,kCHF,Cost per unit installed,Samuel PdM,0

@@ -315,6 +315,7 @@ def time_param(S):
 def annualize(n, i):
     """ Takes the number of years and interest rate as parameters and returns 
         the annualization factor Tau
+        Refernce in the report: eq. (82)
     """
     return (i*(1 + i)**n) / ((1 + i)**n - 1)
 
