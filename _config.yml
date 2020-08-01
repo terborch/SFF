@@ -3,13 +3,6 @@
 # url: "https://terborch.github.io/SFF/"
 
 
-
-
-
-
-
-
-
 title: Farm Energy System
 description: >- # Included in Google sear
   Farm Energy System modelling in the context of the EPFL master thesis titled
@@ -21,27 +14,6 @@ github_username: terborch
 # Email and twitter are optional:
 email: n.terborch@protonmail.ch
 
-# Set this to true to get LaTeX math equation support
-use_math: True
-
 # Everything below here can be ignored, unless you want to change the theme entirely
 theme: jekyll-theme-cayman
-plugins:
-  - jekyll-feed
-  - jekyll-gist
-  - jekyll-octicons
-  - jekyll-github-metadata
 
-titles_from_headings:
-  enabled:     true
-  strip_title: true
-  collections: true
-
-highlighter: rouge
-markdown: kramdown
-kramdown:
-  math_engine: katex
-  input: GFM
-  auto_ids: true
-  hard_wrap: false
-  syntax_highlighter: rouge
