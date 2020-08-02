@@ -396,7 +396,7 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
                     (grid_import_a[r] - f_CO2*grid_export_a[r]), n);
     
     n='Total_emissions'
-    C_meta[n] = ['Instant CO2 emissions relative to Elec and Gas imports', 0]
+    C_meta[n] = ['Instant CO2 emissions relative to Elec and Gas imports', 85]
     m.addConstr(emissions == sum(r_emissions[r] for r in G_res) +
                 1e-3*sum(unit_size[u]*P[u,'LCA']/P[u,'Life'] for u in Units) +
                 (1 - P['Physical','Manure_AD']*unit_install['AD'])*

@@ -7,6 +7,7 @@
 
 # External modules
 from matplotlib import pyplot as plt
+from matplotlib.pyplot import figure
 import numpy as np
 import os.path
 import pandas as pd
@@ -14,9 +15,9 @@ import time
 import os
 # Internal modules
 from read_inputs import (Periods, dt_end, Days, Hours, Ext_T, Irradiance, 
-                         Build_cons, Build_T, AD_T, Fueling, Frequence)
+                         Build_cons, Build_T, AD_T, Fueling, Frequence, P)
 from global_set import (Units, Units_storage, Resources, Color_code, 
-                        Linestyle_code, Linestyles, Abbrev, Unit_color)
+                        Linestyle_code, Linestyles, Abbrev, Unit_color, G_res)
 import results
 from data import get_hdf
 
@@ -303,6 +304,86 @@ def all_fig(path, save_fig=True):
     #print_fig(save_fig, os.path.join(cd, 'Heat_flows.png'))
 
 
+def units_and_resources(path):
+    """ Read the result.h5 file in a given result path and plot 4 graphs.
+        1. Unit installed capex
+        2. Unit investement cost
+        3. Emissions by resource + Manure emissions + units total LCA 
+        4. Opex by resource + units maintenance
+        5. A tiny .csv table with the most important results
+    """
+    file_path = os.path.join(path, 'results.h5')
+    df = get_hdf(file_path, 'single')
+    df = df.set_index('Var_name')['Value']
+    capex = unit_capex(df)
+    capacity = unit_capacity(df)
+    envex, opex = {}, {}
+    for r in G_res:
+        envex[r] = df[f'r_emissions[{r}]']*1e3
+        opex[r] = (df[f'grid_import_a[{r}]']*P[r,'Import_cost'] - 
+                   df[f'grid_export_a[{r}]']*P[r,'Export_cost'])
+        
+    envex['Manure'] = 1e3*(P['Farm','Biomass_emissions']*
+        (1 - P['Physical','Manure_AD']*df['unit_install[AD]']))
+    envex['LCA'] = sum(df[f'unit_size[{u}]']*P[u,'LCA']/P[u,'Life'] 
+                                for u in Units)
+    opex['Maintenance'] = sum(capex[u]*P[u,'Maintenance'] for u in Units)
+
+    fig_size = (4,6)
+    fig_path = os.path.join(path, 'capacity.png')
+    chart_from_dict(capacity, 'Capacity in kW or KWh for storage', 
+                    'Installed capacity', fig_size, fig_path=fig_path)
+    fig_path = os.path.join(path, 'capex.png')
+    chart_from_dict(capex, 'CAPEX contribution in MCHF', 'CAPEX shares', 
+                    fig_size, fig_path=fig_path)
+    fig_path = os.path.join(path, 'opex.png')
+    chart_from_dict(opex, 'OPEX contribution in kCHF/year', 'OPEX shares', 
+                    fig_size, fig_path=fig_path)
+    fig_path = os.path.join(path, 'envex.png')
+    chart_from_dict(envex, 'ENVEX contribution in t-CO2/year', 'ENVEX shares', 
+                    fig_size, fig_path=fig_path)
+    
+    objectives = {
+        'ENVEX':    ['{:.0f}'.format(1e3*df['emissions']), 't-CO2/year'],
+        'TOTEX':    ['{:.0f}'.format(1e3*df['totex']), 'kCHF/year'],
+        'OPEX':     ['{:.0f}'.format(1e3*df['opex']), 'kCHF/year'],
+        'CAPEX':    ['{:.0f}'.format(sum(capex[u] for u in Units)), 'MCHF']
+        }
+    
+    table = pd.DataFrame(objectives)
+    
+def chart_from_dict(y, X_label, Title, fig_size, fig_path=None):
+    """ Draw a horrizontal bar chart of values in a dict """
+    figure(num=None, figsize=(fig_size), dpi=300, facecolor='w', edgecolor='k')
+    fig, ax = plt.subplots()
+    fig.set_size_inches(fig_size)
+    
+    max_val = max([y[k] for k in y.keys()])
+    min_val = min([y[k] for k in y.keys()])
+    for j, k in enumerate(y.keys()):
+        if y[k] > 1e-9:
+            ax.barh(j + 1, y[k], color='grey')
+            if min_val > 1:
+                ax.text(y[k] + 0.01*max_val, j + 1 - 0.4/len(y.keys()), 
+                        '{:.0f}'.format(y[k]))
+            else:
+                ax.text(y[k] + 0.01*max_val, j + 1 - 0.4/len(y.keys()), 
+                        '{:.3f}'.format(y[k]))
+    ax.set_yticks(range(1, len(y.keys()) + 1))
+    ax.set_yticklabels(y.keys())
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    plt.title(Title)
+    plt.xlabel(X_label)
+    plt.tight_layout()
+        
+    if fig_path:
+        plt.savefig(fig_path)
+    else:
+        plt.show()
+    
+   
+
 def unit_capex(df):
     """ Return a dictionnary containing the capex of each unit for a given
         series of single results. 
@@ -413,7 +494,6 @@ def pareto(*args, date=None, print_it=False, Xaxis='totex', Yaxis='emissions'):
             'emissions': '[kt-CO2/year]'}
     
     # Plot options
-    from matplotlib.pyplot import figure
     size = (6,5) if len(list_of_files) < 11 else (8,6)
     figure(num=None, figsize=(size), dpi=300, facecolor='w', edgecolor='k')
     plt.title('Pareto multi-objective optimization')
