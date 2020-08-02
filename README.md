@@ -12,7 +12,7 @@ Support for writing the optimization problem: Gurobipy - Python - Anaconda - Spy
 
 Results of the OPEX - CAPEX optimization for the base case scenario using 10 typical days
 
-[links](https://terborch.github.io/SFF/sff_mip/Visualization/envex_10_cls_parcords.html)
+[links](https://terborch.github.io/SFF/sff_mip/Visualization/opex_10_cls_parcords.html)
 
 Results of the ENVEX - TOTEX optimization for the base case scenario using 10 typical days
 
