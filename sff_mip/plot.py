@@ -17,7 +17,8 @@ import os
 from read_inputs import (Periods, dt_end, Days, Hours, Ext_T, Irradiance, 
                          Build_cons, Build_T, AD_T, Fueling, Frequence, P)
 from global_set import (Units, Units_storage, Resources, Color_code, 
-                        Linestyle_code, Linestyles, Abbrev, Unit_color, G_res)
+                        Linestyle_code, Linestyles, Abbrev, Unit_color, 
+                        G_res, U_prod, U_cons)
 import results
 from data import get_hdf
 
@@ -304,17 +305,32 @@ def all_fig(path, save_fig=True):
     #print_fig(save_fig, os.path.join(cd, 'Heat_flows.png'))
 
 
-def units_and_resources(path):
+def units_and_resources(path, fig_path=None):
     """ Read the result.h5 file in a given result path and plot 4 graphs.
         1. Unit installed capex
         2. Unit investement cost
         3. Emissions by resource + Manure emissions + units total LCA 
         4. Opex by resource + units maintenance
         5. A tiny .csv table with the most important results
+        6. A summary of annual resource produced and consumed by each unit
     """
+    # fig_path = None
+    # list_of_files = [f for f in os.listdir(path) if 'figures' not in f and 'png' not in f]
+    # for f in list_of_files:
+    #     file_path = os.path.join(path, f)
+    #     p = int(f.split('_')[0])
+    #     if p in [9, 14, 21]:
+    #         units_and_resources(file_path, fig_path)
+    
+    # Daily values
     file_path = os.path.join(path, 'results.h5')
     df = get_hdf(file_path, 'single')
     df = df.set_index('Var_name')['Value']
+    
+    # Annual total consumption and production
+    df2 = get_hdf(file_path, 'daily')
+    df2.sort_index(inplace=True) # Sort for performance
+    
     capex = unit_capex(df)
     capacity = unit_capacity(df)
     envex, opex = {}, {}
@@ -327,8 +343,13 @@ def units_and_resources(path):
         (1 - P['Physical','Manure_AD']*df['unit_install[AD]']))
     envex['LCA'] = sum(df[f'unit_size[{u}]']*P[u,'LCA']/P[u,'Life'] 
                                 for u in Units)
-    opex['Maintenance'] = sum(capex[u]*P[u,'Maintenance'] for u in Units)
-
+    opex['Maintenance'] = sum(capex[u]*P[u,'Maintenance'] for u in Units)*1e3
+    
+    if not fig_path:
+        fig_path = path
+    else:
+        path = fig_path
+        
     fig_size = (4,6)
     fig_path = os.path.join(path, 'capacity.png')
     chart_from_dict(capacity, 'Capacity in kW or KWh for storage', 
@@ -343,45 +364,133 @@ def units_and_resources(path):
     chart_from_dict(envex, 'ENVEX contribution in t-CO2/year', 'ENVEX shares', 
                     fig_size, fig_path=fig_path)
     
+    # Make table
     objectives = {
-        'ENVEX':    ['{:.0f}'.format(1e3*df['emissions']), 't-CO2/year'],
-        'TOTEX':    ['{:.0f}'.format(1e3*df['totex']), 'kCHF/year'],
-        'OPEX':     ['{:.0f}'.format(1e3*df['opex']), 'kCHF/year'],
-        'CAPEX':    ['{:.0f}'.format(sum(capex[u] for u in Units)), 'MCHF']
+        'ENVEX':    [dot(1e3*df['emissions']), 't-CO2/year'],
+        'TOTEX':    [dot(1e3*df['totex']), 'kCHF/year'],
+        'OPEX':     [dot(1e3*df['opex']), 'kCHF/year'],
+        'CAPEX':    [dot(sum(capex[u] for u in Units)), 'MCHF']
         }
     
-    table = pd.DataFrame(objectives)
+    table = pd.DataFrame(objectives).T
+    table.rename(columns={0: 'Value', 1: 'Units'}, inplace=True)
+    table.to_csv(os.path.join(path, 'summary.csv'))
+
+    # annual = {'prod': {}, 'cons': {}}
+    e = 1e-2
+    p = {'cons': 1, 'prod': -1}
+    annual = {}
+    for u in Units:
+        for k in ['prod', 'cons']:
+            try:
+                resources = U_prod[u] if k == 'prod' else U_cons[u]
+            except:
+                continue
+            for r in resources:
+                if (sum(df2[f'unit_{k}[{u}][{r}]', d].sum()*
+                       Frequence[d] for d in Days) > e):
+                    try:
+                        annual[k, u, r] = 0
+                    except:
+                        annual[u] = {}    
+                        
+                    annual[k, u, r] = p[k]*float(
+                        sum(df2[f'unit_{k}[{u}][{r}]', d].sum()*Frequence[d] 
+                            for d in Days))*1e-3
+                
+    for r in G_res:
+        for i in ['import', 'export']:
+            if df[f'grid_{i}_a[{r}]'] > e:
+                k = 'prod' if i == 'import' else 'cons'
+                annual[k, 'grid', r] = p[k]*df[f'grid_{i}_a[{r}]']
     
-def chart_from_dict(y, X_label, Title, fig_size, fig_path=None):
-    """ Draw a horrizontal bar chart of values in a dict """
-    figure(num=None, figsize=(fig_size), dpi=300, facecolor='w', edgecolor='k')
+    Unused_res = ['Biomass', 'Biogas', 'Gas', 'Wood', 'Heat', 'Diesel', 'BM']
+    for r in Unused_res:
+        if df[f'unused_a[{r}]'] > e:
+            annual['cons', 'waste', r] = df[f'unused_a[{r}]']
+    
+    fig_path = os.path.join(path, 'resources.png')
+    chart_from_dict(annual, 
+                    'Annual total energy in MWh/year',
+                    'Annual total energy flows', 
+                    fig_size, fig_path=fig_path)
+                
+def dot(x):
+    if np.abs(x) > 10:
+        return '{:.0f}'.format(x)
+        
+    elif np.abs(x) > 1:
+        return '{:.1f}'.format(x)
+    
+    else:
+        return '{:.2g}'.format(x)
+    
+    
+def chart_from_dict(y, X_label, Title, fig_size, fig_path=None, e=1e-6):
+    """ Draw a horrizontal bar chart of values in a dict 
+        Alternatively if the keys of y are tuples, Draw a horrizontal bar 
+        chart of values in a dict specifically for annual prod and cons
+    """
     fig, ax = plt.subplots()
-    fig.set_size_inches(fig_size)
+    fig.set_size_inches(fig_size[0], len(y.keys())*fig_size[1]/16)
+    fig.set_dpi(300)
     
-    max_val = max([y[k] for k in y.keys()])
-    min_val = min([y[k] for k in y.keys()])
-    for j, k in enumerate(y.keys()):
-        if y[k] > 1e-9:
-            ax.barh(j + 1, y[k], color='grey')
-            if min_val > 1:
-                ax.text(y[k] + 0.01*max_val, j + 1 - 0.4/len(y.keys()), 
-                        '{:.0f}'.format(y[k]))
-            else:
-                ax.text(y[k] + 0.01*max_val, j + 1 - 0.4/len(y.keys()), 
-                        '{:.3f}'.format(y[k]))
-    ax.set_yticks(range(1, len(y.keys()) + 1))
-    ax.set_yticklabels(y.keys())
+    if type(list(y.keys())[0]) != tuple:
+        max_val = max([y[k] for k in y.keys()])
+        # small_val = any([y[k] > 0 and y[k] < 1 for k in y.keys()])
+        for j, k in enumerate(list(y.keys())[::-1]):
+            if y[k] > e or y[k] < -e:
+                ax.barh(j + 1, y[k], color='grey')
+                x_text = y[k] if y[k] > 0 else 0
+                ax.text(x_text + 0.01*max_val, j + 1 - 1/len(y.keys()), 
+                            dot(y[k]))
+        ax.set_yticks(range(1, len(y.keys()) + 1))
+        ax.set_yticklabels(list(y.keys())[::-1])
+      
+    else:
+        x_max = max([y[k] for k in y.keys()])
+        x_min = min([y[k] for k in y.keys()])
+        Delta = x_max - x_min
+        p = {'cons': 0.01, 'prod': -0.05}
+        
+        R = []
+        for k in y.keys():
+            R.append(k[2])
+        
+        j = 1
+        last_label = None
+        Units = []
+        for r in set(R) - set(['Biomass']):
+           for k in y.keys():
+               if r in k:
+                   ax.text(y[k] + p[k[0]]*Delta*len(dot(y[k])), 
+                           j - 1/len(y.keys()), dot(y[k]))
+                   if last_label != r:
+                       ax.barh(j, y[k], color=Color_code[r], label=r)
+                       last_label = r
+                       ax.plot([x_max*1.5, x_min*1.75 ], [j - 0.5]*2, 
+                               color='lightgrey', ls='--')
+                   else:
+                       ax.barh(j, y[k], color=Color_code[r])
+                   Units.append(k[1])
+                   j = j + 1
+    
+        ax.set_yticks(range(1, len(Units) + 1))
+        ax.set_yticklabels(Units)
+        plt.xlim(x_min*1.5, x_max*1.75)
+        plt.ylim(0.5, len(Units) + 0.5)  
+        plt.legend(loc='center right', fancybox=True, framealpha=0.3)
+    
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     plt.title(Title)
     plt.xlabel(X_label)
     plt.tight_layout()
-        
+
     if fig_path:
         plt.savefig(fig_path)
     else:
         plt.show()
-    
    
 
 def unit_capex(df):
