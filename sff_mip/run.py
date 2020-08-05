@@ -20,6 +20,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 from importlib import reload
+from data import get_param
 
 start_construct = time.time()
 
@@ -87,14 +88,15 @@ def run(objective, Reload=False, relax=False, Pareto=False, Limit=None,
             1: f'Limit:         {Limit}',
             2: f'Solve Time:    {end_solve - start_solve}',
             3: f'Write Time:    {end_write - start_write}',
-            4: f'Plot Time:     {end_plot - start_plot}'}            
+            4: f'Plot Time:     {end_plot - start_plot}'}     
+    
     with open(os.path.join(cd, file_name), 'w') as f:
         for k in info.keys():
             print(info[k], file=f)
-            for v in m.getVars():
-                if v.x > 2000:
-                    print('Warning high variable value', file=f)
-                    print('{}: {:.0f}'.format(v.VarName, v.x), file=f)
+            # for v in m.getVars():
+            #     if v.x > 2000:
+            #         print('Warning high variable value', file=f)
+            #         print('{}: {:.0f}'.format(v.VarName, v.x), file=f)
     return path
     
 """
@@ -108,9 +110,9 @@ Results = {}
 
 Objective_description = {
     'totex': 'TOTEX minimization', 
-    'emissions': 'Emissions minimization',
-    'pareto_totex':'Emissions minimization with constrained TOTEX at the minimum',
-    'pareto_emissions': 'TOTEX minimization with constrained emissions at the minimum',
+    'envex': 'Emissions minimization',
+    'pareto_totex': 'Emissions minimization with constrained TOTEX at the minimum',
+    'pareto_envex': 'TOTEX minimization with constrained emissions at the minimum',
     }
 
 
@@ -183,20 +185,20 @@ def pareto(objective_x, objective_y, N_points, Plot=True, Summary=True):
     max_x = get_objective_value(objective_x, path)
     solve_time.append(time.time() - start)
     
-    if objective_x != 'capex':
-        # Find the true maximum of objective_y
-        path = run('limit_' + objective_x, Pareto=True, Limit=min_x*(1 + r), Plot=Plot, Summary=Summary)
-        min_x = get_objective_value(objective_x, path)
-        max_y = get_objective_value(objective_y, path)
-        solve_time.append(time.time() - start)
-        N_points = N_points + 1
+
+    # Find the true maximum of objective_y
+    path = run('limit_' + objective_x, Pareto=True, Limit=min_x*(1 + r), Plot=Plot, Summary=Summary)
+    min_x = get_objective_value(objective_x, path)
+    max_y = get_objective_value(objective_y, path)
+    solve_time.append(time.time() - start)
+    N_points = N_points + 1
         
     # List of pareto results
     x = [min_x, max_x]
     y = [max_y, min_y]
     
     # add n new pareto points to the x, y list
-    for i in range(N_points - 4):
+    for i in range(N_points - 3):
         # Longest segment number
         s = np.argmax(disctance(x, y)) + 1
         # Objective according to slope
@@ -231,19 +233,148 @@ def diagnostic(objective):
         data.change_settings(u, 'max_capacity', 0) 
     
     data.reset_settings()
+
+
+def slim_run(objective, querry, *file_path,
+             Limit=None, New_Pamar=None, New_Setting=None):
+    """ Minimalistic run function, solve the model with given inputs
+        and returns a name-value dictionnary for each item in the querry list
+        Saves all results in a hdf5 file to the specified path.
+    """
+    # Solve the model
+    m = model.run(objective, Limit=Limit, 
+                  New_Pamar=New_Pamar, New_Setting=New_Setting)
+        
+    # Querry variable values
+    Querried_results = {}
+    for q in querry:
+        Querried_results[q] = m.getVarByName(q).x
+
+    if file_path:         
+        # Save results to path
+        var_results, var_meta = results.get_all(m, 1e-6, 
+                                                Days, Hours, Periods)    
+        results.save_df_to_hdf5(var_results, var_meta, file_path[0], 
+                                Days, Hours, Periods)
     
+    return Querried_results
+
+
+def make_folder(param_index, variation, folder_path):
+    """ Create a new folder inside folder_path based on the Param_index
+        and variation. Return a path to the new folder. """
+    
+    param_name = '_'.join(param_index)
+    new_folder = '_'.join([param_name, '{:.2g}'.format(variation)])
+
+    os.makedirs(os.path.dirname(os.path.join(folder_path, new_folder, '')), 
+                exist_ok=True)
+    
+    return os.path.join(folder_path, new_folder)
+    
+def get_default_param():
+    P, P_meta = get_param('parameters.csv')
+    P_calc, P_meta_calc = get_param('calc_param.csv')
+    P_eco, P_meta_eco = get_param('cost_param.csv')
+    P, P_meta = P.append(P_calc), P_meta.append(P_meta_calc)
+    P, P_meta = P.append(P_eco), P_meta.append(P_meta_eco)
+    return P, P_meta
+    
+def sensitsivity_analysis():
+    """ Performs a sensitivity analysis on the selected parameters using the 
+        One At a Time approach.
+    """
+    folder_path = os.path.join('results', 'sensitivity_analysis')
+    list_of_files = [f for f in os.listdir(folder_path)]
+    
+    # 1. Select what parameter to modify and use this new value as input.
+    P, P_meta = get_default_param()
+    start = time.time()
+    variation = P_meta['Uncertainty']
+    totex_min_SFF, envex_min = {}, {}
+    pt_5_dict, pt_15_dict = {}, {}
+    for i in variation[variation > 0].index:
+        print(i, '{:.2g}'.format(P[i]*(1 + variation[i])), '{:.2g}'.format(P[i]), 
+              '{:.2g}'.format(P[i]*(1-variation[i])))
+        
+        # Reset all input parameters to default values
+        P, _ = get_default_param()
+        for p in [1, -1]:
+            # Param index i, Positivie or Negative p, Variation variation[i]
+            P[i] = P[i]*(1 + p*variation[i])
+            
+            path = make_folder(i, 1 + p*variation[i], folder_path)
+            path_separator = os.path.join('a', 'a').split('a')[1]
+            if path.split(path_separator)[-1] in list_of_files:
+                continue
+            # 2. Run the optimizer with a new parameter value
+             # 2.1 Pinpoint and solve pareto point 5 on the envex-totex graph
+              # 2.1.1 Get the TOTEX min for the current SFF scenario
+            file_path = os.path.join(path, 'current_SFF.h5')
+            S, _ = get_param('settings_SFF_current.csv')
+            totex_min_SFF[i] = slim_run('totex', ['totex'], file_path, 
+                                        Limit=None, New_Pamar=P, New_Setting=S)            
+              
+              # 2.1.2 Get the ENVEX min undex TOTEX constrained at the current SFF value
+            file_path = os.path.join(path, 'point_5.h5')
+            S, _ = get_param('settings.csv')
+            pt_5_dict[i] = slim_run('limit_totex', ['envex', 'totex'], file_path,
+                                   Limit=totex_min_SFF[i]['totex'], 
+                                   New_Pamar=P, New_Setting=S) 
+            
+            
+             # 2.1 Pinpoint and solve pareto point 15 on the envex-totex graph
+              # 2.2.1 Get the absolute ENVEX minimum
+            file_path = os.path.join(path, 'envex_min.h5')
+            envex_min[i] = slim_run('envex', ['envex'], file_path, 
+                                    Limit=None, New_Pamar=P, New_Setting=S)
+            
+              # 2.2.2 Get the TOTEX minimu under ENVEX constrained at 7% above the min
+            file_path = os.path.join(path, 'point_15.h5')
+            pt_15_dict[i] = slim_run('limit_envex', ['envex', 'totex'], 
+                                     file_path, Limit=envex_min[i]['envex']*1.073, 
+                                     New_Pamar=P, New_Setting=S)    
+            
+            print(f'Run {i} finished')
+        
+    return pt_5_dict, pt_15_dict
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+ 
+    
+    # print('Solve Time: ', time.time() - start)
+    
+    
+    # # Save all results to a hdf5 file
+    # file_name = 'results.h5'
+    # cd = results.make_path(objective=objective, Limit=Limit, Pareto=Pareto)
+    # path = os.path.join(cd, file_name)
+    # results.save_df_to_hdf5(var_results, var_meta, path, Days, Hours, Periods)
+
+    
+    # S, _ = get_param('settings.csv')
+
 
 if __name__ == "__main__":
     # Execute single run
-    # run('emissions', Reload=True)
-    # run('totex')
-    # run('emissions')
+    # run('envex', Reload=True)
+    # run('totex', Plot=True, Summary=True)
+    # run('envex')
 
     
     # Execute multi_run
-    # pareto('totex', 'emissions', 10, Plot=True, Summary=True)
+    # pareto('totex', 'envex', 10, Plot=True, Summary=True)
     # pareto('capex', 'opex', 21, Plot=False, Summary=False)
-    pareto('totex', 'emissions', 21, Plot=False, Summary=False)
+    # pareto('totex', 'envex', 21, Plot=True, Summary=True)
     # diagnostic('totex')
     
     
@@ -265,7 +396,7 @@ def make_results():
     """ Goes through all results in a folder and generate pareto results """
     for p in range(1, 6):
         print(p)
-        plot.pareto2(f'results\\2020-07-28\\Pareto_{p}')
+        plot.pareto(f'results\\2020-07-28\\Pareto_{p}')
 
 """
 path = run('opex', Pareto=True, Limit=None)

@@ -1,6 +1,6 @@
 Category,Name,Value,Units,Description
 Model,Solver_time_limit,90000,s,Maximum solving time allowed
-Model,Var_bound,3000,-,Default upper bound for all variables
+Model,Var_bound,2400,-,Default upper bound for all variables
 Model,Var_bound_tight,10,-,Default upper bound for small variables
 Model,Clusters,30,clusters,"Number of clusters (10, 20, 30, 50 or 100)"
 WBOI,Is_renewable,1,-,1 if wood is considered renewable 0 if not

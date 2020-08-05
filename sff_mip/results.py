@@ -81,9 +81,8 @@ def make_path(objective=None, Limit=None, Pareto=False):
 
 def get_all(m, Threshold, Days, Hours, Periods):
     """ Get all results from the gurobi model m into a dictionnary split in time 
-    dependent and
-        time independent variables. Get the upper and lower bounds of each variable 
-        in a dict.
+        dependent and time independent variables. 
+        Get the upper and lower bounds of each variable in a dict.
         Return both dictionnarairies.
     """
     

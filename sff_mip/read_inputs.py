@@ -21,6 +21,7 @@ P = P.append(P_calc)
 P = P.append(P_eco)
 # Dictionnaries of values and metadata from the file 'Settings.csv'
 S, _ = get_param('settings.csv')
+# S, _ = get_param('settings_no_WBOI.csv')
 # S, _ = get_param('settings_SFF_current.csv')
 # Time discretization
 (Periods, Nbr_of_time_steps, dt, Day_dates, Time, dt_end, Days_all, Hours

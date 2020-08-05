@@ -335,7 +335,7 @@ def units_and_resources(path, fig_path=None):
     capacity = unit_capacity(df)
     envex, opex = {}, {}
     for r in G_res:
-        envex[r] = df[f'r_emissions[{r}]']*1e3
+        envex[r] = df[f'r_envex[{r}]']*1e3
         opex[r] = (df[f'grid_import_a[{r}]']*P[r,'Import_cost'] - 
                    df[f'grid_export_a[{r}]']*P[r,'Export_cost'])
         
@@ -366,7 +366,7 @@ def units_and_resources(path, fig_path=None):
     
     # Make table
     objectives = {
-        'ENVEX':    [dot(1e3*df['emissions']), 't-CO2/year'],
+        'ENVEX':    [dot(1e3*df['envex']), 't-CO2/year'],
         'TOTEX':    [dot(1e3*df['totex']), 'kCHF/year'],
         'OPEX':     [dot(1e3*df['opex']), 'kCHF/year'],
         'CAPEX':    [dot(sum(capex[u] for u in Units)), 'MCHF']
@@ -536,7 +536,7 @@ def dict_to_df_plot(dic):
         df.set_index('Pareto', inplace=True)
         return df
     
-def pareto(*args, date=None, print_it=False, Xaxis='totex', Yaxis='emissions'):
+def pareto(*args, date=None, print_it=False, Xaxis='totex', Yaxis='envex'):
     """ Opens the path to the latest pareto folder of results of a given day, 
         alternatively takes a path to that folder.
         - Generate a pareto scatter plot for two given objectives
@@ -561,8 +561,8 @@ def pareto(*args, date=None, print_it=False, Xaxis='totex', Yaxis='emissions'):
         return int(file_name.split('_')[0])
     
     # path = os.path.join('results', 'Final_results_2020-07-20', 'Pareto_opex_capex_10')
-    
     # path = os.path.join('results', 'Final_results_2020-07-20', 'Pareto_envex_totex_10')
+    # path = os.path.join('results', '2020-08-05', 'Pareto_1')
     
     """ Get necessary values from pareto reult folders """    
     Pareto = []
@@ -582,7 +582,7 @@ def pareto(*args, date=None, print_it=False, Xaxis='totex', Yaxis='emissions'):
     rename_pareto_run_dir(path, Pareto[-1][0], '0')
     Pareto = Pareto[1:-1]  
 
-    obj = ['emissions', 'totex', 'opex']
+    obj = ['envex', 'totex', 'opex']
     capex, capacity, objectives = {}, {}, {}
     for p, file_name in enumerate([i[0] for i in Pareto]):
         file_path = os.path.join(path, file_name, 'results.h5')
@@ -600,7 +600,7 @@ def pareto(*args, date=None, print_it=False, Xaxis='totex', Yaxis='emissions'):
     unit = {'totex': '[MCHF/year]',
             'opex': '[MCHF/year]',
             'capex': '[MCHF/year]',
-            'emissions': '[kt-CO2/year]'}
+            'envex': '[kt-CO2/year]'}
     
     # Plot options
     size = (6,5) if len(list_of_files) < 11 else (8,6)
@@ -747,14 +747,18 @@ def pareto(*args, date=None, print_it=False, Xaxis='totex', Yaxis='emissions'):
                 plot_time.append(float(line.split(' ')[-1]))
             if 'Warning' in line:
                 warning = f'Warning in run {i}, high variable value.'
-                
+    
+    times = np.array(solve_time) + np.array(write_time)
+    times.sort()
+    
     Summary = """
     For {} pareto optimal solutions the longest solve time was {:.0f} s 
     and the shortest was {:.0f} s. The totale solve and write time was {:.0f} s
-    with and average at {:.0f} s. The time solve time of each run is {}.
+    with and average at {:.0f} s. The time solve for each of the three longest 
+    runs are {}.
     """.format(len(write_time), max(solve_time), min(solve_time), 
     np.sum(solve_time + write_time), np.mean(solve_time + write_time),
-    ', '.join(map(str, np.sum(solve_time + write_time, axis=0))))
+    times[-3:])
     print(Summary)
     # Save info about the run
     file_name = 'summary_info.txt'

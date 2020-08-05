@@ -241,7 +241,8 @@ def pv(m, Days, Hours, unit_prod, unit_size, Irradiance):
 
 
 def bat(m, Periods, Days, Hours, 
-        unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge):
+        unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge,
+        unit_install):
     """ MILP model of a battery
         Charge and discharge efficiency follows Dirk Lauinge MA thesis
     """
@@ -263,7 +264,8 @@ def bat(m, Periods, Days, Hours,
     m.addConstr((unit_SOC[0] == unit_SOC[Periods[-1]]), n);
     n = f'{u}_charge_discharge'
     C_meta[n] = ['Prevent the unit from simulateneously charging and discharging', 38]
-    m.addConstrs((unit_charge[d,h] + unit_discharge[d,h] <= 1 for d in Days for h in Hours), n);
+    m.addConstrs((unit_charge[d,h] + unit_discharge[d,h] <= unit_install 
+                  for d in Days for h in Hours), n);
     n = f'{u}_charge'
     C_meta[n] = ['M constraint to link IS Charging with Elec consumption', 39]
     m.addConstrs((unit_charge[d,h]*Bound >= unit_cons[r,d,h] for d in Days for h in Hours), n);
@@ -289,7 +291,8 @@ def bat(m, Periods, Days, Hours,
     
 
 def cgt(m, Periods, Days, Hours, 
-        unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge):
+        unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge,
+        unit_install):
     """ MILP model of Compressed Gas Tank for storing Natural Gas. No losses are modeled.
         The tank only accepts Biogas and assumes the energy consumption and volume takeup
         to be equivalent between 1m^3 of Methane and 1m^3 of CO2
@@ -313,7 +316,8 @@ def cgt(m, Periods, Days, Hours,
     m.addConstr((unit_SOC[0] == unit_SOC[Periods[-1]]), n);
     n = f'{u}_charge_discharge'
     C_meta[n] = ['Prevent the unit from simulateneously charging and discharging', 38]
-    m.addConstrs((unit_charge[d,h] + unit_discharge[d,h] <= 1 for d in Days for h in Hours), n);
+    m.addConstrs((unit_charge[d,h] + unit_discharge[d,h] <= unit_install 
+                  for d in Days for h in Hours), n);
     n = f'{u}_charge'
     C_meta[n] = ['M constraint to link IS Charging with BM consumption', 39]
     m.addConstrs((unit_charge[d,h]*Bound >= unit_cons[r,d,h] for d in Days for h in Hours), n);
@@ -338,7 +342,8 @@ def cgt(m, Periods, Days, Hours,
     
 
 def bs(m, Periods, Days, Hours, 
-        unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge):
+        unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge, 
+        unit_install):
     """ MILP model of Biogas Storage for storing raw biogas. The biogas is 
         stored close to atmospheric pressure in an expandable vessel. 1% loss 
         of stored biogas per day.
@@ -362,7 +367,8 @@ def bs(m, Periods, Days, Hours,
     m.addConstr((unit_SOC[0] == unit_SOC[Periods[-1]]), n);
     n = f'{u}_charge_discharge'
     C_meta[n] = ['Prevent the unit from simulateneously charging and discharging', 38]
-    m.addConstrs((unit_charge[d,h] + unit_discharge[d,h] <= 1 for d in Days for h in Hours), n);
+    m.addConstrs((unit_charge[d,h] + unit_discharge[d,h] <= unit_install 
+                  for d in Days for h in Hours), n);
     n = f'{u}_charge'
     C_meta[n] = ['M constraint to link IS Charging with BM consumption', 39]
     m.addConstrs((unit_charge[d,h]*Bound >= unit_cons[r,d,h] for d in Days for h in Hours), n);

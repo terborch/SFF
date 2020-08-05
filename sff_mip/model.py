@@ -78,28 +78,21 @@ def model_units(m, Days, Hours, Periods, unit_prod, unit_cons, unit_size,
     u = 'WBOI'
     units.wboi(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
     
-    u='EH'
-    units.eh(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
-    
     u = 'AHP'
     units.ahp(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
     
     u = 'GHP'
     units.ghp(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
     
+    u='EH'
+    units.eh(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
+    
     u = 'PV'
     units.pv(m, Days, Hours, unit_prod[u], unit_size[u], Irradiance)
-    
-    u = 'BAT'
-    units.bat(m, Periods, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], 
-              unit_SOC[u], unit_charge[u], unit_discharge[u])
     
     u = 'AD'
     units.ad(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], 
              AD_cons_Heat, unit_install[u])
-    
-    u = 'GCSOFC'
-    units.gcsofc(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
     
     u = 'SOFC'
     units.sofc(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
@@ -107,23 +100,31 @@ def model_units(m, Days, Hours, Periods, unit_prod, unit_cons, unit_size,
     u = 'ICE'
     units.ice(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
     
+    u = 'BAT'
+    units.bat(m, Periods, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], 
+              unit_SOC[u], unit_charge[u], unit_discharge[u], unit_install[u])
+    
     u = 'CGT'
     units.cgt(m, Periods, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], 
-              unit_SOC[u], unit_charge[u], unit_discharge[u])
+              unit_SOC[u], unit_charge[u], unit_discharge[u], unit_install[u])
     
     u = 'BS'
     units.bs(m, Periods, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], 
-              unit_SOC[u], unit_charge[u], unit_discharge[u])
+              unit_SOC[u], unit_charge[u], unit_discharge[u], unit_install[u])
+    
+    u = 'GCSOFC'
+    units.gcsofc(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
     
     u = 'BU'
     units.bu(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
     
-    u = 'GI'
-    units.gi(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
-    
     u = 'GFS'
     units.gfs(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], U_prod[u])
     
+    u = 'GI'
+    units.gi(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
+    
+
 
 ##################################################################################################
 ### Mass and energy balance
@@ -365,13 +366,13 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
     m.addConstr(totex == opex + capex, n);
     
     # CO2 emissions
-    n = 'emissions'
+    n = 'envex'
     V_meta[n] = ['kt-CO2', 'Annual total CO2 emissions', 'unique']
-    emissions = m.addVar(lb=-Tight, ub=Tight, name=n)
+    envex = m.addVar(lb=-Tight, ub=Tight, name=n)
 
-    n = 'r_emissions'
+    n = 'r_envex'
     V_meta[n] = ['kt-CO2', 'Annual total CO2 emissions for a given resource', 'unique']
-    r_emissions = m.addVars(G_res, lb=-Tight, ub=Tight, name=n)
+    r_envex = m.addVars(G_res, lb=-Tight, ub=Tight, name=n)
     
     # c = 'Emissions'
     # n = 'Emissions'
@@ -383,29 +384,29 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
     
     
     f_CO2 = P['Farm', 'Export_CO2']
-    n = 'Elec_emissions'
+    n = 'Elec_envex'
     C_meta[n] = ['Annual CO2 emissions relative to Elec import and export', 83]
-    m.addConstr(r_emissions['Elec'] == 1e-6*sum(sum(
+    m.addConstr(r_envex['Elec'] == 1e-6*sum(sum(
         Elec_CO2[d,h]*(grid_import['Elec',d,h] - f_CO2*grid_export['Elec',d,h]) 
         for h in Hours)*Frequence[d] for d in Days), n);
     
     for r in [r for r in G_res if r != 'Elec']:
-        n=f'{r}_emissions'
+        n=f'{r}_envex'
         C_meta[n] = [f'Annual CO2 emissions relative to {r} import and export', 84]
-        m.addConstr(r_emissions[r] == 1e-3*P[r,'Emissions']*
+        m.addConstr(r_envex[r] == 1e-3*P[r,'Emissions']*
                     (grid_import_a[r] - f_CO2*grid_export_a[r]), n);
     
     n='Total_emissions'
     C_meta[n] = ['Instant CO2 emissions relative to Elec and Gas imports', 85]
-    m.addConstr(emissions == sum(r_emissions[r] for r in G_res) +
+    m.addConstr(envex == sum(r_envex[r] for r in G_res) +
                 1e-3*sum(unit_size[u]*P[u,'LCA']/P[u,'Life'] for u in Units) +
                 (1 - P['Physical','Manure_AD']*unit_install['AD'])*
                 P['Farm','Biomass_emissions'], n);
     
-    C_meta['Limit_emissions'] = ['Fix a limit to the emissions, for Pareto only', 0]
+    C_meta['Limit_envex'] = ['Fix a limit to the emissions, for Pareto only', 0]
     C_meta['Limit_totex'] = ['Fix a limit to the TOTEX, for Pareto only', 0]
     
-    return totex, capex, opex, emissions
+    return totex, capex, opex, envex
 
 
 ##################################################################################################
@@ -459,7 +460,15 @@ def print_highlight(string):
     print('******************************************************************')
     
     
-def run(objective, Limit=None, relax=False):
+def run(objective, Limit=None, New_Pamar=None, New_Setting=None, relax=False):
+    """ Option to redefine the set of Parameters P and Settings S """
+    if type(New_Pamar) != type(None):
+        global P
+        P = New_Pamar
+    if type(New_Setting) != type(None):
+        global S
+        S = New_Setting
+        
     """ Run each function to effectivel build the MILP """
     # Reset old model and creat a new model
     m = initialize_model()
@@ -476,13 +485,13 @@ def run(objective, Limit=None, relax=False):
     (grid_import_a, grid_export_a, grid_import, grid_export
      ) = model_energy_balance(m, Days, Hours, unit_cons, unit_prod, unit_install)
     # Calculate objective variables
-    totex, capex, opex, emissions = model_objectives(
+    totex, capex, opex, envex = model_objectives(
         m, Days, Hours, grid_import_a, grid_export_a, unit_size, unit_install, 
         unit_capex, grid_import, grid_export)
     # Constraint for extreme case scenario
     extreme_case(m, unit_size)
 
-    """ Definie objective function """
+    """ Definie all possible objective function """
     def minimize_opex():
         m.setObjective(opex, GRB.MINIMIZE)
     def minimize_capex():
@@ -500,26 +509,26 @@ def run(objective, Limit=None, relax=False):
     
     def minimize_totex():
         m.setObjective(totex, GRB.MINIMIZE)
-    def minimize_emissions():
-        m.setObjective(emissions, GRB.MINIMIZE)
+    def minimize_envex():
+        m.setObjective(envex, GRB.MINIMIZE)
         
     def pareto_constrained_totex(Limit_totex):
         print('-----------------{}--------------------'.format(Limit_totex))
         m.addConstr(totex <= Limit_totex, 'Limit_totex')
-        m.setObjective(emissions, GRB.MINIMIZE)
-    def pareto_constrained_emissions(Limit_emissions):
-        print('-----------------{}--------------------'.format(Limit_emissions))
-        m.addConstr(emissions <= Limit_emissions, 'Limit_emissions');
+        m.setObjective(envex, GRB.MINIMIZE)
+    def pareto_constrained_envex(Limit_envex):
+        print('-----------------{}--------------------'.format(Limit_envex))
+        m.addConstr(envex <= Limit_envex, 'Limit_envex');
         m.setObjective(totex, GRB.MINIMIZE)
         
     def minimize_totex_tax_co2():
-        m.setObjective(totex + emissions*P['CO2']['Tax'], GRB.MINIMIZE)
+        m.setObjective(totex + envex*P['CO2']['Tax'], GRB.MINIMIZE)
         
     switcher = {
         'totex': minimize_totex,
-        'emissions': minimize_emissions,
+        'envex': minimize_envex,
         'limit_totex': pareto_constrained_totex,
-        'limit_emissions': pareto_constrained_emissions,
+        'limit_envex': pareto_constrained_envex,
 
         'opex': minimize_opex,
         'capex': minimize_capex,
@@ -547,6 +556,38 @@ def run(objective, Limit=None, relax=False):
 ##################################################################################################
 ### END
 ##################################################################################################
+
+def get_expr_coos(expr, var_indices):
+    for i in range(expr.size()):
+        dvar = expr.getVar(i)
+        yield expr.getCoeff(i), var_indices[dvar]
+    
+def get_matrix_coos(m):
+    dvars = m.getVars()
+    constrs = m.getConstrs()
+    var_indices = {v: i for i, v in enumerate(dvars)}
+    for row_idx, constr in enumerate(constrs):
+        for coeff, col_idx in get_expr_coos(m.getRow(constr), var_indices):
+            yield row_idx, col_idx, coeff
+
+def funky(m):
+    import pandas as pd
+    dvars = m.getVars()
+    constrs = m.getConstrs()
+    
+    obj_coeffs = m.getAttr('Obj', dvars)
+    
+    var_index = {v: i for i, v in enumerate(dvars)}
+    constr_index= {c: i for i, c in enumerate(constrs)}
+
+    
+    nzs = pd.DataFrame(get_matrix_coos(m), columns=['row_idx', 'col_idx', 'coeff'])
+    return nzs
+
+
+
+
+
 
 """
     # l - 145
