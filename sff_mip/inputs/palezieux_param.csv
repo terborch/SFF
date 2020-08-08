@@ -1,0 +1,35 @@
+Category,Name,Value,Units,Description,Source
+ICE,Capacity,150,kW-elec,Installed electric production capacity of the cogeneration engine,palézieux
+ICE,Capacity_heat,186,kW-heat,Installed heat production capacity of the cogeneration engine,palézieux
+ICE,Eff_elec,0.372,-,Measured net electric efficiency ,palézieux
+ICE,t_op,8300,hours/year,Average operating time for the engine (only 8070 in 2019),palézieux
+ICE,prod_heat,1.501,GWh/year,Measured heat production,palézieux
+ICE,prod_elec,1.224,GWh/year,Meausred electricity production,palézieux
+ICE,prod_elec_net,1.08,GWh/year,Measured net electricity production ,palézieux
+ICE,cost_inv,300,kCHF,Invetsement cost,palézieux
+ICE,cost_maint_net,35,kCHF/year,Annual maintenance cost,palézieux
+ICE,Eff_thermal,0.734,-,Thermal efficiency (% heat recovered from losses),calc
+ICE,cost_inv_relative,2,kCHF/kW,Invetsement cost relative to installed capacity,calc
+ICE,cost_maint,0.116,-,Annual maintenance cost as a percent of investement,calc
+ICE,prod_elec_avrg,1.245,GWh/year,Annual electricity production relative to efficency and average t_op,calc
+ICE,prod_heat_avrg,1.543,GWh/year,Annual heat produced relative to efficency average and t_op,calc
+AD,cons_heat_net,500,MWh/year,Estimated heat consumed by the AD,palézieux
+AD,cost_inv,2.9,MCHF,Invetsement cost ,palézieux
+AD,t_op,8760,hours/year,Operating time for AD,Assumption
+AD,Eff,0.37,-,AD average efficiency,Assumption
+AD,Capacity,403,kW-biogas,Installed capacity of the AD,calc
+AD,cons_elec_net,143,MWh/year,Electricity consumed by the AD assuming it is prod_elec - prod_elec_net,calc
+AD,cons_heat,0.14,-,Heat consumed divided by biogas output,calc
+AD,cons_elec,0.04,-,Elec consumed divided by biogas output,calc
+PV,Capacity,552.5,kW-peak,PV installed capacity in kW peak (at GHI=1kW/m^2),palézieux
+PV,prod_elec,491,MWh/year,PV production in 2019,palézieux
+PV,prod_elec_max,524,MWh/year,PV production in 2015,palézieux
+Farm,cons_heat,140,MWh/year,Heat consumed by the farm,palézieux
+Farm,export_heat,466,MWh/year,Heat exported to the nearby school,palézieux
+Farm,cons_Elec_annual,88,MWh/year,Electriciy consumed by the farm,palézieux
+Farm,lost_heat,437,MWh/year,Total heat lost,calc
+Farm,lost_heat_relative,0.28,-,Total heat lost divided by total heat generated,calc
+Farm,A_heated,8640,m^2,Total heated surface of farm + school,map.geo.admin
+Farm,A_ground,3560,m^2,Total available roof surface for PV,map.geo.admin
+Farm,Cows,300,LSU,Number of adult milk cows,palézieux
+Farm,Biomass,8.9,GWh/year,Total input biomass (cows + other),calc

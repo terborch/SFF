@@ -1,21 +1,21 @@
 Category,Name,Value,Units,Description,Source
-AD,C,519.6630666666657,kWh/C,Heat capacity of the AD,calc
-AD,Cap_area,141.75,m^2,Surface area of the AD top cap,calc
-AD,Cap_height,2.78,m,Height of the AD top cap,calc
-AD,Capacity,31.43,kW,Rated Biogas production capacity,calc
-AD,Cyl_height,4.12,m,Height of the AD cylindrical body,calc
-AD,Cyl_volume,484.0,m^3,Cylinder volume,calc
-AD,Diameter,12.23,m,Diameter of the AD cylindrical body,calc
+AD,C,1114.8550666666645,kWh/C,Heat capacity of the AD,calc
+AD,Cap_area,236.56,m^2,Surface area of the AD top cap,calc
+AD,Cap_height,3.59,m,Height of the AD top cap,calc
+AD,Capacity,375.91,kW,Rated Biogas production capacity,calc
+AD,Cyl_height,5.32,m,Height of the AD cylindrical body,calc
+AD,Cyl_volume,1044.0,m^3,Cylinder volume,calc
+AD,Diameter,15.8,m,Diameter of the AD cylindrical body,calc
 AD,Gains,inputs.h5,kW/m^2,Sum of all heat gains and losses,0
-AD,Gains_elec,0.25144,kW,Heat gains from electricity consumption,calc
+AD,Gains_elec,3.00728,kW,Heat gains from electricity consumption,calc
 AD,Gains_solar,inputs.h5,kW,Heat gains from irradiation,calc
-AD,Ground_area,117.47,m^2,Ground floor area,calc
+AD,Ground_area,196.07,m^2,Ground floor area,calc
 AD,Losses_biomass,inputs.h5,kW,Heat gains from irradiation,calc
-AD,Losses_ground,7.292537599999999,kW,Heat gains from irradiation,calc
-AD,Sludge_volume,435.0,m^3,Sludge volume capacity,calc
-AD,U,0.29484000000000005,kW/C,AD heat conductance,calc
+AD,Losses_ground,12.1720256,kW,Heat gains from irradiation,calc
+AD,Sludge_volume,939.0,m^3,Sludge volume capacity,calc
+AD,U,0.49204480000000006,kW/C,AD heat conductance,calc
 Farm,Biogas_prod,31.42854861643836,kW,Methane yield from animals,calc
-Farm,Biomass_emissions,0.18921686666666665,kt-CO2/year,Emissions from untreated manure,calc
+Farm,Biomass_emissions,0.18921686666666662,kt-CO2/year,Emissions from untreated manure,calc
 Farm,Biomass_prod,84.94202328767125,kW,Biomass yield from animals,calc
 Farm,Fuel_cons,80000,kW/year,Fuel consumed by tractors in a year,calc
 Farm,Fueling_load,31.496062992125985,kW,Fuel consumed by tractors during fueling,calc

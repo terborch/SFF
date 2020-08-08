@@ -20,7 +20,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 from importlib import reload
-from data import get_param
+from data import get_param, get_all_param
 
 start_construct = time.time()
 
@@ -122,7 +122,8 @@ def get_objective_value(objective, path):
     return df['Value'][objective]
 
 
-def pareto(objective_x, objective_y, N_points, Plot=True, Summary=True):
+def pareto(objective_x, objective_y, N_points, Plot=True, Summary=True,
+           New_Pamar=None, New_Setting=None):
     
     
     def disctance(x, y):
@@ -156,7 +157,8 @@ def pareto(objective_x, objective_y, N_points, Plot=True, Summary=True):
         elif obj == objective_y:
             limit = (y[s-1] - y[s])/2 + y[s]
    
-        path = run(objective, Pareto=True, Limit=limit, Plot=Plot, Summary=Summary)
+        path = run(objective, Pareto=True, Limit=limit, Plot=Plot, Summary=Summary,
+                   New_Pamar=New_Pamar, New_Setting=New_Setting)
         solve_time.append(time.time() - start)
         plt.close('all')
         x.insert(s, get_objective_value(objective_x, path))
@@ -165,13 +167,15 @@ def pareto(objective_x, objective_y, N_points, Plot=True, Summary=True):
         
     solve_time = []
     # Find the true minimum of objective_x
-    path = run(objective_x, Pareto=True, Limit=None, Plot=Plot, Summary=Summary)
+    path = run(objective_x, Pareto=True, Limit=None, Plot=Plot, Summary=Summary,
+                   New_Pamar=New_Pamar, New_Setting=New_Setting)
     min_x = get_objective_value(objective_x, path)
     max_y = get_objective_value(objective_y, path)
     solve_time.append(time.time() - start)
     
     # Find the true maximum of objective_y
-    path = run(objective_y, Pareto=True, Limit=None, Plot=Plot, Summary=Summary)
+    path = run(objective_y, Pareto=True, Limit=None, Plot=Plot, Summary=Summary,
+                   New_Pamar=New_Pamar, New_Setting=New_Setting)
     max_x = get_objective_value(objective_x, path)
     min_y = get_objective_value(objective_y, path)
     solve_time.append(time.time() - start)
@@ -180,14 +184,17 @@ def pareto(objective_x, objective_y, N_points, Plot=True, Summary=True):
     r = 0.01
 
     # Find the true minimum of objective_x
-    path = run('limit_' + objective_y, Pareto=True, Limit=min_y*(1 + r), Plot=Plot, Summary=Summary)
+    path = run('limit_' + objective_y, Pareto=True, Limit=min_y*(1 + r), Plot=Plot, 
+               Summary=Summary, New_Pamar=New_Pamar, New_Setting=New_Setting)
+
     min_y = get_objective_value(objective_y, path)
     max_x = get_objective_value(objective_x, path)
     solve_time.append(time.time() - start)
     
 
     # Find the true maximum of objective_y
-    path = run('limit_' + objective_x, Pareto=True, Limit=min_x*(1 + r), Plot=Plot, Summary=Summary)
+    path = run('limit_' + objective_x, Pareto=True, Limit=min_x*(1 + r), Plot=Plot, 
+               Summary=Summary, New_Pamar=New_Pamar, New_Setting=New_Setting)
     min_x = get_objective_value(objective_x, path)
     max_y = get_objective_value(objective_y, path)
     solve_time.append(time.time() - start)
@@ -257,6 +264,13 @@ def slim_run(objective, querry, *file_path,
         results.save_df_to_hdf5(var_results, var_meta, file_path[0], 
                                 Days, Hours, Periods)
     
+    # file_name = 'run_info.txt' 
+    # with open(os.path.join(file_path[0], file_name), 'w') as f:
+    #     for v in m.getVars():
+    #         if v.x > 2000:
+    #             print('Warning high variable value', file=f)
+    #             print('{}: {:.0f}'.format(v.VarName, v.x), file=f)
+        
     return Querried_results
 
 
@@ -272,13 +286,6 @@ def make_folder(param_index, variation, folder_path):
     
     return os.path.join(folder_path, new_folder)
     
-def get_default_param():
-    P, P_meta = get_param('parameters.csv')
-    P_calc, P_meta_calc = get_param('calc_param.csv')
-    P_eco, P_meta_eco = get_param('cost_param.csv')
-    P, P_meta = P.append(P_calc), P_meta.append(P_meta_calc)
-    P, P_meta = P.append(P_eco), P_meta.append(P_meta_eco)
-    return P, P_meta
     
 def sensitsivity_analysis():
     """ Performs a sensitivity analysis on the selected parameters using the 
@@ -286,10 +293,10 @@ def sensitsivity_analysis():
     """
     folder_path = os.path.join('results', 'sensitivity_analysis')
     list_of_files = [f for f in os.listdir(folder_path)]
+    path_separator = os.path.join('a', 'a').split('a')[1]
     
     # 1. Select what parameter to modify and use this new value as input.
-    P, P_meta = get_default_param()
-    start = time.time()
+    P, P_meta = get_all_param()
     variation = P_meta['Uncertainty']
     totex_min_SFF, envex_min = {}, {}
     pt_5_dict, pt_15_dict = {}, {}
@@ -298,13 +305,12 @@ def sensitsivity_analysis():
               '{:.2g}'.format(P[i]*(1-variation[i])))
         
         # Reset all input parameters to default values
-        P, _ = get_default_param()
+        P, _ = get_all_param()
         for p in [1, -1]:
             # Param index i, Positivie or Negative p, Variation variation[i]
             P[i] = P[i]*(1 + p*variation[i])
             
             path = make_folder(i, 1 + p*variation[i], folder_path)
-            path_separator = os.path.join('a', 'a').split('a')[1]
             if path.split(path_separator)[-1] in list_of_files:
                 continue
             # 2. Run the optimizer with a new parameter value
@@ -323,7 +329,7 @@ def sensitsivity_analysis():
                                    New_Pamar=P, New_Setting=S) 
             
             
-             # 2.1 Pinpoint and solve pareto point 15 on the envex-totex graph
+             # 2.2 Pinpoint and solve pareto point 15 on the envex-totex graph
               # 2.2.1 Get the absolute ENVEX minimum
             file_path = os.path.join(path, 'envex_min.h5')
             envex_min[i] = slim_run('envex', ['envex'], file_path, 
@@ -336,14 +342,40 @@ def sensitsivity_analysis():
                                      New_Pamar=P, New_Setting=S)    
             
             print(f'Run {i} finished')
-        
+    
+
+    # # No variation - default run
+    # path = make_folder(['default'], 1, folder_path)
+    # P, _ = get_all_param()
+    #  # 2.1 Pinpoint and solve pareto point 5 on the envex-totex graph
+    #   # 2.1.1 Get the TOTEX min for the current SFF scenario
+    # file_path = os.path.join(path, 'current_SFF.h5')
+    # S, _ = get_param('settings_SFF_current.csv')
+    # totex_min_SFF[i] = slim_run('totex', ['totex'], file_path, 
+    #                             Limit=None, New_Pamar=P, New_Setting=S)            
+      
+    #   # 2.1.2 Get the ENVEX min undex TOTEX constrained at the current SFF value
+    # file_path = os.path.join(path, 'point_5.h5')
+    # S, _ = get_param('settings.csv')
+    # pt_5_dict[i] = slim_run('limit_totex', ['envex', 'totex'], file_path,
+    #                        Limit=totex_min_SFF[i]['totex'], 
+    #                        New_Pamar=P, New_Setting=S) 
+    
+    
+    #  # 2.2 Pinpoint and solve pareto point 15 on the envex-totex graph
+    #   # 2.2.1 Get the absolute ENVEX minimum
+    # file_path = os.path.join(path, 'envex_min.h5')
+    # envex_min[i] = slim_run('envex', ['envex'], file_path, 
+    #                         Limit=None, New_Pamar=P, New_Setting=S)
+    
+    #   # 2.2.2 Get the TOTEX minimu under ENVEX constrained at 7% above the min
+    # file_path = os.path.join(path, 'point_15.h5')
+    # pt_15_dict[i] = slim_run('limit_envex', ['envex', 'totex'], 
+    #                          file_path, Limit=envex_min[i]['envex']*1.073, 
+    #                          New_Pamar=P, New_Setting=S)  
+
+    
     return pt_5_dict, pt_15_dict
-    
-    
-    
-    
-    
-    
     
     
     
@@ -364,7 +396,74 @@ def sensitsivity_analysis():
     # S, _ = get_param('settings.csv')
 
 
+def palezieux(Reload=False, Reference=False):
+    """ Alters parameters that concern the case study for Palézieux """
+    P , _ = get_all_param()
+    P_heat_load, _ = get_param('heat_load_param.csv')
+    P = P.append(P_heat_load)
+    P_new, _ = get_param('palezieux_param.csv')
+    
+    # Parma pre-calculation
+     # Inside write_inputs => calc_param.csv
+    f = 'Farm'
+    P[f, 'cons_Elec_annual'] = 1e3*P_new[f, 'cons_Elec_annual']
+    P[f, 'Biomass_prod'] = 1e6*P_new[f, 'Biomass']/8760
+    A, _ = get_param('animals.csv')
+    P[f, 'Biomass_emissions'] = 1e-6*(P_new[f, 'Cows']*
+        A['Dairy_cows', 'Manure']*P['Physical', 'Manure_emissions'])
+     # Inside heal_loads_cals => heat_load_param.csv
+    P['AD', 'LSU'] = P_new[f, 'Cows']
+    P['build', 'Heated_area'] = P_new[f, 'A_heated']
+    
+    if Reload:
+        path = os.path.join('inputs', 'inputs_palezieux.h5')
+        reload_all_inputs(path, Cluster=True, 
+                          New_Pamar=P, New_Setting=None)
+    
+    # Remaining Parameters
+     # Inside parameters.csv
+    u = 'AD'
+    P[u, 'Heat_cons'] = P_new[u, 'cons_heat']
+    P[u, 'Elec_cons'] = P_new[u, 'cons_elec']
+    P[u, 'Cost_multiplier'] = 1
+    P[u, 'Cost_per_size'] = 1e3*0.9*P_new[u, 'cost_inv']/P_new[u, 'Capacity']
+    P[u, 'Cost_per_unit'] = 1e3*0.1*P_new[u, 'cost_inv']
+    
+    u = 'ICE'
+    P[u, 'Eff_elec'] = P_new[u, 'Eff_elec']
+    P[u, 'Eff_thermal'] = P_new[u, 'Eff_thermal']
+    P[u, 'Cost_per_size'] = 0.9*P_new[u, 'cost_inv']/P_new[u, 'Capacity']
+    P[u, 'Cost_per_unit'] = 0.1*P_new[u, 'cost_inv']
+    P[u, 'Maintenance'] = P_new[u, 'cost_maint_net']/P_new[u, 'cost_inv']
+    P[u, 'Min_size'] = P_new[u, 'Capacity']/3
+    P[u, 'Ref_size'] = P_new[u, 'Capacity']
+    
+    u = 'PV'
+    
+    
+    # file_path = os.path.join('results', 'palezieux')
+    # pareto('totex', 'envex', 21, Plot=True, Summary=True, New_Pamar=P, New_Setting=None)
+    
+    # Palezieux Reference scenario
+    if Reference:
+        # S, _ = get_param('settings.csv')
+        S, _ = get_param('settings_Palezieux_current.csv')
+        
+        folder_path = os.path.join('results', 'palezieux_ref')
+        os.makedirs(os.path.dirname(os.path.join(folder_path, '')), 
+                exist_ok=True)
+        
+        file_path = os.path.join(folder_path, 'results.h5')
+        obj = slim_run('totex', ['envex', 'totex'], file_path, 
+                       Limit=None, New_Pamar=P, New_Setting=S)
+    print(obj)
+    
+    
 if __name__ == "__main__":
+    
+    
+    palezieux(Reload=False, Reference=True)
+    
     # Execute single run
     # run('envex', Reload=True)
     # run('totex', Plot=True, Summary=True)
@@ -386,11 +485,13 @@ if __name__ == "__main__":
     #     print(f'Pareto_{i}_solve_time', solve_time[i] )
 
 
-def reload_all_inputs():
+def reload_all_inputs(path='default', Cluster=True, 
+                      New_Pamar=None, New_Setting=None):
     """ Reload inputs """
     import write_inputs
-    write_inputs.write_arrays('default', Cluster=True)
-    
+    write_inputs.write_arrays(path, Cluster=True,
+                              New_Pamar=New_Pamar, New_Setting=New_Setting)
+
     
 def make_results():
     """ Goes through all results in a folder and generate pareto results """

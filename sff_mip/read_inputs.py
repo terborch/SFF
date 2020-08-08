@@ -34,13 +34,14 @@ Bound = S['Model','Var_bound']
 Tight = S['Model','Var_bound_tight']
 # Dictionnary of variable metadata
 V_meta = {}
-V_meta['Header'] = ['Name', 'Value', 'Lower Bound', 'Upper Bound', 'Units', 'Decription', 'Type']
+V_meta['Header'] = ['Name', 'Value', 'Lower Bound', 'Upper Bound', 'Units', 
+                    'Decription', 'Type']
 V_bounds = {}
 # Dictionnary describing each constraint and its source if applicable
 C_meta = {}
 
-
-path = os.path.join('inputs', 'inputs.h5')
+path = os.path.join('inputs', 'inputs_palezieux.h5')
+# path = os.path.join('inputs', 'inputs.h5')
 # path = os.path.join('inputs', 'no_clusters.h5')
 dic = get_hdf(path)
 

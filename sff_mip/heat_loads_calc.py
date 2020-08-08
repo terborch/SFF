@@ -388,10 +388,18 @@ def save_df_to_hdf5(key, profile, path):
         hdf.put(key, df, data_columns=True)
         
     
-def generate(path, Clustered_days, Frequence):
+def generate(path, Clustered_days, Frequence, New_Pamar=None, New_Setting=None):
     """ Generates and stored temperature and heat load profiles for the
         building and the AD.
     """
+    
+    # If specified, new parameters and settings are defined before writings inputs
+    if type(New_Pamar) != type(None):
+        global P
+        P = New_Pamar
+    if type(New_Setting) != type(None):
+        global S
+        S = New_Setting
     
     # Building profiles
     c = 'build'

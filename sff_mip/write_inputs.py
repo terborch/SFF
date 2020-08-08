@@ -158,9 +158,17 @@ def tractor_fueling(Days, Hours, Frequence, Ext_T):
 ###############################################################################
     
     
-def write_arrays(path, Cluster=True):
+def write_arrays(path, Cluster=True, New_Pamar=None, New_Setting=None):
     """ Precalculate and write single input parameters to calc_param.csv and 
         profile or time-dependent input parameters to inputs.h5 """
+    
+    # If specified, new parameters and settings are defined before writings inputs
+    if type(New_Pamar) != type(None):
+        global P
+        P = New_Pamar
+    if type(New_Setting) != type(None):
+        global S
+        S = New_Setting
     
     # Time related parameters
     (Periods, Nbr_of_time_steps, dt, Day_dates, Time, dt_end, Days_all, Hours
@@ -221,8 +229,9 @@ def write_arrays(path, Cluster=True):
 
     for k in P_write.keys():
         data.save_to_hdf(k, P_write[k], path)  
-
-    heat_loads_calc.generate(path, Clustered_days, Frequence)
+        
+    heat_loads_calc.generate(path, Clustered_days, Frequence, 
+                             New_Pamar=New_Pamar, New_Setting=New_Setting)
     
     
     # # Append extreme period

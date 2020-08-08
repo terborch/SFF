@@ -6,6 +6,7 @@
 """
 
 # External modules
+
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import figure
 import numpy as np
@@ -20,7 +21,7 @@ from global_set import (Units, Units_storage, Resources, Color_code,
                         Linestyle_code, Linestyles, Abbrev, Unit_color, 
                         G_res, U_prod, U_cons)
 import results
-from data import get_hdf
+from data import get_hdf, get_all_param
 
 ###############################################################################
 ### Global variables to be eliminated
@@ -450,8 +451,8 @@ def chart_from_dict(y, X_label, Title, fig_size, fig_path=None, e=1e-6):
     else:
         x_max = max([y[k] for k in y.keys()])
         x_min = min([y[k] for k in y.keys()])
-        Delta = x_max - x_min
-        p = {'cons': 0.01, 'prod': -0.05}
+        Delta = 0.01*(x_max - x_min)
+        p = {'cons': 1, 'prod': 0}
         
         R = []
         for k in y.keys():
@@ -463,7 +464,7 @@ def chart_from_dict(y, X_label, Title, fig_size, fig_path=None, e=1e-6):
         for r in set(R) - set(['Biomass']):
            for k in y.keys():
                if r in k:
-                   ax.text(y[k] + p[k[0]]*Delta*len(dot(y[k])), 
+                   ax.text(y[k]*p[k[0]] + Delta*len(dot(y[k])), 
                            j - 1/len(y.keys()), dot(y[k]))
                    if last_label != r:
                        ax.barh(j, y[k], color=Color_code[r], label=r)
@@ -1053,6 +1054,165 @@ def clustering(Number_of_clusters):
     plt.show()
         
 
+def sensitivity_analysis():
+    """ Plot a sorted bar chart of the sesitivity analysis """
+    folder_path = os.path.join('results', 'sensitivity_analysis')
+    list_of_files = [f for f in os.listdir(folder_path) if 'solution' not in f]
+    result_files = ['point_5', 'point_15']
+    
+    P, P_meta = get_all_param()
+    variation = P_meta['Uncertainty']
+    name = P_meta['Full name']
+    default_index = ('all', 'default', '1')
+    
+    index = ['Solution', 'Param Category', 'Param Name', 'Variation']
+    columns = ['envex', 'totex', 'opex', 'capex', 'size'] + [u + ' Size' for u in Units]
+    vari_df = pd.DataFrame(columns=columns + index)
+    vari_df.set_index(index, inplace=True)
+    capex_u = {}
+    for f in list_of_files:
+        for r in result_files:
+            # Read a signle resuts file in one folder
+            file_path = os.path.join(folder_path, f, f'{r}.h5')
+            df = get_hdf(file_path, 'single')
+            df = df.set_index('Var_name')['Value']
+            # Make an index i to store information in dict 
+            # i = (Pareto point, Category, Name, Change)
+            name_index = f.split('_')
+            i = (r.split('_')[-1],
+                 name_index[0], '_'.join(name_index[1:-1]), name_index[-1])
+            if 'default' in f:
+                i = (r.split('_')[-1], *default_index)
+            capex_u[i] = unit_capex(df)
+            capacity = unit_capacity(df)
+            vari_df.loc[i] = [1e3*df['envex'], # envex
+                              1e3*df['totex'], # totex
+                              1e3*df['opex'],  # opex
+                              np.sum([capex_u[i][k] for k in capex_u[i].keys()]), # capex
+                              0,               # size
+                              *[capacity[u] for u in Units] # units 
+                              ]
+            
+    
+    def units_installed(df):
+        """ Returns the list of installed units as array of 1 and 0 """
+        return np.array([int(bool(df[f'{u} Size'])) for u in Units])
+    
+    def get_variation(index):
+        """ Return the exact variation for a given file index """
+        if 'default' in index:
+            return 1
+        if float(index[-1]) > 1:
+            return 1 + variation[index[:-1]]
+        else:
+            return 1 - variation[index[:-1]]
+        
+    def plot_relative_changes(change, colors, Title):
+            fig_size = (8,6)
+            fig, ax = plt.subplots()
+            fig.set_size_inches(fig_size[0], len(change.index)*fig_size[1]/24)
+            fig.set_dpi(300)
+            j = 1
+            inputs_changed = []
+            # ax.plot([0, 0], [0.5, len(vary.index)/2 + 0.5], color ='black')
+            for k in change.index:
+                # per cent change in result divided by per cent change in input
+                
+                color = colors[1] if change.loc[k]['increased'] < 0 else colors[0]
+                ax.barh(j, np.abs(change.loc[k]['increased']), color=color, left=0.001)
+                
+                color = colors[1] if change.loc[k]['reduced'] < 0 else colors[0]
+                ax.barh(j, -np.abs(change.loc[k]['reduced']), color=color, left=-0.001)  
+                
+                j = j + 1
+                if pd.isna(name[k[:-1]]):
+                    n = k[1]
+                elif k[0] in ['Pysical', 'Farm', 'Profile']:
+                    n = name[k[:-1]]
+                else:
+                    n = ' '.join([k[0], name[k[:-1]]])
+                inputs_changed.append('{} {:.0f}%'.format(n, float(k[-1])*100))
+                
+            ax.axvline(linewidth=1, color='black', zorder=0)
+            # ax.axhline(y= linewidth=1, color='grey', zorder=0,  linestyle="--")
+            # plt.axhline(y=1.0, color="black",)
+            ax.set_yticks(range(1, len(inputs_changed) + 1))
+            ax.set_yticklabels(inputs_changed)
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+            plt.title(Title)
+            plt.xlabel('%change output over %change input')
+            plt.tight_layout()
+            
+            fig_name = '{}.png'.format(Title.replace(' ','_'))
+            fig_path = os.path.join(folder_path, f'solution {sol}', fig_name)
+            plt.savefig(fig_path)
+
+    
+    # for every solution create a df
+    for sol in ['5', '15']:
+        print(f'printing for solution {sol}')
+        default = vari_df.loc[(sol, *default_index),:]
+        change_df = vari_df.loc[sol, :, :, :]
+        Units_index = [u + ' Size' for u in Units]
+        os.makedirs(os.path.dirname(os.path.join(folder_path, f'solution {sol}', '')), exist_ok=True)
+        
+        # Cumulative change in installed capacity
+        Size_max = [change_df[f'{u} Size'].max() for u in Units]
+        for k in change_df.index:
+            delta = change_df[Units_index].loc[k] - default[Units_index]
+            count = 0
+            if all(delta == 0):
+                change_df['size'].loc[k] = 0
+                continue
+            for i, u in enumerate(Units_index):
+                if Size_max[i] != 0:
+                    count = count + (delta[Units_index[i]]/Size_max[i])**2
+            change_df['size'].loc[k] = count**0.5/np.abs(get_variation(k) - 1)
+        
+        # for every objective create series of results that vary
+        for o in change_df.columns:
+            vary = change_df[o]
+            Title = 'Variation on ' + o
+            # Sort from largest to smallest variation
+            change = pd.DataFrame(columns=['increased', 'reduced', 'delta'] + index[1:])
+            change.set_index(index[1:], inplace=True)
+            for k in vary.index:
+                if get_variation(k) < 1:
+                    continue
+                v1, v2 = get_variation(k), 1 - (get_variation(k) - 1)
+                k1 = tuple(list(k[:-1]) + ['{:.2g}'.format(v1)])
+                k2 = tuple(list(k[:-1]) + ['{:.2g}'.format(v2)])
+                key = tuple(list(k[:-1]) + ['{:.2g}'.format(get_variation(k) - 1)])
+                if k2 not in vary.index:
+                    continue
+                if o != 'size':
+                    relative1 = (vary[k1]/default[o] - 1) / (v1 - 1)
+                    relative2 = (vary[k2]/default[o] - 1) / (v2 - 1)
+                else: 
+                    relative1 = change_df['size'][k1]
+                    relative2 = change_df['size'][k2]
+                    
+                if np.abs(relative1) > 0.01 or np.abs(relative2) > 0.01:
+                    change.loc[key] = [relative1, relative2, 
+                                       np.abs(relative1) + np.abs(relative2)]
+            change.sort_values('delta', ascending=True, inplace=True)
+            
+    
+            colors = ('green', 'red') if o != 'size' else ('grey', 'grey')
+            plot_relative_changes(change, colors, Title)
+        
+        
+ 
+
+            
+
+
+        
+
+
+   
+    
     
 ###############################################################################
 ### Secondairy methods

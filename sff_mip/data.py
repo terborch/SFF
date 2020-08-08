@@ -65,6 +65,15 @@ def read_json(file_path):
     return data['labels'], data['closest']
 
 
+def get_all_param():
+    """ Get all parameters in values series and df metadata """
+    P, P_meta = get_param('parameters.csv')
+    P_calc, P_meta_calc = get_param('calc_param.csv')
+    P_eco, P_meta_eco = get_param('cost_param.csv')
+    P, P_meta = P.append(P_calc), P_meta.append(P_meta_calc)
+    P, P_meta = P.append(P_eco), P_meta.append(P_meta_eco)
+    return P, P_meta
+
 
 ###############################################################################
 ### External Parameter (weather profiles)
