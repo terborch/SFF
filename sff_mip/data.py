@@ -252,18 +252,18 @@ def make_param(category, name, value, meta):
     return
 
 
-def change_settings(category, name, value):
+def change_settings(category, name, value, file='settings.csv'):
     """ Modify an existing setting value by name and category """
     
     # Open the settings.csv file as dataframe and set index
-    df = csv_to_df('settings.csv')
+    df = csv_to_df(file)
     df.set_index(['Category', 'Name'], inplace=True)
     
     # Change the selected values
     df.loc[(category, name), 'Value'] = value
             
     # Save the new dataframe in csv format
-    df.to_csv(os.path.join('inputs', 'settings.csv'))
+    df.to_csv(os.path.join('inputs', file))
     return
 
 

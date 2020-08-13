@@ -1,0 +1,18 @@
+Category,Name,Full name,Latex_symbol,Latex_value,Latex_unit,Latex_source,Value,Units,Source,Description,Symbol,Uncertainty
+AD,Eff,Efficiency,$\eta_{AD}$,$0.37$,$-$,Default,0.37,-,Thees 2017,AD efficiency,\eta_{AD},0.05
+AD,Elec_cons,Electric consumption,$f_{AD_{EL/BG}}$,$0.04$,$-$,\cite{palezieux},0.04,-,Carlini 2017,AD faction of electricity consumed,f_{AD_{EL/BG}},0.1
+AD,Heat_cons,Heat consumption,$f_{AD_{Q/BG}}$,$0.14$,$-$,\cite{palezieux},0.14,-,Thees 2017,Fraction of heat self consumed relative to the biogas procued,f_{AD_{Q/BG}},0.1
+AD,Volume,Digester volume,$V_{AD}$,$1500$,$m^3$,\cite{palezieux},0.14,-,Thees 2017,Fraction of heat self consumed relative to the biogas procued,f_{AD_{Q/BG}},0.1
+ICE,Eff_elec,Electric efficiency,"$\eta_{ICE, EL}$",$0.372$,$-$,\cite{palezieux},0.372,-,Samuel PdM,ICE electric efficiency,"\eta_{ICE, EL}",0.1
+ICE,Eff_thermal,Thermal efficiency,"$\eta_{ICE, Q}$",$0.734$,$-$,\cite{palezieux},0.734,-,Samuel PdM,ICE thermal efficiency,"\eta_{ICE, Q}",0.1
+PV,Eff,Efficiency,$\eta_{PV}$,$0.14$,$-$,Default,0.14,-,Paul PHD,PV efficiency,\eta_{PV},0.25
+PV,P_density,Energy density,$\rho_{PV}$,$0.197$,$kW/m^2$,Default,0.197,kW/m^2,Panasonic datasheet,PV power density,\rho_{PV},0.1
+PV,max_utilisation,Available area,$f_{PV_{A_{PV}/A}}$,$1$,$-$,\cite{palezieux},1,-,setting,Maximum utilisation of available rood area,f_{PV_{A_{PV}/A}},0.25
+Farm,LSU,Number of LSU,$LSU_{farm}$,$300$,$LSU$,\cite{palezieux},139,LSU,SFF,Number of Livestock Units on the farm,LSU_{farm},
+Farm,Ground_area,Available roof area for PV,"$A_{b, ground}$",$3560$,$m^2$,\cite{geo.admin.ch},3560,m^2,geo.admin.ch,Building ground surface area,"A_{b, ground}",0
+Farm,cons_Diesel_annual,Annual diesel consumption,$\dot{E}^{+ diesel}_{tractors}$,$8000$,$l/year$,Default,8000,l/year,SFF,Annual diesel consumption for tractors,\dot{E}^{+ diesel}_{tractors},0
+Farm,cons_Elec_annual,Annual electric consumption,$E^{+ el}_{b}$,$880$,$MWh/year$,\cite{palezieux},88000,kWh/year,SFF,Annual electric consumption,E^{+ el}_{b},0
+Farm,cons_Heat_annual,Annual heat consumption,"$\dot{Q}^+_{b, real}$",$606$,$MWh/year$,\cite{palezieux},1650000,kWh/year,SFF,Annual heat consumption,"\dot{Q}^+_{b, real}",0
+Farm,i,Annual interest rate,$i$,$0.025$,$-$,Default,0.025,-,Nils PdS,Annual interest rate,i,0.1
+Farm,nbr_tractors,Number of tractors,$N_{tractors}$,$4$,$Tractor$,Default,4,Tractor,SFF,Number of tractors in poteration,N_{tractors},0
+Physical,Biogas_CH4,BG Methane volume fraction,$f_{BG_{CH_4/CO_2}}$,$0.6$,$-$,Default,0.6,-,JVH,Fraction of CO2 contained in Biogas,f_{BG_{CH_4/CO_2}},0

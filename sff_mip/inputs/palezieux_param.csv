@@ -24,6 +24,7 @@ AD,cons_elec,0.04,-,Elec consumed divided by biogas output,calc
 PV,Capacity,552.5,kW-peak,PV installed capacity in kW peak (at GHI=1kW/m^2),palézieux
 PV,prod_elec,491,MWh/year,PV production in 2019,palézieux
 PV,prod_elec_max,524,MWh/year,PV production in 2015,palézieux
+PV,cost_inv,1221,kCHF,PV total investement cost,palézieux
 Farm,cons_heat,140,MWh/year,Heat consumed by the farm,palézieux
 Farm,export_heat,466,MWh/year,Heat exported to the nearby school,palézieux
 Farm,cons_Elec_annual,88,MWh/year,Electriciy consumed by the farm,palézieux
@@ -33,3 +34,4 @@ Farm,A_heated,8640,m^2,Total heated surface of farm + school,map.geo.admin
 Farm,A_ground,3560,m^2,Total available roof surface for PV,map.geo.admin
 Farm,Cows,300,LSU,Number of adult milk cows,palézieux
 Farm,Biomass,8.9,GWh/year,Total input biomass (cows + other),calc
+Farm,Feed_in_Tariff,0.0816,CHF/kWh,Oron feedin tarif of renewable electricity (PV),vese.ch

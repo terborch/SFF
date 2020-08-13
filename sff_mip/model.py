@@ -16,7 +16,7 @@ from global_set import Units, U_res, G_res, U_prod
 from read_inputs import (P, S, V_meta, C_meta, Bound, Tight, 
                          Periods, Days, Hours, Frequence, 
                          Irradiance, Ext_T, Build_cons, AD_cons_Heat, Fueling,
-                         Elec_CO2)
+                         Elec_CO2, Energy_Producer, Q_extreme)
 # Functions
 from data import annualize, get_param
 import variables
@@ -70,59 +70,59 @@ def cstr_unit_size(m, S, unit_size):
 
 
 def model_units(m, Days, Hours, Periods, unit_prod, unit_cons, unit_size, 
-                unit_SOC, unit_charge, unit_discharge, unit_install):
+                unit_SOC, unit_charge, unit_discharge, unit_install, P):
     
     u = 'GBOI'
-    units.gboi(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
+    units.gboi(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], P)
     
     u = 'WBOI'
-    units.wboi(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
+    units.wboi(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], P)
     
     u = 'AHP'
-    units.ahp(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
+    units.ahp(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], P)
     
     u = 'GHP'
-    units.ghp(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
+    units.ghp(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], P)
     
     u='EH'
-    units.eh(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
+    units.eh(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], P)
     
     u = 'PV'
-    units.pv(m, Days, Hours, unit_prod[u], unit_size[u], Irradiance)
+    units.pv(m, Days, Hours, unit_prod[u], unit_size[u], Irradiance, P)
     
     u = 'AD'
     units.ad(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], 
-             AD_cons_Heat, unit_install[u])
+             AD_cons_Heat, unit_install[u], P)
     
     u = 'SOFC'
-    units.sofc(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
+    units.sofc(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], P)
     
     u = 'ICE'
-    units.ice(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
+    units.ice(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], P)
     
     u = 'BAT'
     units.bat(m, Periods, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], 
-              unit_SOC[u], unit_charge[u], unit_discharge[u], unit_install[u])
+              unit_SOC[u], unit_charge[u], unit_discharge[u], unit_install[u], P)
     
     u = 'CGT'
     units.cgt(m, Periods, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], 
-              unit_SOC[u], unit_charge[u], unit_discharge[u], unit_install[u])
+              unit_SOC[u], unit_charge[u], unit_discharge[u], unit_install[u], P)
     
     u = 'BS'
     units.bs(m, Periods, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], 
-              unit_SOC[u], unit_charge[u], unit_discharge[u], unit_install[u])
+              unit_SOC[u], unit_charge[u], unit_discharge[u], unit_install[u], P)
     
     u = 'GCSOFC'
-    units.gcsofc(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
+    units.gcsofc(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], P)
     
     u = 'BU'
-    units.bu(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
+    units.bu(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], P)
     
     u = 'GFS'
-    units.gfs(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], U_prod[u])
+    units.gfs(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], U_prod[u], P)
     
     u = 'GI'
-    units.gi(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u])
+    units.gi(m, Days, Hours, unit_prod[u], unit_cons[u], unit_size[u], P)
     
 
 
@@ -165,7 +165,7 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod, unit_install):
     V_meta[n] = ['-', 'Decision var on exporting elec', 'unique']
     grid_export_elec = m.addVars(Days, Hours, vtype=GRB.BINARY, name=n)
     
-    # Resource balances     
+    # Resource balances
     r = 'Elec'
     n = 'Balance_' + r
     C_meta[n] = [f'Sum of all {r} sources equal to Sum of all {r} sinks', 59]
@@ -273,10 +273,16 @@ def model_energy_balance(m, Days, Hours, unit_cons, unit_prod, unit_install):
                   for r in ['Gas', 'Wood', 'Diesel']
                   for h in Hours for d in Days), n);
     
-    n = 'No_import'
-    C_meta[n] = ['Prevent some resources from being imported', 0]
-    m.addConstrs((grid_import['BM',d,h] == 0
-                  for h in Hours for d in Days), n);
+    if not Energy_Producer:
+        n = 'No_import'
+        C_meta[n] = ['Prevent some resources from being imported', 0]
+        m.addConstrs((grid_import['BM',d,h] == 0
+                      for h in Hours for d in Days), n);
+    else:
+        n = 'No_import'
+        C_meta[n] = ['Prevent some resources from being imported', 0]
+        m.addConstrs((grid_import['BM',d,h] + grid_import['Elec',d,h] + grid_import['Gas',d,h] == 0
+                      for h in Hours for d in Days), n);
     
     # Prevent simultaneous import and export of electricity
     n = 'grid_import_export_elec'
@@ -316,15 +322,15 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
     # Variable
     n = 'capex'
     V_meta[n] = ['MCHF', 'total CAPEX', 'unique']
-    capex = m.addVar(lb=-Tight, ub=Tight, name=n)
+    capex = m.addVar(lb=0, ub=Tight, name=n)
     
     n = 'opex'
     V_meta[n] = ['MCHF/year', 'total annual opex', 'unique']
-    opex = m.addVar(lb=0, ub=Tight, name=n)
+    opex = m.addVar(lb=-Tight, ub=Tight, name=n)
     
     n = 'totex'
     V_meta[n] = ['MCHF/year', 'total annualized expenses', 'unique']
-    totex = m.addVar(lb=0, ub=Tight, name=n)
+    totex = m.addVar(lb=-Tight, ub=Tight, name=n)
     
     # Constraints
     n = 'Is_installed'
@@ -345,7 +351,7 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
     m.addConstrs((unit_capex[u] == P[u,'Cost_multiplier']*
                   (unit_size[u]*P[u,'Cost_per_size'] + 
                    unit_install[u]*P[u,'Cost_per_unit'])*
-                  annualize(P[u,'Life'], P['Farm','i'])/1000
+                  annualize(P[u,'Life'], P['Farm','i'])*1e-3
                   for u in Units), n);
     
     n = 'capex_sum'
@@ -371,8 +377,8 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
     envex = m.addVar(lb=-Tight, ub=Tight, name=n)
 
     n = 'r_envex'
-    V_meta[n] = ['kt-CO2', 'Annual total CO2 emissions for a given resource', 'unique']
-    r_envex = m.addVars(G_res, lb=-Tight, ub=Tight, name=n)
+    V_meta[n] = ['t-CO2', 'Annual total CO2 emissions for a given resource', 'unique']
+    r_envex = m.addVars(G_res, lb=-Bound, ub=Bound, name=n)
     
     # c = 'Emissions'
     # n = 'Emissions'
@@ -386,19 +392,19 @@ def model_objectives(m, Days, Hours, grid_import_a, grid_export_a, unit_size,
     f_CO2 = P['Farm', 'Export_CO2']
     n = 'Elec_envex'
     C_meta[n] = ['Annual CO2 emissions relative to Elec import and export', 83]
-    m.addConstr(r_envex['Elec'] == 1e-6*sum(sum(
+    m.addConstr(r_envex['Elec'] == 1e-3*sum(sum(
         Elec_CO2[d,h]*(grid_import['Elec',d,h] - f_CO2*grid_export['Elec',d,h]) 
         for h in Hours)*Frequence[d] for d in Days), n);
     
     for r in [r for r in G_res if r != 'Elec']:
         n=f'{r}_envex'
         C_meta[n] = [f'Annual CO2 emissions relative to {r} import and export', 84]
-        m.addConstr(r_envex[r] == 1e-3*P[r,'Emissions']*
+        m.addConstr(r_envex[r] == P[r,'Emissions']*
                     (grid_import_a[r] - f_CO2*grid_export_a[r]), n);
     
     n='Total_emissions'
     C_meta[n] = ['Instant CO2 emissions relative to Elec and Gas imports', 85]
-    m.addConstr(envex == sum(r_envex[r] for r in G_res) +
+    m.addConstr(envex == 1e-3*sum(r_envex[r] for r in G_res) +
                 1e-3*sum(unit_size[u]*P[u,'LCA']/P[u,'Life'] for u in Units) +
                 (1 - P['Physical','Manure_AD']*unit_install['AD'])*
                 P['Farm','Biomass_emissions'], n);
@@ -427,15 +433,10 @@ def extreme_case(m, unit_size):
             
         The GBOI, EH and GHP alone have to be big enough to answer this load.
     """
-    
-    P, _ = get_param('heat_load_param.csv')
 
-    b = 'build'
     n='Extreme_case'
     C_meta[n] = ['Extreme scenario, only GBOI, EH and GHP active', 12]
-    m.addConstr(P[b, 'Heated_area']*P[b, 'U_b']*
-                (P[b, 'T_min'] - P[b, 'T_ext_extreme']) ==
-                sum(unit_size[u] for u in ['GBOI', 'EH', 'GHP']), n);
+    m.addConstr(Q_extreme == sum(unit_size[u] for u in ['GBOI', 'EH', 'GHP']), n);
 
 
 
@@ -444,7 +445,7 @@ def extreme_case(m, unit_size):
 ##################################################################################################
 
 
-def set_objective(m, switcher, objective, Limit=None, relax=False):
+def set_objective(m, switcher, objective, Limit=None):
     
     print_highlight('Objective: ' + objective)
     set_objective = switcher.get(objective)
@@ -460,7 +461,7 @@ def print_highlight(string):
     print('******************************************************************')
     
     
-def run(objective, Limit=None, New_Pamar=None, New_Setting=None, relax=False):
+def run(objective, Limit=None, New_Pamar=None, New_Setting=None, Relax=False):
     """ Option to redefine the set of Parameters P and Settings S """
     if type(New_Pamar) != type(None):
         global P
@@ -480,7 +481,7 @@ def run(objective, Limit=None, New_Pamar=None, New_Setting=None, relax=False):
     cstr_unit_size(m, S, unit_size)
     # Model each unit
     model_units(m, Days, Hours, Periods, unit_prod, unit_cons, unit_size, 
-                unit_SOC, unit_charge, unit_discharge, unit_install)
+                unit_SOC, unit_charge, unit_discharge, unit_install, P)
     # Model mass and energy balance
     (grid_import_a, grid_export_a, grid_import, grid_export
      ) = model_energy_balance(m, Days, Hours, unit_cons, unit_prod, unit_install)
@@ -538,15 +539,19 @@ def run(objective, Limit=None, New_Pamar=None, New_Setting=None, relax=False):
         'totex_tax_co2': minimize_totex_tax_co2,
         }
     
-    set_objective(m, switcher, objective, Limit=Limit, relax=False)
+    set_objective(m, switcher, objective, Limit=Limit)
+    m.setParam("Presolve", 2)
+    m.setParam("NumericFocus", 2)
     m.optimize()
     
-    if relax:
+    
+    
+    if Relax:
         # Relaxion in case of infeasible model
         if m.status == GRB.INFEASIBLE:
             print_highlight('Model INFEASIBLE!!!')
             
-        if m.status == GRB.INFEASIBLE and relax:
+        if m.status == GRB.INFEASIBLE and Relax:
             m.feasRelaxS(1, False, False, True)
             m.optimize()
             print_highlight('Model INFEASIBLE!!!')  
@@ -557,163 +562,7 @@ def run(objective, Limit=None, New_Pamar=None, New_Setting=None, relax=False):
 ### END
 ##################################################################################################
 
-def get_expr_coos(expr, var_indices):
-    for i in range(expr.size()):
-        dvar = expr.getVar(i)
-        yield expr.getCoeff(i), var_indices[dvar]
-    
-def get_matrix_coos(m):
-    dvars = m.getVars()
-    constrs = m.getConstrs()
-    var_indices = {v: i for i, v in enumerate(dvars)}
-    for row_idx, constr in enumerate(constrs):
-        for coeff, col_idx in get_expr_coos(m.getRow(constr), var_indices):
-            yield row_idx, col_idx, coeff
-
-def funky(m):
-    import pandas as pd
-    dvars = m.getVars()
-    constrs = m.getConstrs()
-    
-    obj_coeffs = m.getAttr('Obj', dvars)
-    
-    var_index = {v: i for i, v in enumerate(dvars)}
-    constr_index= {c: i for i, c in enumerate(constrs)}
-
-    
-    nzs = pd.DataFrame(get_matrix_coos(m), columns=['row_idx', 'col_idx', 'coeff'])
-    return nzs
 
 
 
 
-
-
-"""
-    # l - 145
-    n = 'Building_T_daily_cycle'
-    C_meta[n] = ['Cycling constraint to carry over the temperature from one day to the next', 0]
-    m.addConstrs((build_T[d,0] == build_T[d,Hours[-1] + 1] for d in Days[:-1]), n);
-    n = 'Building_T_yearly_cycle'
-    C_meta[n] = ['Carry over the temperature from one modelling period to the next', 0]
-    m.addConstr((build_T[0,0] == build_T[Days[-1],Hours[-1] + 1]), n);
-"""
-
-###############################################################################
-### OLD - Heat cascade with water volume flows
-###############################################################################
-
-""" 
-def model_heating(m, Days, Hours, unit_cons, unit_prod, build_cons_Heat, v, unit_install):
-    g = 'General'
-    n = 'Heat_load_balance_AD'
-    C_meta[n] = ['Heat consumed by the AD relative to hot water supply and temperature delta', 0]
-    m.addConstrs((unit_cons['AD']['Heat',d,h] == P[g]['Cp_water']*(P['AD']['Th'] - P['AD']['Tc'])*
-                  (v['GBOI']['AD',d,h] + v['SOFC']['AD',d,h]) for d in Days for h in Hours), n);
-    
-    n = 'Heat_load_balance_build'
-    C_meta[n] = ['Heat consumed by the Building relative to hot water supply and temperature delta', 0]
-    m.addConstrs((build_cons_Heat[d,h] == P[g]['Cp_water']*(P['build']['Th'] - P['build']['Tc'])*
-                  (v['GBOI']['build',d,h] + v['SOFC']['build',d,h]) for d in Days for h in Hours), n);
-    
-    n = 'Heat_load_balance_heat_prod'
-    C_meta[n] = ['Heat produced by each unit relative to hot water supplied and temperature delta', 0]
-    m.addConstrs((unit_prod[u]['Heat',d,h] == 
-                  P[g]['Cp_water']*(v[u]['build',d,h]*(P['build']['Th'] - P['build']['Tc']) + 
-                                 v[u]['AD',d,h]*(P['AD']['Th'] - P['AD']['Tc'])) 
-                  for u in Heat_prod for d in Days for h in Hours), n);
-    
-"""
-
-
-###############################################################################
-### OLD - Farm thermodynamic model
-###############################################################################
-
-"""
-def next_day(d):
-    if not d == Days[-1]:
-        return d+1
-    else:
-        return 0
-
-# Farm temperature
-penalty = model_farm_temperature(m, Days, Hours, Ext_T, Irradiance, build_cons_Heat)
-
-def model_farm_temperature(m, Days, Hours, Ext_T, Irradiance, build_cons_Heat):
-    c = 'build'
-    n = 'build_T'
-    V_meta[n] = ['°C', 'Interior temperature of the building', 'time']
-    build_T = m.addVars(Days, Hours + [Hours[-1] + 1], lb=-Bound, ub=Bound, name=n)
-    
-    P_meta[c]['Gains_ppl'] = ['kW/m^2', 'Heat gains from people', 'calc']
-    C_meta['Gains_ppl'] = ['Building people gains', 4, 'P']
-    Gains_ppl = annual_to_daily(P[c]['Gains_ppl'], df_cons['Gains'].values)
-
-    P_meta[c]['Gains_elec'] = ['kW/m^2', 'Heat gains from appliances', 'calc']
-    C_meta['Gains_elec'] = ['Building electric gains', 3, 'P']
-    Gains_elec = P[c]['Elec_heat_frac'] * Build_cons_Elec / Heated_area
-
-    P_meta[c]['Gains_solar'] = ['kW/m^2', 'Heat gains from irradiation', 'calc']
-    C_meta['Gains_solar'] = ['Building solar gains', 3, 'P']
-    Gains_solar = P[c]['Building_absorptance'] * Irradiance
-    
-    P_meta[c]['Gains'] = ['kW/m^2', 'Sum of all heat gains', 'calc']
-    C_meta['Gains'] = ['Sum of all building heating gains', 3, 'P']
-    Gains = Gains_ppl + Gains_elec + Gains_solar
-    
-    n = 'Building_temperature'
-    C_meta[n] = ['Building Temperature change relative to External Temperature, Gains and Losses', 2]
-    m.addConstrs((
-        P[c]['C_b']*(build_T[d,h+1] - build_T[d,h]) == 
-        P[c]['U_b']*(Ext_T[d,h] - build_T[d,h]) + Gains[d,h] + 
-        build_cons_Heat[d,h]/Heated_area for d in Days for h in Hours), n);
-
-    n = 'Building_T_daily_cycle'
-    C_meta[n] = ['Cycling constraint for building temperature', 0]
-    m.addConstrs((build_T[d,Hours[-1] + 1] == build_T[next_day(d), 0] for d in Days), n);
-    n = 'Building_T_daily_init'
-    C_meta[n] = ['Fix the initial building temperature every day', 0]
-    m.addConstrs((build_T[d,0] ==  build_T[d,0] for d in Days), n);
-    
-    n = 'Building_temperature_min'
-    C_meta[n] = ['Lower limit on Building Temperature', 0]
-    m.addConstrs((build_T[d,h] >= P[c]['T_min'] for d in Days for h in Hours), n);
-    C_meta[n] = ['Upper limit on Building Temperature', 0]
-    n = 'Building_temperature_max'
-    m.addConstrs((build_T[d,h] <= P[c]['T_max'] for d in Days for h in Hours), n);
-    
-    n = 'penalty'
-    V_meta[n] = ['MCHF', 'Isntant Penalty for deviating from the comfort temperature', 'time']
-    penalty = m.addVars(Days, Hours, lb=0, ub=Bound, name=n)
-    n = 'penalty_a'
-    V_meta[n] = ['MCHF', 'Sum of Penalty for deviating from the comfort temperature', 'unique']
-    penalty_a = m.addVar(lb=0, ub=Bound, name=n)
-    
-    n = 'comfort_delta_T'
-    V_meta[n] = ['°C', 'Temerature difference between comfort and actual building temperature', 'time']
-    delta_T_1 = m.addVars(Days, Hours, lb=-Bound, ub=Bound, name=n)
-    n = 'Comfort_delta_T'
-    C_meta[n] = ['Temerature difference between comfort and actual building temperature', 0]
-    m.addConstrs((delta_T_1[d,h] == P[c]['T_amb'] - build_T[d,h] for d in Days for h in Hours), n);
-    
-    n = 'comfort_delta_T_abs'
-    V_meta[n] = ['°C', 'Absolute Temerature difference between comfort and actual building temperature',
-                 'time']
-    delta_T_abs = m.addVars(Days, Hours, lb=0, ub=Bound, name=n)
-    n = 'Comfort_delta_T_abs'
-    C_meta[n] = ['Absolute Temerature difference between comfort and actual building temperature', 'time', 0]
-    m.addConstrs((delta_T_abs[d,h] == gp.abs_(delta_T_1[d,h]) for d in Days for h in Hours), n);
-    
-    n = 'comfort_T_penalty'
-    C_meta[n] = ['Instant penalty value relative to temperature difference and penalty factor', 0]
-    m.addConstrs((penalty[d,h] == delta_T_abs[d,h]*3.3013330297486014e-05 for d in Days for h in Hours), n);
-    
-    n = 'comfort_T_penalty_tot'
-    C_meta[n] = ['Sum of penalty value relative to instant penalty', 0]
-    m.addConstr(penalty_a == penalty.sum('*'), n);
-    
-    return penalty
-
-
-"""

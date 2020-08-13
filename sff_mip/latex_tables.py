@@ -18,8 +18,56 @@ P, P_meta = data.get_param('parameters.csv')
 P_heat, P_heat_meta = data.get_param('heat_load_param.csv')
 P_eco, P_eco_meta = data.get_param('cost_param.csv')
 
-# P = P.append(P_eco)
-# P_meta = P_meta.append(P_eco_meta)
+
+# ### Palezieux parameters injection
+# P , _ = data.get_all_param()
+# P_heat_load, _ = data.get_param('heat_load_param.csv')
+# P = P.append(P_heat_load)
+# P_new, _ = data.get_param('palezieux_param.csv')
+
+# # Parma pre-calculation
+#  # Inside write_inputs => calc_param.csv
+# f = 'Farm'
+# P[f, 'cons_Elec_annual'] = 1e3*P_new[f, 'cons_Elec_annual']
+# P[f, 'cons_Heat_annual'] = 1e3*(P_new[f, 'cons_heat'] + P_new[f, 'export_heat'])
+# P[f, 'Biomass_prod'] = 1e6*P_new[f, 'Biomass']/8760
+# A, _ = data.get_param('animals.csv')
+# P[f, 'Biomass_emissions'] = 1e-6*(P_new[f, 'Cows']*
+#     A['Dairy_cows', 'Manure']*P['Physical', 'Manure_emissions'])
+#  # Inside heal_loads_cals => heat_load_param.csv
+# P['AD', 'LSU'] = P_new[f, 'Cows']
+# P['build', 'Heated_area'] = P_new[f, 'A_heated']
+
+# # Remaining Parameters
+#  # Inside parameters.csv
+# u = 'AD'
+# P[u, 'Heat_cons'] = P_new[u, 'cons_heat']
+# P[u, 'Elec_cons'] = P_new[u, 'cons_elec']
+# P_eco[u, 'Cost_multiplier'] = 1
+# P_eco[u, 'Cost_per_size'] = 1e3*0.9*P_new[u, 'cost_inv']/P_new[u, 'Capacity']
+# P_eco[u, 'Cost_per_unit'] = 1e3*0.1*P_new[u, 'cost_inv']
+# P_eco[u, 'Min_size'] = 100
+# P_eco[u, 'Ref_size'] = P_new[u, 'Capacity']  
+
+# u = 'ICE'
+# P[u, 'Eff_elec'] = P_new[u, 'Eff_elec']
+# P[u, 'Eff_thermal'] = P_new[u, 'Eff_thermal']
+# P_eco[u, 'Cost_per_size'] = 0.9*P_new[u, 'cost_inv']/P_new[u, 'Capacity']
+# P_eco[u, 'Cost_per_unit'] = 0.1*P_new[u, 'cost_inv']
+# P_eco[u, 'Maintenance'] = P_new[u, 'cost_maint_net']/P_new[u, 'cost_inv']
+# P_eco[u, 'Min_size'] = int(P_new[u, 'Capacity']/3)
+# P_eco[u, 'Ref_size'] = P_new[u, 'Capacity']
+
+# u = 'PV'
+# P[u, 'max_utilisation'] = 1
+# P['Farm', 'Ground_area'] = P_new['Farm', 'A_ground']
+# P_eco[u, 'Cost_multiplier'] = 1
+# P_eco[u, 'Cost_per_size'] = 0.9*P_new[u, 'cost_inv']/P_new[u, 'Capacity']
+# P_eco[u, 'Cost_per_unit'] = 0.1*P_new[u, 'cost_inv']
+# P_eco[u, 'Min_size'] = 100
+# P_eco[u, 'Ref_size'] = P_new[u, 'Capacity']
+
+
 
 # Standard symbols for cost parameter
 Symbols = {
@@ -127,7 +175,6 @@ def latex_source(s):
 
 df['Latex_symbol'] = df['Symbol'].apply(lambda x: f'${x}$')
 
-
 df['Latex_value'] = df['Value'].apply(lambda x: latex_value(x))
 
 df['Latex_unit'] = df['Units'].apply(lambda x: latex_units(x))
@@ -153,3 +200,57 @@ df2 = df2.reindex(columns= ['Latex_name', 'Latex_symbol', 'Latex_value', 'Latex_
                           'Symbol', 'Uncertainty'])
 
 df2.to_csv(os.path.join('inputs', 'latex_param_eco.csv'))
+
+
+
+def sankey_drawings():
+    """ Draw sanky diagrams for the figures """
+    from matplotlib import pyplot as plt
+    from matplotlib.sankey import Sankey
+    
+    fig = plt.figure(figsize=(12, 8))
+    ax = fig.add_subplot(1, 1, 1, xticks=[], yticks=[],
+                         title="Statistics from the 2nd edition of\nfrom Audio Signal Processing for Music Applications by Stanford University\nand Universitat Pompeu Fabra of Barcelona on Coursera (Jan. 2016)")
+    learners = [14460, 9720, 7047, 3059, 2149, 351]
+    labels = ["Total learners joined", "Learners that visited the course", "Learners that watched a lecture",
+             "Learners that browsed the forums", "Learners that submitted an exercise", 
+              "Learners that obtained a grade >70%\n(got a Statement of Accomplishment)"]
+    colors = ["#FF0000", "#FF4000", "#FF8000", "#FFBF00", "#FFFF00"]
+    
+    sankey = Sankey(ax=ax, scale=0.0015, offset=0.3)
+    for input_learner, output_learner, label, prior, color in zip(learners[:-1], learners[1:], 
+                                                                  labels, [None, 0, 1, 2, 3],
+                                                                 colors):
+        if prior != 3:
+            sankey.add(flows=[input_learner, -output_learner, output_learner - input_learner],
+                   orientations=[0, 0, 1],
+                   patchlabel=label,
+                   labels=['', None, 'quit'],
+                  prior=prior,
+                  connect=(1, 0),
+                   pathlengths=[0, 0, 2],
+                  trunklength=10.,
+                  rotation=0,
+                      facecolor=color)
+        else:
+            sankey.add(flows=[input_learner, -output_learner, output_learner - input_learner],
+                   orientations=[0, 0, 1],
+                   patchlabel=label,
+                   labels=['', labels[-1], 'quit'],
+                  prior=prior,
+                  connect=(1, 0),
+                   pathlengths=[0, 0, 10],
+                  trunklength=10.,
+                  rotation=0,
+                      facecolor=color)
+    diagrams = sankey.finish()
+    for diagram in diagrams:
+        diagram.text.set_fontweight('bold')
+        diagram.text.set_fontsize('10')
+        for text in diagram.texts:
+            text.set_fontsize('10')
+    ylim = plt.ylim()
+    plt.ylim(ylim[0]*1.05, ylim[1])
+    
+
+    

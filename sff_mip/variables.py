@@ -16,7 +16,7 @@
 # External modules
 from gurobipy import GRB
 # Internal modules
-from global_set import (Units, U_prod, U_cons, Units_storage, G_res, Resources)
+from global_set import (Units, U_prod, U_cons, Units_storage)
 
         
 def time_steps(*args):

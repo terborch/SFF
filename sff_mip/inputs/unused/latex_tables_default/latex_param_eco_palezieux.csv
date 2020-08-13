@@ -1,0 +1,28 @@
+Category,Name,Latex_name,Latex_symbol,Latex_value,Latex_unit,Latex_source,Value,Units,Source,Description,Symbol,Uncertainty
+AD,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$1$,$-$,\cite{palezieux},1,-,Nils PdS,Cost multiplier for Switzerland,,0.5
+AD,Cost_per_size,Specific investment cost,$c^{size}_u$,$6.476427$,$kCHF/kW$,\cite{palezieux},6.47642679900744,kCHF/kW,Nils PdS,Cost retalive to installed capacity,,0
+AD,Cost_per_unit,Fixed investment cost,$c^{fixe}_u$,$290$,$kCHF$,\cite{palezieux},290,kCHF,Nils PdS,Cost per unit installed,,0
+AD,LCA,LCA emissions,"$m^{LCA}_{CO_2,u}$",$0.02$,$tCO_2/kW$,Default,0.02,tCO2/kW,Default,LCA emissions from construction,,0
+AD,Life,Life,$n_u$,$20$,$Years$,Default,20,Years,Nils PdS,Lifetime,,0
+AD,Maintenance,Maintenance,$c^{maint}_u$,$0.1$,$-$,Default,0.1,-,Nils PdS,Yearly maintenance cost in percent CAPEX,,0
+AD,Min_size,Smallest size,$S^{min}_u$,$100$,$kW$,Setting,100,kW,dobbelaere 2015,Smallest possible installed capacity,,0
+AD,Ref_size,Reference size,$S^{ref}_u$,$403$,$kW$,\cite{palezieux},403,kW,Nils PdS,Reference size for which costs are calculated,,0
+ICE,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$1$,$-$,\cite{Palezieux},1,-,Samuel PdM,Cost multiplier,,0.5
+ICE,Cost_per_size,Specific investment cost,$c^{size}_u$,$1.8$,$kCHF/kW$,\cite{Palezieux},1.8,kCHF/kW,Samuel PdM,Cost retalive to installed capacity,,0
+ICE,Cost_per_unit,Fixed investment cost,$c^{fixe}_u$,$30$,$kCHF$,\cite{Palezieux},30,kCHF,Samuel PdM,Cost per unit installed,,0
+ICE,LCA,LCA emissions,"$m^{LCA}_{CO_2,u}$",$0.02$,$tCO_2/kW$,Default,0.02,tCO2/kW,Default,LCA emissions from construction,,0
+ICE,Life,Life,$n_u$,$20$,$Years$,Default,20,Years,Samuel PdM,Lifetime,,0
+ICE,Maintenance,Maintenance,$c^{maint}_u$,$0.116667$,$-$,\cite{Palezieux},0.116666666666667,-,Palezieux,Yearly maintenance cost in percent CAPEX,,0
+ICE,Min_size,Smallest size,$S^{min}_u$,$50$,$kW$,Setting,50,kW,Setting,Smallest possible installed capacity,,0
+ICE,Ref_size,Reference size,$S^{ref}_u$,$150$,$kW$,\cite{Palezieux},150,kW,Samuel PdM,Reference size for which costs are calculated,,0
+PV,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$1$,$-$,\cite{Palezieux},1,-,Paul PHD,Cost multiplier,,0.5
+PV,Cost_per_size,Specific investment cost,$c^{size}_u$,$1.988959$,$kCHF/kW$,\cite{Palezieux},1.9889592760181,kCHF/kW,Paul PHD,Cost retalive to installed capacity,,0
+PV,Cost_per_unit,Fixed investment cost,$c^{fixe}_u$,$122.1$,$kCHF$,\cite{Palezieux},122.1,kCHF,Paul PHD,Cost per unit installed,,0
+PV,LCA,LCA emissions,"$m^{LCA}_{CO_2,u}$",$0.02$,$tCO_2/kW$,Default,0.02,tCO2/kW,Default,LCA emissions from construction,,0
+PV,Life,Life,$n_u$,$20$,$Years$,Default,20,Years,Paul PHD,Lifetime,,0
+PV,Maintenance,Maintenance,$c^{maint}_u$,$0.02$,$-$,Default,0.02,-,Paul PHD,Yearly maintenance cost in percent CAPEX,,0
+PV,Min_size,Smallest size,$S^{min}_u$,$100$,$kW$,Setting,100,kW,Setting,Smallest possible installed capacity,,0
+PV,Ref_size,Reference size,$S^{ref}_u$,$552.5$,$kW$,\cite{Palezieux},552.5,kW,Paul PHD,Reference size for which costs are calculated,,0
+Elec,Export_cost,Selling price,$c^{sell}_{Elec}$,$0.1175$,$CHF/kWh$,Default,0.1175,CHF/kWh,vese.ch,Price at which Elec is sold,,0.5
+Elec,Import_cost,Purchase cost,$c^{buy}_{Elec}$,$0.2107$,$CHF/kWh$,Default,0.2107,CHF/kWh,OFS,Cost to import Elec ,,0.15
+Elec,Emissions,Associated emissions,"$m^{buy}_{CO_2\,Elec}$",$0.2$,$tCO_2/MWh$,Default,0.2,tCO2/MWh,vuarnoz 2018,Emissions from importing Electricity in Switzerland,,0

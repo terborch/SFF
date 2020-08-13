@@ -1,0 +1,53 @@
+,,Full Name,Symbol,Variation,Minima,Maxima
+AD,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$50\%$,$2.7$,$0.9$
+AD,Eff,Efficiency,$\eta_{AD}$,$10\%$,$0.41$,$0.33$
+AD,Elec_cons,Electric consumption,$f_{AD_{EL/BG}}$,$10\%$,$0.0088$,$0.0072$
+AD,Heat_cons,Heat consumption,$f_{AD_{Q/BG}}$,$10\%$,$0.35$,$0.29$
+AHP,COP,Coefficient of Performance,$COP_{AHP}$,$20\%$,$3.6$,$2.4$
+AHP,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$50\%$,$2.7$,$0.9$
+BAT,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$50\%$,$2$,$0.67$
+BAT,Eff,Efficiency,$\eta{BAT}$,$10\%$,$0.99$,$0.81$
+BAT,Self_discharge,Self dischanrge rate,$r_{BAT_{sd}}$,$10\%$,$0.0033$,$0.0027$
+BS,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$50\%$,$7.8$,$2.6$
+BS,Elec_fan,Electric consumption,$f^{fan}_{BS_{EL/BG}}$,$10\%$,$0.07$,$0.057$
+BS,Self_discharge,Self dischanrge rate,$r_{BS_{sd}}$,$10\%$,$0.00046$,$0.00037$
+BU,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$50\%$,$7.6$,$2.5$
+BU,Eff,Efficiency,$\eta_{u}$,$10\%$,$1$,$0.85$
+BU,Elec_comp,Electric consumption,$f^{comp}_{u_{EL/BM}}$,$10\%$,$0.05$,$0.041$
+CGT,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$50\%$,$2.7$,$0.9$
+CGT,Elec_comp,Electric consumption,$f^{comp}_{CGT_{EL/NG}}$,$10\%$,$0.022$,$0.018$
+EH,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$50\%$,$1.5$,$0.5$
+EH,Eff,Efficiency,$\eta_{EH}$,$0\%$,$0.99$,$0.99$
+GBOI,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$50\%$,$2.7$,$0.9$
+GBOI,Eff,Efficiency,$\eta_{GBOI}$,$0\%$,$0.98$,$0.98$
+GCSOFC,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$50\%$,$1.5$,$0.5$
+GCSOFC,Elec_cons,Electric consumption,$f_{GCSOFC_{EL/BG}}$,$10\%$,$0.017$,$0.013$
+GFS,Conversion_cost,Conversion cost,$c^{convert}_{GFS}$,$50\%$,$72$,$24$
+GFS,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$50\%$,$2.7$,$0.9$
+GFS,Elec_comp,Electric consumption compressor,$f^{comp}_{GFS_{EL/NG}}$,$10\%$,$0.033$,$0.027$
+GFS,Elec_dry,Electric consumption dryer,$f^{dry}_{GFS_{EL/BG}}$,$10\%$,$0.0083$,$0.0067$
+GHP,COP,Coefficient of Performance,$COP_{GHP}$,$20\%$,$4.8$,$3.2$
+GHP,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$50\%$,$1.5$,$0.5$
+GI,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$50\%$,$1.5$,$0.5$
+ICE,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$50\%$,$1.5$,$0.5$
+ICE,Eff_elec,Electric efficiency,"$\eta_{ICE, EL}$",$10\%$,$0.33$,$0.27$
+ICE,Eff_thermal,Thermal efficiency,"$\eta_{ICE, Q}$",$10\%$,$0.83$,$0.67$
+PV,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$50\%$,$2$,$0.67$
+PV,Eff,Efficiency,$\eta_{PV}$,$20\%$,$0.17$,$0.11$
+PV,max_utilisation,Available area,$f_{PV_{A_{PV}/A}}$,$20\%$,$0.6$,$0.4$
+PV,P_density,Energy density,$\rho_{PV}$,$10\%$,$0.22$,$0.18$
+SOFC,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$50\%$,$2.7$,$0.9$
+SOFC,Eff_elec_biogas,Electric efficiency for BG,"$\eta_{SOFC, EL-BG}$",$10\%$,$0.55$,$0.45$
+SOFC,Eff_elec_gas,Electric efficiency for NG,"$\eta_{SOFC, EL-NG}$",$10\%$,$0.66$,$0.54$
+SOFC,Eff_thermal,Thermal efficiency,"$\eta_{SOFC, Q}$",$10\%$,$0.99$,$0.81$
+WBOI,Cost_multiplier,Cost multiplier,$c^{mult}_u$,$50\%$,$2.7$,$0.9$
+WBOI,Eff,Efficiency,$\eta_{WBOI}$,$10\%$,$0.94$,$0.76$
+Farm,i,Annual interest rate,$i$,$10\%$,$0.028$,$0.022$
+Physical,Manure_AD,Manure emissions AD reduction,$f^{AD}_{CO_2/manure}$,$30\%$,$0.77$,$0.41$
+Physical,Manure_emissions,Manure emissions untreated,$f_{CO_2/manure}$,$30\%$,$1.4e+02$,$77$
+BM,Export_cost,Selling price,$c^{sell}_{BM}$,$20\%$,$0.094$,$0.063$
+Diesel,Import_cost,Purchase cost,$c^{buy}_{Diesel}$,$20\%$,$0.18$,$0.12$
+Elec,Export_cost,Selling price,$c^{sell}_{Elec}$,$50\%$,$0.18$,$0.059$
+Elec,Import_cost,Purchase cost,$c^{buy}_{Elec}$,$10\%$,$0.23$,$0.19$
+Gas,Import_cost,Purchase cost,$c^{buy}_{Gas}$,$10\%$,$0.11$,$0.088$
+Wood,Import_cost,Purchase cost,$c^{buy}_{Wood}$,$10\%$,$0.082$,$0.067$

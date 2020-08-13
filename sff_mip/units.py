@@ -3,8 +3,7 @@
 """
 
 # Internal modules
-from read_inputs import P, C_meta, Bound, Time_period_map
-
+from read_inputs import C_meta, Bound, Time_period_map
 
 def t(*args):
     """ Given a resource (optional) and a Period key return the corresponding
@@ -21,7 +20,7 @@ def t(*args):
 ###############################################################################
 
 
-def gboi(m, Days, Hours, unit_prod, unit_cons, unit_size):
+def gboi(m, Days, Hours, unit_prod, unit_cons, unit_size, P):
     """ LP model of a Natural Gas Boiler efficiency is the same for any fuel """
     n = 'GBOI_production'
     C_meta[n] = ['Heat produced relative fuel consumed and Efficiency', 14]
@@ -40,7 +39,7 @@ def gboi(m, Days, Hours, unit_prod, unit_cons, unit_size):
 ###############################################################################
 
 
-def wboi(m, Days, Hours, unit_prod, unit_cons, unit_size):
+def wboi(m, Days, Hours, unit_prod, unit_cons, unit_size, P):
     """ LP model of a Wood Boiler """
     n = 'WBOI_production'
     C_meta[n] = ['Heat produced relative to consumed and Efficiency', 16]
@@ -58,7 +57,7 @@ def wboi(m, Days, Hours, unit_prod, unit_cons, unit_size):
 ###############################################################################
 
 
-def ahp(m, Days, Hours, unit_prod, unit_cons, unit_size):
+def ahp(m, Days, Hours, unit_prod, unit_cons, unit_size, P):
     """ LP model of a Air Heat Pump with constant efficiency
         and fixed operating point. Domestic unit operating between external and
         internal air.
@@ -80,7 +79,7 @@ def ahp(m, Days, Hours, unit_prod, unit_cons, unit_size):
 ###############################################################################
 
 
-def ghp(m, Days, Hours, unit_prod, unit_cons, unit_size):
+def ghp(m, Days, Hours, unit_prod, unit_cons, unit_size, P):
     """ LP model of a Gothermal Heat Pump with constant efficiency
         and fixed operating point. Disctric unit for a small housing apartement
         operating with a closed loop ground water heating system. Aprox.
@@ -104,7 +103,7 @@ def ghp(m, Days, Hours, unit_prod, unit_cons, unit_size):
 ###############################################################################
     
 
-def eh(m, Days, Hours, unit_prod, unit_cons, unit_size):
+def eh(m, Days, Hours, unit_prod, unit_cons, unit_size, P):
     """ LP model of a Electric Heater """
     n = 'EH_production'
     C_meta[n] = ['Heat produced relative to Elec consumed and Efficiency', 22]
@@ -122,7 +121,7 @@ def eh(m, Days, Hours, unit_prod, unit_cons, unit_size):
 ###############################################################################
 
 
-def sofc(m, Days, Hours, unit_prod, unit_cons, unit_size):
+def sofc(m, Days, Hours, unit_prod, unit_cons, unit_size, P):
     """ LP model of a Solid Oxyde Fuel Cell (SOFC) with constant efficiency
         and fixed operating point. Two efficiencies, one for NG amd BM and 
         another lower for BG because of CO2 content. 
@@ -155,7 +154,7 @@ def sofc(m, Days, Hours, unit_prod, unit_cons, unit_size):
 ###############################################################################
 
 
-def ice(m, Days, Hours, unit_prod, unit_cons, unit_size):
+def ice(m, Days, Hours, unit_prod, unit_cons, unit_size, P):
     """ MILP model of a Internal Combustion Engine (ICE) with constant efficiency
         and fixed operating point. 
     """
@@ -183,7 +182,7 @@ def ice(m, Days, Hours, unit_prod, unit_cons, unit_size):
 ###############################################################################
 
 
-def ad(m, Days, Hours, unit_prod, unit_cons, unit_size, AD_cons_Heat, unit_install):
+def ad(m, Days, Hours, unit_prod, unit_cons, unit_size, AD_cons_Heat, unit_install, P):
     """ MILP model of an AD with constant efficiency. Startup time is neglected.
         The AD consumes all biomass available if installed. The heat load profile
         pre-calculated.
@@ -220,18 +219,18 @@ def ad(m, Days, Hours, unit_prod, unit_cons, unit_size, AD_cons_Heat, unit_insta
 ###############################################################################
 
 
-def pv(m, Days, Hours, unit_prod, unit_size, Irradiance):
+def pv(m, Days, Hours, unit_prod, unit_size, Irradiance, P):
     """ LP model of PV panels. The low efficiency account for sub optimal
         orientation. """
-    c = 'PV'
+    u = 'PV'
     n = 'PV_production'
     C_meta[n] = ['Elec produced relative to Irradiance eff and surface', 34]
-    m.addConstrs((unit_prod['Elec',d,h] == Irradiance[d,h]*P[c,'Eff']*unit_size/
-                  P[c,'P_density'] for d in Days for h in Hours), n);
+    m.addConstrs((unit_prod['Elec',d,h] == Irradiance[d,h]*P[u,'Eff']*unit_size/
+                  P[u,'P_density'] for d in Days for h in Hours), n);
     
     n = 'PV_roof_size'
     C_meta[n] = ['Upper limit on Capacity relative to Available area', 35]
-    m.addConstr(unit_size <= P[c,'P_density']*P['Farm','Ground_area']*P[c,'max_utilisation'], n);    
+    m.addConstr(unit_size <= P[u,'P_density']*P['Farm','Ground_area']*P[u,'max_utilisation'], n);    
 
 
 
@@ -242,7 +241,7 @@ def pv(m, Days, Hours, unit_prod, unit_size, Irradiance):
 
 def bat(m, Periods, Days, Hours, 
         unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge,
-        unit_install):
+        unit_install, P):
     """ MILP model of a battery
         Charge and discharge efficiency follows Dirk Lauinge MA thesis
     """
@@ -264,14 +263,16 @@ def bat(m, Periods, Days, Hours,
     m.addConstr((unit_SOC[0] == unit_SOC[Periods[-1]]), n);
     n = f'{u}_charge_discharge'
     C_meta[n] = ['Prevent the unit from simulateneously charging and discharging', 38]
-    m.addConstrs((unit_charge[d,h] + unit_discharge[d,h] <= unit_install 
+    m.addConstrs((unit_charge[d,h] + unit_discharge[d,h] <= 1 
                   for d in Days for h in Hours), n);
     n = f'{u}_charge'
     C_meta[n] = ['M constraint to link IS Charging with Elec consumption', 39]
-    m.addConstrs((unit_charge[d,h]*Bound >= unit_cons[r,d,h] for d in Days for h in Hours), n);
+    m.addConstrs((unit_charge[d,h]*Bound >= unit_cons[r,d,h] 
+                  for d in Days for h in Hours), n);
     n = f'{u}_discharge'
     C_meta[n] = ['M constraint to link IS Discharging with Elec production', 40]
-    m.addConstrs((unit_discharge[d,h]*Bound >= unit_prod[r,d,h] for d in Days for h in Hours), n);
+    m.addConstrs((unit_discharge[d,h]*Bound >= unit_prod[r,d,h] 
+                  for d in Days for h in Hours), n);
     
     n = f'{u}_size_SOC'
     C_meta[n] = ['Upper limit on the SOC relative to the Installed Capacity', 41]
@@ -292,7 +293,7 @@ def bat(m, Periods, Days, Hours,
 
 def cgt(m, Periods, Days, Hours, 
         unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge,
-        unit_install):
+        unit_install, P):
     """ MILP model of Compressed Gas Tank for storing Natural Gas. No losses are modeled.
         The tank only accepts Biogas and assumes the energy consumption and volume takeup
         to be equivalent between 1m^3 of Methane and 1m^3 of CO2
@@ -316,14 +317,16 @@ def cgt(m, Periods, Days, Hours,
     m.addConstr((unit_SOC[0] == unit_SOC[Periods[-1]]), n);
     n = f'{u}_charge_discharge'
     C_meta[n] = ['Prevent the unit from simulateneously charging and discharging', 38]
-    m.addConstrs((unit_charge[d,h] + unit_discharge[d,h] <= unit_install 
+    m.addConstrs((unit_charge[d,h] + unit_discharge[d,h] <= 1 
                   for d in Days for h in Hours), n);
     n = f'{u}_charge'
     C_meta[n] = ['M constraint to link IS Charging with BM consumption', 39]
-    m.addConstrs((unit_charge[d,h]*Bound >= unit_cons[r,d,h] for d in Days for h in Hours), n);
+    m.addConstrs((unit_charge[d,h]*Bound >= unit_cons[r,d,h] 
+                  for d in Days for h in Hours), n);
     n = f'{u}_discharge'
     C_meta[n] = ['M constraint to link IS Discharging with BM production', 40]
-    m.addConstrs((unit_discharge[d,h]*Bound >= unit_prod[r,d,h] for d in Days for h in Hours), n);
+    m.addConstrs((unit_discharge[d,h]*Bound >= unit_prod[r,d,h] 
+                  for d in Days for h in Hours), n);
     
     n = f'{u}_size_SOC'
     C_meta[n] = ['Upper limit on the SOC relative to the Installed Capacity', 41]
@@ -343,7 +346,7 @@ def cgt(m, Periods, Days, Hours,
 
 def bs(m, Periods, Days, Hours, 
         unit_prod, unit_cons, unit_size, unit_SOC, unit_charge, unit_discharge, 
-        unit_install):
+        unit_install, P):
     """ MILP model of Biogas Storage for storing raw biogas. The biogas is 
         stored close to atmospheric pressure in an expandable vessel. 1% loss 
         of stored biogas per day.
@@ -367,14 +370,16 @@ def bs(m, Periods, Days, Hours,
     m.addConstr((unit_SOC[0] == unit_SOC[Periods[-1]]), n);
     n = f'{u}_charge_discharge'
     C_meta[n] = ['Prevent the unit from simulateneously charging and discharging', 38]
-    m.addConstrs((unit_charge[d,h] + unit_discharge[d,h] <= unit_install 
+    m.addConstrs((unit_charge[d,h] + unit_discharge[d,h] <= 1 
                   for d in Days for h in Hours), n);
     n = f'{u}_charge'
     C_meta[n] = ['M constraint to link IS Charging with BM consumption', 39]
-    m.addConstrs((unit_charge[d,h]*Bound >= unit_cons[r,d,h] for d in Days for h in Hours), n);
+    m.addConstrs((unit_charge[d,h]*Bound >= unit_cons[r,d,h] 
+                  for d in Days for h in Hours), n);
     n = f'{u}_discharge'
     C_meta[n] = ['M constraint to link IS Discharging with BM production', 40]
-    m.addConstrs((unit_discharge[d,h]*Bound >= unit_prod[r,d,h] for d in Days for h in Hours), n);
+    m.addConstrs((unit_discharge[d,h]*Bound >= unit_prod[r,d,h] 
+                  for d in Days for h in Hours), n);
     
     n = f'{u}_size_SOC'
     C_meta[n] = ['Upper limit on the SOC relative to the Installed Capacity', 41]
@@ -392,7 +397,7 @@ def bs(m, Periods, Days, Hours,
 ### Biogas cleaning for SOFC - Utility
 ###############################################################################
 
-def gcsofc(m, Days, Hours, unit_prod, unit_cons, unit_size):
+def gcsofc(m, Days, Hours, unit_prod, unit_cons, unit_size, P):
     """ MILP model of a Gas Cleaning installation for SOFC applications. The
         installation is a stack of filters to be replaced regularly, losses
         represent the electricity consumed by the fan and the chiller (drying).
@@ -422,7 +427,7 @@ def gcsofc(m, Days, Hours, unit_prod, unit_cons, unit_size):
 ### Biogas Upgrading - Utility
 ###############################################################################
 
-def bu(m, Days, Hours, unit_prod, unit_cons, unit_size):
+def bu(m, Days, Hours, unit_prod, unit_cons, unit_size, P):
     """ LP model of a Biogas Upgrading system using membranes. Product has a 95
         to 99% methane content and is called biomethane (BM). Electricity is
         consumed for compression. Most of the metahen is recodevers (some losses)
@@ -450,7 +455,7 @@ def bu(m, Days, Hours, unit_prod, unit_cons, unit_size):
 ###############################################################################
 
 
-def gfs(m, Days, Hours, unit_prod, unit_cons, unit_size, U_prod):
+def gfs(m, Days, Hours, unit_prod, unit_cons, unit_size, U_prod, P):
     """ MILP model of Gas Fueling Station for the slow refueling of utility
         vehicles. Takes Natural Gas or Biomethane as inputs. No gas is stored.
         The gas is dried and compressed to 3600 PSI. The vehicles are refueld
@@ -481,7 +486,7 @@ def gfs(m, Days, Hours, unit_prod, unit_cons, unit_size, U_prod):
 ### Grid Injection (of biomethane) - Utility
 ###############################################################################
 
-def gi(m, Days, Hours, unit_prod, unit_cons, unit_size):
+def gi(m, Days, Hours, unit_prod, unit_cons, unit_size, P):
     """ LP model of a biomethane grid injection system. For injection into the
         swiss distribution grid (5 bar). The biomethane from the upgrading unit
         is already at 5 to 7 bar. No further compression is considered.
@@ -506,86 +511,3 @@ def gi(m, Days, Hours, unit_prod, unit_cons, unit_size):
 
 
 
-
-###############################################################################
-### Anaerobic Digester
-###############################################################################
-
-"""
-def ad(m, Days, Hours, unit_prod, unit_cons, unit_size, unit_T, unit_install, Ext_T, Irradiance):
-    
-    c, g = 'AD', 'General'
-    n = 'AD_production'
-    C_meta[n] = ['Biogas produced relative to Biomass consumed and Efficiency', 0]
-    m.addConstrs((unit_prod['Biogas',d,h] == 
-                  unit_cons['Biomass',d,h]*P[c]['Eff'] for d in Days for h in Hours), n);
-    
-    n = 'AD_elec_cons'
-    C_meta[n] = ['Elec consumed relative to Biogas produced and Elec consumption factor', 0]
-    m.addConstrs((unit_cons['Elec',d,h] == 
-                  unit_prod['Biogas',d,h]*P[c]['Elec_cons'] for d in Days for h in Hours), n);
-    
-    n = 'AD_size'
-    C_meta[n] = ['Upper limit on Biogas produced relative to Installed capacity', 0]
-    m.addConstrs((unit_prod['Biogas',d,h] <= unit_size for d in Days for h in Hours), n);
-
-    # Thermodynamics parameters
-    n = 'U'
-    P_meta[c][n] = ['kW/°C', 'AD heat conductance', 'calc']
-    P[c][n] = P[c]['Cap_area']*P[c]['U_cap']*(1 + P[c]['U_wall'])
-    
-    n = 'C'
-    P_meta[c][n] = ['kWh/°C', 'Heat capacity of the AD', 'calc']
-    P[c][n] = P['General']['Cp_water']*P[c]['Sludge_volume'] + P['build']['C_b']*P[c]['Ground_area']
-    
-    P_meta[c]['Gains_solar'] = ['kW', 'Heat gains from irradiation', 'calc']
-    Gains_solar_AD = P[c]['Cap_abs']*P[c]['Ground_area']*Irradiance
-    
-    # Thermodynamic variables   
-    n = 'heat_loss_biomass'
-    V_meta[n] = ['kW', 'Heat loss from biomass input', 'time']
-    heat_loss_biomass = m.addVars(Days, Hours, lb=0, ub=Bound, name= n)
-
-    # Thermodynamic constraints 
-    C_meta[n] = ['Heat losses relative to Biomass consumption and mean external temperature', 0]
-    m.addConstrs((heat_loss_biomass[d,h] == ((unit_cons['Biomass',d,h]/P[c]['Manure_HHV_dry'])/
-                  (1 - P[c]['Biomass_water'])/1000)*P[g]['Cp_water']*(P[c]['T_mean'] - P[g]['Temp_ext_mean']) 
-                  for d in Days for h in Hours), n);
-    
-    n = 'AD_temperature'
-    C_meta[n] = ['AD Temperature change relative to External Temperature, Gains and Losses', 0]
-    m.addConstrs((P[c]['C']*(unit_T[d,h+1] - unit_T[d,h])/dt == P[c]['U']*(Ext_T[d,h] - unit_T[(d,h)]) +
-                  Gains_solar_AD[d,h] + unit_cons['Elec',d,h] - heat_loss_biomass[d,h] + 
-                  unit_cons['Heat',d,h] for d in Days for h in Hours), n);
-    
-    n = 'AD_T_daily_cycle'
-    C_meta[n] = ['Cycling constraint for the AD temperature', 0]
-    m.addConstrs((unit_T[d,Hours[-1]] == unit_T[d,Hours[-1] + 1] for d in Days), n);
-    n = 'AD_T_daily_init'
-    C_meta[n] = ['Fix the initial AD temperature every day', 0]
-    m.addConstrs((unit_T[d,0] == P[c]['T_mean'] for d in Days), n);
-    
-    # Add temperature constraints only if the the unit is installed
-    V_meta[n] = ['°C', 'Minimum sludge temperature', 'unique']
-    min_T_AD = m.addVar(lb=-Bound, ub=Bound, name='min_T_AD')
-    V_meta[n] = ['°C', 'Maximum sludge temperature', 'unique']
-    max_T_AD = m.addVar(lb=-Bound, ub=Bound, name='max_T_AD')
-    
-    n = 'AD_temperature_constraint'
-    C_meta[n] = ['Limit AD Temperature only if AD is installed', 0]
-    m.addGenConstrIndicator(unit_install, True, min_T_AD == P[c]['T_min'])
-    m.addGenConstrIndicator(unit_install, True, max_T_AD == P[c]['T_max'])
-    
-    m.addConstrs((unit_T[d,h] >= min_T_AD for d in Days for h in Hours), n);
-    m.addConstrs((unit_T[d,h] <= max_T_AD for d in Days for h in Hours), n);
-"""
-
-
-# Daily Battery
-
-    # n = f'{u}_daily_cycle'
-    # C_meta[n] = ['Cycling constraint on the battery SOC', 0]
-    # m.addConstrs((unit_SOC[d, Hours[-1]] == unit_SOC[d,Hours[-1] + 1] for d in Days), n);
-    # n = f'{u}_cycle_init'
-    # C_meta[n] = ['Cycling constraint to reset the battery SOC every day', 0]
-    # m.addConstrs((unit_SOC[d,0] == 0 for d in Days), n);

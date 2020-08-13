@@ -324,7 +324,11 @@ def units_and_resources(path, fig_path=None):
     #         units_and_resources(file_path, fig_path)
     
     # Daily values
-    file_path = os.path.join(path, 'results.h5')
+    if 'results.h5' not in path:
+        file_path = os.path.join(path, 'results.h5')
+    else:
+        file_path = path
+        path = os.path.join(*path.split('\\')[:-1])
     df = get_hdf(file_path, 'single')
     df = df.set_index('Var_name')['Value']
     
@@ -336,7 +340,7 @@ def units_and_resources(path, fig_path=None):
     capacity = unit_capacity(df)
     envex, opex = {}, {}
     for r in G_res:
-        envex[r] = df[f'r_envex[{r}]']*1e3
+        envex[r] = df[f'r_envex[{r}]']
         opex[r] = (df[f'grid_import_a[{r}]']*P[r,'Import_cost'] - 
                    df[f'grid_export_a[{r}]']*P[r,'Export_cost'])
         
@@ -537,7 +541,8 @@ def dict_to_df_plot(dic):
         df.set_index('Pareto', inplace=True)
         return df
     
-def pareto(*args, date=None, print_it=False, Xaxis='totex', Yaxis='envex'):
+def pareto(*args, date=None, print_it=False, Xaxis='totex', Yaxis='envex', 
+           Relaxed=True):
     """ Opens the path to the latest pareto folder of results of a given day, 
         alternatively takes a path to that folder.
         - Generate a pareto scatter plot for two given objectives
@@ -564,15 +569,28 @@ def pareto(*args, date=None, print_it=False, Xaxis='totex', Yaxis='envex'):
     # path = os.path.join('results', 'Final_results_2020-07-20', 'Pareto_opex_capex_10')
     # path = os.path.join('results', 'Final_results_2020-07-20', 'Pareto_envex_totex_10')
     # path = os.path.join('results', '2020-08-05', 'Pareto_1')
-    
+    # path = os.path.join('results', 'Final_results_2020-07-20', 'Pareto_less_cost_PV')
+    # path = os.path.join('results', '2020-08-12')
+
+    ### The feed in tariffs functions
+    Feed_in_tariff = False
+    if Feed_in_tariff:
+        path = os.path.join('results', 'Final_results_2020-07-20', 'feed_in_tariffs')
+        traiffs = np.linspace(-0.1, 1, 21)[::-1]
+     
     """ Get necessary values from pareto reult folders """    
     Pareto = []
+    
     list_of_files = [f for f in os.listdir(path) if 'figures' not in f and 'png' not in f]
     for file_name in list_of_files:
         file_path = os.path.join(path, file_name, 'results.h5')
         df = get_hdf(file_path, 'single')
         df.set_index('Var_name', inplace=True)
-        X, Y = float(df.loc[Xaxis]), float(df.loc[Yaxis])
+        if not Feed_in_tariff:
+            X, Y = float(df.loc[Xaxis]), float(df.loc[Yaxis])
+        else:
+            X = float(df.loc[Xaxis])
+            Y = traiffs[int(file_name.split('_')[-1]) - 1]
         Pareto.append([file_name, X, Y])
 
     # Sort the Pareto list along Xaxis
@@ -581,7 +599,8 @@ def pareto(*args, date=None, print_it=False, Xaxis='totex', Yaxis='envex'):
     # Remove outliers (first and last solution) and rename their directory
     rename_pareto_run_dir(path, Pareto[0][0], '0')
     rename_pareto_run_dir(path, Pareto[-1][0], '0')
-    Pareto = Pareto[1:-1]  
+    if Relaxed:
+        Pareto = Pareto[1:-1]  
 
     obj = ['envex', 'totex', 'opex']
     capex, capacity, objectives = {}, {}, {}
@@ -606,14 +625,23 @@ def pareto(*args, date=None, print_it=False, Xaxis='totex', Yaxis='envex'):
     # Plot options
     size = (6,5) if len(list_of_files) < 11 else (8,6)
     figure(num=None, figsize=(size), dpi=300, facecolor='w', edgecolor='k')
-    plt.title('Pareto multi-objective optimization')
+    if not Feed_in_tariff:
+        plt.title('Pareto multi-objective optimization')
+        plt.ylabel(f'{Yaxis} in ' + str(unit[Yaxis]))
     plt.xlabel(f'{Xaxis} in ' + str(unit[Xaxis]))
-    plt.ylabel(f'{Yaxis} in ' + str(unit[Yaxis]))
-    plt.ylim(min(Y)*0.95, max(Y)*1.05)
+    min_y = min(Y)*0.95 if min(Y) > 0 else min(Y)*1.05
+    min_x = min(X)*0.95 if min(X) > 0 else min(X)*1.05
+    plt.ylim(min_y, max(Y)*1.05)
+    plt.xlim(min_x, max(X)*1.05)
     plt.gca().set_axisbelow(True)
     plt.grid(b=True, which='major', color='lightgrey', linestyle='-')
     plt.gca().spines['top'].set_visible(False)
     plt.gca().spines['right'].set_visible(False)
+    
+    if Feed_in_tariff:
+        plt.ylabel('Electricity feed-in tariff in [CHF/kWh]')
+        plt.title('Minimum TOTEX relative to feed-in tariffs')
+        plt.gca().yaxis.set_ticks(Y)
     
     # # # Add 20 - 80 lines
     # plt.plot([min(X), max(X)], [Dy*0.2 + min(Y)]*2, color='black', ls='--')
@@ -626,7 +654,7 @@ def pareto(*args, date=None, print_it=False, Xaxis='totex', Yaxis='envex'):
     Dx, Dy = (max(X) - min(X)), (max(Y) - min(Y))
     for i, _ in enumerate(X):
         # Text on graph
-        plt.text(X[i] + Dx*0.01, Y[i] + Dy*0.01, f'{i + 1}')
+        plt.text(X[i] - Dx*0.02, Y[i] + Dy*0.01, f'{i + 1}')
         # Rename directories according to the pareto points
         rename_pareto_run_dir(path, Pareto[i][0], i + 1)
     
@@ -1093,7 +1121,81 @@ def sensitivity_analysis():
                               *[capacity[u] for u in Units] # units 
                               ]
             
-    
+    def print_pareto(df, fig_size):
+        """ Generate a Pareto graph of results """
+        
+        fig, ax = plt.subplots()
+        fig.set_dpi(300)
+        
+        for sol in ['5', '15']:
+            col = {'5': 'darkviolet', '15': 'gold'}
+            plt.scatter(df['totex'].loc[sol,:]*1e-3, df['envex'].loc[sol,:]*1e-3,
+                        color=col[sol], zorder=500, label=f'Solution {sol}')
+        plt.legend()
+        
+        """ Add Pareto background """    
+        path = os.path.join('results', 'Final_results_2020-07-20', 'Pareto_envex_totex_10')
+        Xaxis, Yaxis = 'totex', 'emissions'    
+        Pareto = []
+        list_of_files = [f for f in os.listdir(path) 
+                         if 'figures' not in f and 'png' not in f and '.h5' not in f]
+        for file_name in list_of_files:
+            file_path = os.path.join(path, file_name, 'results.h5')
+            df2 = get_hdf(file_path, 'single')
+            df2.set_index('Var_name', inplace=True)
+            X, Y = float(df2.loc[Xaxis]), float(df2.loc[Yaxis])
+            Pareto.append([file_name, X, Y])
+
+        Pareto = Pareto[1:-1]  
+        X = [sublist[1] for sublist in Pareto]
+        Y = [sublist[2] for sublist in Pareto]
+        plt.scatter(X, Y, marker='o', color='black')# c=range(len(Pareto)), cmap='plasma')
+
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        plt.xlabel('TOTEX in [MCF/year]')
+        plt.ylabel('ENVEX in [kt-CO2/year]')
+        plt.ylim(0.15, 0.31)
+        plt.xlim(0.31, 0.64)
+        plt.title('Variation on solutions 5 and 15')
+        plt.tight_layout()
+            
+        fig_name = '{}.png'.format(Title.replace(' ','_'))
+        fig_path = os.path.join(folder_path, f'solution {sol}', fig_name)
+        plt.savefig(fig_path)
+        
+        
+    def table():
+        """ Table of values changed """
+        list_of_files = [f for f in os.listdir(folder_path) 
+                     if 'solution' not in f and '.h5' not in f and 'default' not in f]
+        file_path = os.path.join('inputs', 'sensitivity_param.csv')
+        
+        from data import get_param
+        P, P_meta = get_param('latex_param.csv')
+        P_eco, P_meta_eco = get_param('latex_param_eco.csv')
+        P = P.append(P_eco)
+        P_meta = P_meta.append(P_meta_eco)
+        
+        d = {}
+        for f in list_of_files:
+            Name_split = f.split('_')
+            i = (Name_split[0], '_'.join(Name_split[1:-1]))
+            vary = float(f.split('_')[-1])
+            vary = vary - 1 if vary > 1 else 1 - vary 
+            value = float(P[i])
+            Full_name = P_meta['Full name'].loc[i]
+            Symbol = P_meta['Latex_symbol'].loc[i]
+            Variation = '${:.0f}'.format(vary*100) + r'\%$'
+            Minima = '${:.2g}$'.format((1 + vary)*value)
+            Maxima = '${:.2g}$'.format((1 - vary)*value)
+            d[i] = [Full_name, Symbol, Variation, Minima, Maxima]
+            
+        table = pd.DataFrame.from_dict(d).T
+        table.columns = ['Full Name', 'Symbol', 'Variation', 'Minima', 'Maxima']
+        table.to_csv(file_path)
+        
+        
     def units_installed(df):
         """ Returns the list of installed units as array of 1 and 0 """
         return np.array([int(bool(df[f'{u} Size'])) for u in Units])
@@ -1107,10 +1209,9 @@ def sensitivity_analysis():
         else:
             return 1 - variation[index[:-1]]
         
-    def plot_relative_changes(change, colors, Title):
-            fig_size = (8,6)
+    def plot_relative_changes(change, colors, Title, x_label, fig_size):
             fig, ax = plt.subplots()
-            fig.set_size_inches(fig_size[0], len(change.index)*fig_size[1]/24)
+            # fig.set_size_inches(fig_size[0], len(change.index)*fig_size[1]/24)
             fig.set_dpi(300)
             j = 1
             inputs_changed = []
@@ -1119,21 +1220,21 @@ def sensitivity_analysis():
                 # per cent change in result divided by per cent change in input
                 
                 color = colors[1] if change.loc[k]['increased'] < 0 else colors[0]
-                ax.barh(j, np.abs(change.loc[k]['increased']), color=color, left=0.001)
+                ax.barh(j, np.abs(change.loc[k]['increased']), color=color, height=0.8)
                 
                 color = colors[1] if change.loc[k]['reduced'] < 0 else colors[0]
-                ax.barh(j, -np.abs(change.loc[k]['reduced']), color=color, left=-0.001)  
+                ax.barh(j, -np.abs(change.loc[k]['reduced']), color=color, height=0.8)  
                 
                 j = j + 1
                 if pd.isna(name[k[:-1]]):
                     n = k[1]
-                elif k[0] in ['Pysical', 'Farm', 'Profile']:
+                elif k[0] in ['Pysical', 'Farm', 'Profile'] or k[0] in Resources:
                     n = name[k[:-1]]
                 else:
                     n = ' '.join([k[0], name[k[:-1]]])
                 inputs_changed.append('{} {:.0f}%'.format(n, float(k[-1])*100))
                 
-            ax.axvline(linewidth=1, color='black', zorder=0)
+            ax.axvline(linewidth=1, color='black', zorder=100)
             # ax.axhline(y= linewidth=1, color='grey', zorder=0,  linestyle="--")
             # plt.axhline(y=1.0, color="black",)
             ax.set_yticks(range(1, len(inputs_changed) + 1))
@@ -1141,14 +1242,14 @@ def sensitivity_analysis():
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
             plt.title(Title)
-            plt.xlabel('%change output over %change input')
+            plt.xlabel(x_label)
             plt.tight_layout()
             
             fig_name = '{}.png'.format(Title.replace(' ','_'))
             fig_path = os.path.join(folder_path, f'solution {sol}', fig_name)
             plt.savefig(fig_path)
-
-    
+       
+            
     # for every solution create a df
     for sol in ['5', '15']:
         print(f'printing for solution {sol}')
@@ -1193,21 +1294,122 @@ def sensitivity_analysis():
                     relative1 = change_df['size'][k1]
                     relative2 = change_df['size'][k2]
                     
-                if np.abs(relative1) > 0.01 or np.abs(relative2) > 0.01:
-                    change.loc[key] = [relative1, relative2, 
-                                       np.abs(relative1) + np.abs(relative2)]
+                if np.abs(relative1) > 0.001 or np.abs(relative2) > 0.001:
+                    change.loc[key] = [relative1, relative2, np.abs(relative1) + np.abs(relative2)]
             change.sort_values('delta', ascending=True, inplace=True)
             
     
             colors = ('green', 'red') if o != 'size' else ('grey', 'grey')
-            plot_relative_changes(change, colors, Title)
+            x_label = ('%change output over %change input' if o != 'size' else
+                       'agregated change in installed capacity')
+            fig_size = (6.4, 4.8)
+            plot_relative_changes(change[-10:], colors, Title, x_label, fig_size)
         
         
  
 
             
 
+def plot_mc():
+    path = os.path.join('results', 'monte_carlo')
 
+     
+    """ Get necessary values from pareto reult folders """    
+    Pareto = []
+    
+    list_of_files = [f for f in os.listdir(path) if 'figures' not in f and 'png' not in f]
+    
+    # for file_name in list_of_files:
+    #     file_path = os.path.join(path, file_name, 'results.h5')
+    #     df = get_hdf(file_path, 'single')
+    #     df.set_index('Var_name', inplace=True)
+    #     if not Feed_in_tariff:
+    #         X, Y = float(df.loc[Xaxis]), float(df.loc[Yaxis])
+    #     else:
+    #         X = float(df.loc[Xaxis])
+    #         Y = traiffs[int(file_name.split('_')[-1]) - 1]
+    #     Pareto.append([file_name, X, Y])
+
+    # Sort the Pareto list along Xaxis
+    # Pareto.sort(key=lambda sublist: sublist[1]) 
+    
+    # Remove outliers (first and last solution) and rename their directory
+    # rename_pareto_run_dir(path, Pareto[0][0], '0')
+    # rename_pareto_run_dir(path, Pareto[-1][0], '0')
+    # if Relaxed:
+    #     Pareto = Pareto[1:-1]  
+
+    obj = ['envex', 'totex', 'opex']
+    capex, capacity, objectives = {}, {}, {}
+    for p, file_name in enumerate(list_of_files):
+        file_path = os.path.join(path, file_name, 'results.h5')
+        
+        # Only time independent results are used, set names as index
+        df = get_hdf(file_path, 'single')
+        df.set_index('Var_name', inplace=True)
+        capacity[p] = unit_capacity(df['Value'])
+        capex[p] = unit_capex(df['Value'])
+        objectives[p] = [df['Value'][o] for o in obj]
+    
+    table = pd.DataFrame.from_dict(capacity).T
+    table.hist()
+    
+    
+    table.columns = ['Full Name', 'Symbol', 'Variation', 'Minima', 'Maxima']
+    
+    
+    
+    # """ Plot the Pareto scatter graph """ 
+    # X = [sublist[1] for sublist in Pareto]
+    # Y = [sublist[2] for sublist in Pareto]
+    # unit = {'totex': '[MCHF/year]',
+    #         'opex': '[MCHF/year]',
+    #         'capex': '[MCHF/year]',
+    #         'envex': '[kt-CO2/year]'}
+    
+    # Plot options
+    size = (6,5) if len(list_of_files) < 11 else (8,6)
+    figure(num=None, figsize=(size), dpi=300, facecolor='w', edgecolor='k')
+    if not Feed_in_tariff:
+        plt.title('Pareto multi-objective optimization')
+        plt.ylabel(f'{Yaxis} in ' + str(unit[Yaxis]))
+    plt.xlabel(f'{Xaxis} in ' + str(unit[Xaxis]))
+    min_y = min(Y)*0.95 if min(Y) > 0 else min(Y)*1.05
+    min_x = min(X)*0.95 if min(X) > 0 else min(X)*1.05
+    plt.ylim(min_y, max(Y)*1.05)
+    plt.xlim(min_x, max(X)*1.05)
+    plt.gca().set_axisbelow(True)
+    plt.grid(b=True, which='major', color='lightgrey', linestyle='-')
+    plt.gca().spines['top'].set_visible(False)
+    plt.gca().spines['right'].set_visible(False)
+    
+    if Feed_in_tariff:
+        plt.ylabel('Electricity feed-in tariff in [CHF/kWh]')
+        plt.title('Minimum TOTEX relative to feed-in tariffs')
+        plt.gca().yaxis.set_ticks(Y)
+    
+    # # # Add 20 - 80 lines
+    # plt.plot([min(X), max(X)], [Dy*0.2 + min(Y)]*2, color='black', ls='--')
+    # plt.text(max(X) - Dx*0.3, (Dy*0.2 + min(Y)) + Dy*0.02, '20% more than min opex')
+    # plt.plot([Dx*0.2 + min(X)]*2, [min(Y), max(Y)], color='black', ls='--')
+    # plt.text((Dx*0.2 + min(X)) + Dx*0.02, max(Y) - Dy*0.05, '20% more than min capex')
+    # # plt.scatter(X, Y, marker='o', color='black')    
+    
+    # Plot pareto point number
+    Dx, Dy = (max(X) - min(X)), (max(Y) - min(Y))
+    for i, _ in enumerate(X):
+        # Text on graph
+        plt.text(X[i] - Dx*0.02, Y[i] + Dy*0.01, f'{i + 1}')
+        # Rename directories according to the pareto points
+        rename_pareto_run_dir(path, Pareto[i][0], i + 1)
+    
+    plt.scatter(X, Y, marker='o', c=range(len(Pareto)), cmap='plasma')
+    plt.tight_layout()
+    
+    # Save figure
+    os.makedirs(os.path.dirname(os.path.join(path, 'figures', '')), exist_ok=True)
+    fig_path = os.path.join(path, 'figures')
+    plt.savefig(os.path.join(fig_path, 'pareto.png'))
         
 
 
@@ -1283,247 +1485,3 @@ def make_patch_spines_invisible(ax):
 ###############################################################################
 ### END
 ###############################################################################
-
-
-"""
-def flows(indicator, name, units, var_result, var_name, sort=False,  daily=True):
-        
-    fig, ax = plt.subplots()
-    fig.set_size_inches(fig_width, fig_height)
-    plt.title(name)
-    plt.xlabel('Dates')
-    plt.ylabel(name + units)
-    # Get relevant flows according to indicator
-    flows, flows_name = [], []
-    for n in var_result:
-        if indicator in n:
-            flows.append(var_result[n])
-            flows_name.append(n)
-    # Sort in decreasing order each flow by maximum value
-    if sort:
-        flows_sort = sort_from_index(flows, sorted_index(flows))
-        flows_name_sort = sort_from_index(flows_name, sorted_index(flows))
-    else: flows_sort, flows_name_sort = flows,  flows_name
-    
-    
-    for f, n in zip(flows_sort, flows_name_sort):
-        plt.plot(Dates, f, ls=ls(n))
-    plt.legend(flows_name_sort)
-    
-    
-    # if daily:
-    #     Dates = Day_Dates
-    #     var_result = hourly_to_daily_list(var_result, var_name)
-    
-
-def hourly_to_daily(hourly_values):
-    i, j = 0, 24
-    daily_average = []
-    for d in range(Days):
-        daily_average.append(sum(hourly_values[i:j])/24)
-        i, j = 24*d, 24*(1 + d)
-    daily_average.append(sum(hourly_values[i:-1])/Last_day_hours)
-    return daily_average
-
-def hourly_to_daily_list(var_result, var_name):     
-    daily_var_result = {}
-    for n in var_name:
-        daily_var_result[n] = hourly_to_daily(var_result[n])
-    return daily_var_result
-
-def normalize(l):
-    return [l[i]/max(l) for i in range(len(l))]
-
-def sorted_index(unsorted_list):
-    
-    new_index = []
-    j = 0
-    for i in range(0,len(unsorted_list)):
-        new_index.append([max(unsorted_list[i]), j])
-        j += 1
-        
-    new_index.sort(reverse = True)
-    
-    for i in range(0, len(new_index)):
-        new_index[i][0] = i
-        
-    return new_index 
-
-def sort_from_index(unsorted_list, new_index):
-    sorted_list = [ [] for i in range(len(new_index)) ]
-    for i in new_index:
-        sorted_list[i[0]] = unsorted_list[i[1]]
-        
-    return sorted_list
-
-def transpose_list(l):
-    
-    return list(map(list, zip(*l)))
-
-
-"""
-
-
-""" Returns the transpose of a given list. """
-""" Given a list of lists returns an index (lost of pairs) where the first element is 0, 1, 2... n 
-        the new index sorted by the largest element in each list in decreasing order. The second element
-        is the index of the same list in the original list of list.
-"""
-
-
-
-"""
-def resource(resource, var_result, var_name):
-    fig, ax1 = plt.subplots()
-    ax1.set_xlabel('Dates')
-    ax1.set_ylabel(Abbrev[resource] + ' exchanged with units in kW')
-    ax2 = ax1.twinx()
-    ax2.set_ylabel(Abbrev[resource] + ' exchanged with grids and buildings in kW')
-    ax1.set_xlim(Dates[0], Dates[-1])
-    
-    for n in var_name:
-        if resource in n:
-            if 'grid' not in n:
-                if 'prod' in n:
-                    ax1.plot(Dates, var_result[n], label=n, c=col(n), ls=ls(n))
-                else:
-                    ax1.plot(Dates, [var_result[n][p]*(-1) for p in Periods], 
-                             label=n, c=col(n), ls=ls(n))
-            else:
-                if 'import' in n:
-                    ax2.plot(Dates, var_result[n], label=n, c=col(n), ls=ls(n))
-                else:
-                    ax2.plot(Dates, [var_result[n][p]*(-1) for p in Periods], 
-                             label=n, c=col(n), ls=ls(n))
-    
-    if resource == 'Elec':
-        ax2.plot(Dates, Build_cons_Elec, label = 'Building consumption', c=col('Elec'), ls=ls(n))
-
-    ax1.legend(loc='center left') 
-    ax2.legend(loc='center right')
-"""   
-
-
-"""
-def pareto(*args, date=None, print_it=False, Xaxis='totex', Yaxis='emissions'):
-    if args:
-        path = args[0]
-    else:
-        cd = os.path.join('results', date)
-        nbr = results.get_last_run_nbr(cd, 'Pareto')
-        path = os.path.join(cd, f'Pareto_{nbr}')
-        
-        # if 'pareto.png' in [f for f in sorted(os.listdir(path))]:
-        #     print('Pareto figures already in pareto result folder')
-        #     return
-    
-    def get_pareto_nbr(file_name):
-        return int(file_name.split('_')[0])
-    
-    ### Pareto scatter plot
-    Pareto = []
-    list_of_files = [f for f in os.listdir(path)]
-    for file_name in list_of_files:
-        file_path = os.path.join(path, file_name, 'results.h5')
-        df = get_hdf(file_path, 'single')
-        df.set_index('Var_name', inplace=True)
-        X, Y = float(df.loc[Xaxis]), float(df.loc[Yaxis])
-        Pareto.append([file_name, X, Y])
-        
-    # Sort the Pareto list along Xaxis
-    Pareto.sort(key=lambda x: x[1])
-    X = [sublist[1] for sublist in Pareto]
-    Y = [sublist[2] for sublist in Pareto]
-    unit = {'totex': '[MCHF/year]',
-            'opex': '[MCHF/year]',
-            'capex': '[MCHF/year]',
-            'emissions': '[kt-CO2/year]'}
-    
-    # Plot options
-    plt.title('Pareto possibility frontiere')
-    plt.xlabel(f'{Xaxis} in ' + str(unit[Xaxis]))
-    plt.ylabel(f'{Yaxis} in ' + str(unit[Yaxis]))
-    plt.ylim(min(Y)*0.95, max(Y)*1.05)
-    
-    # Plot pareto point number
-    for i, _ in enumerate(X):
-        # Text on graph
-        plt.text(X[i] + 0.0015, Y[i] + 0.0015, f'{i + 1}')
-        
-        # Rename directories according to the pareto points
-        l = Pareto[i][0].split('_')
-        l[0] = f'{i+1}'
-        name = '_'.join(l)
-        cd_old = os.path.join(path, Pareto[i][0])
-        cd_new = os.path.join(path, name)
-        os.rename(cd_old, cd_new)
-    
-    # Grab the list of files with new names and deduce next graph size
-    list_of_files = [f for f in os.listdir(path)]
-    
-    # Pareto scatter plot
-    plt.scatter(X, Y, marker='o')
-    
-    # Save figure
-    fig_path = os.path.join(path, 'pareto.png')
-    plt.savefig(fig_path)
-    
-    ### Pareto units installed
-    n_pareto = len(list_of_files)
-    fig, ax1 = plt.subplots(n_pareto, 1, sharex=True)
-    fig.set_size_inches(8, 2*n_pareto)
-    fig.subplots_adjust(hspace=0)
-    ax2 = np.array(range(n_pareto), dtype=object)
-
-    # Split into storage and non storage units
-    Names, Values = {}, {}
-    Units_ns = list(set(Units) - set(Units_storage))
-    Units_ns.sort()
-    Names['non_storage'] = [f'unit_size[{u}]' for u in Units_ns]
-    Names['storage'] = [f'unit_size[{u}]' for u in Units_storage]
-        
-    for file_name in list_of_files:
-        p = get_pareto_nbr(file_name) - 1
-        file_path = os.path.join(path, file_name, 'results.h5')
-        
-        # Only time independent results are used, set names as index
-        df = get_hdf(file_path, 'single')
-        df.set_index('Var_name', inplace=True)
-        for t in ['non_storage', 'storage']:
-            Values[t] = [df.loc[n, 'Value'] for n in Names[t]]   
-    
-        # Figure options
-        ax2[p] = ax1[p].twinx()
-        ax1[p].set_ylabel(f'{p + 1} \n Capacity in kW')
-        ax2[p].set_ylabel(f'Capacity in kWh \n {p + 1}')
-        ax1[p].set_xlim(-1, len(Units))
-        ax1[p].set_ylim(0, max(Values['non_storage'])*1.2)
-        ax2[p].set_ylim(0, max(Values['storage'])*1.2)
-        
-        i = 0
-        for n in Names['non_storage']:
-            ax1[p].bar(i, df.loc[n, 'Value'], color='darkgrey')
-            plot_value(ax1[p], i - 0.25, df.loc[n, 'Value'])
-            i += 1
-        for n in Names['storage']:
-            if df.loc[n, 'Value'] > 1:
-                ax2[p].bar(i, df.loc[n, 'Value'], color='lightgrey')
-                plot_value(ax2[p], i - 0.25, df.loc[n, 'Value'])
-                i += 1
-                    
-        # Store the figure in aplt object accessible anywhere
-        Names_order = Units_ns + list(Units_storage)
-        plt.xticks(range(len(Units)), 
-                   [Abbrev[Names_order[i]] for i in range(len(Units))])
-    
-    #ax1[0].tick_params(axis="x", bottom=True, top=True, labelbottom=True, labeltop=True)
-    fig.autofmt_xdate()
-    fig.tight_layout()
-    plt.subplots_adjust(hspace=0)
-    
-    fig_path = os.path.join(path, 'units.png')
-    plt.savefig(fig_path)
-    
-   
-
-"""

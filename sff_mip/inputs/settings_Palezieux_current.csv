@@ -1,9 +1,11 @@
 Category,Name,Value,Units,Description
 Model,Solver_time_limit,90000,s,Maximum solving time allowed
-Model,Var_bound,10000,-,Default upper bound for all variables
+Model,Var_bound,20000,-,Default upper bound for all variables
 Model,Var_bound_tight,10,-,Default upper bound for small variables
-Model,Clusters,30,clusters,"Number of clusters (10, 20, 30, 50 or 100)"
+Model,Clusters,10,clusters,"Number of clusters (10, 20, 30, 50 or 100)"
 WBOI,Is_renewable,1,-,1 if wood is considered renewable 0 if not
+Farm,Is_energy_producer,0,-,1 if the farm is an energy producer 0 otherwise
+Farm,Feed_in_tariff,0.28,CHF/KWh,Feed-in tariff for electricity sold to the grid
 Time,Time_step,01:00:00,time,Number of minutes in a time step
 Time,Period_start,2019-01-01,date,Period starting from this date
 Time,Period_end,2020-01-01,date,Period lasting until this date
@@ -24,7 +26,7 @@ GCSOFC,max_capacity,0,kW,Maximum GCSOFC installed capacity
 GCSOFC,min_capacity,0,kW,Minimum GCSOFC installed capacity
 GBOI,max_capacity,1500,kW,Maximum GBOI installed capacity
 GBOI,min_capacity,0,kW,Minimum GBOI installed capacity
-WBOI,max_capacity,0,kW,Maximum WBOI installed capacity
+WBOI,max_capacity,1500,kW,Maximum WBOI installed capacity
 WBOI,min_capacity,0,kW,Minimum WBOI installed capacity
 EH,max_capacity,1500,kW,Maximum EH installed capacity
 EH,min_capacity,0,kW,Minimum EH installed capacity
