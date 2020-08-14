@@ -340,7 +340,8 @@ def units_and_resources(path, fig_path=None):
     capacity = unit_capacity(df)
     envex, opex = {}, {}
     for r in G_res:
-        envex[r] = df[f'r_envex[{r}]']
+        # envex[r] = df[f'r_envex[{r}]']
+        envex[r] = df[f'r_emissions[{r}]']
         opex[r] = (df[f'grid_import_a[{r}]']*P[r,'Import_cost'] - 
                    df[f'grid_export_a[{r}]']*P[r,'Export_cost'])
         
@@ -371,7 +372,8 @@ def units_and_resources(path, fig_path=None):
     
     # Make table
     objectives = {
-        'ENVEX':    [dot(1e3*df['envex']), 't-CO2/year'],
+        # 'ENVEX':    [dot(1e3*df['envex']), 't-CO2/year'],
+        'ENVEX':    [dot(1e3*df['emissions']), 't-CO2/year'],
         'TOTEX':    [dot(1e3*df['totex']), 'kCHF/year'],
         'OPEX':     [dot(1e3*df['opex']), 'kCHF/year'],
         'CAPEX':    [dot(sum(capex[u] for u in Units)), 'MCHF']
@@ -1099,6 +1101,7 @@ def sensitivity_analysis():
     vari_df.set_index(index, inplace=True)
     capex_u = {}
     for f in list_of_files:
+        print(f)
         for r in result_files:
             # Read a signle resuts file in one folder
             file_path = os.path.join(folder_path, f, f'{r}.h5')
@@ -1313,107 +1316,76 @@ def sensitivity_analysis():
 def plot_mc():
     path = os.path.join('results', 'monte_carlo')
 
-     
+    
     """ Get necessary values from pareto reult folders """    
     Pareto = []
     
     list_of_files = [f for f in os.listdir(path) if 'figures' not in f and 'png' not in f]
     
-    # for file_name in list_of_files:
-    #     file_path = os.path.join(path, file_name, 'results.h5')
-    #     df = get_hdf(file_path, 'single')
-    #     df.set_index('Var_name', inplace=True)
-    #     if not Feed_in_tariff:
-    #         X, Y = float(df.loc[Xaxis]), float(df.loc[Yaxis])
-    #     else:
-    #         X = float(df.loc[Xaxis])
-    #         Y = traiffs[int(file_name.split('_')[-1]) - 1]
-    #     Pareto.append([file_name, X, Y])
-
-    # Sort the Pareto list along Xaxis
-    # Pareto.sort(key=lambda sublist: sublist[1]) 
     
-    # Remove outliers (first and last solution) and rename their directory
-    # rename_pareto_run_dir(path, Pareto[0][0], '0')
-    # rename_pareto_run_dir(path, Pareto[-1][0], '0')
-    # if Relaxed:
-    #     Pareto = Pareto[1:-1]  
-
-    obj = ['envex', 'totex', 'opex']
-    capex, capacity, objectives = {}, {}, {}
+    obj = ['envex', 'totex']
+    capacity, objectives = {}, {}
     for p, file_name in enumerate(list_of_files):
         file_path = os.path.join(path, file_name, 'results.h5')
-        
         # Only time independent results are used, set names as index
-        df = get_hdf(file_path, 'single')
+        try:
+            df = get_hdf(file_path, 'single')
+        except:
+            continue
         df.set_index('Var_name', inplace=True)
         capacity[p] = unit_capacity(df['Value'])
-        capex[p] = unit_capex(df['Value'])
         objectives[p] = [df['Value'][o] for o in obj]
     
     table = pd.DataFrame.from_dict(capacity).T
-    table.hist()
+    obj_df = pd.DataFrame.from_dict(objectives).T
+    obj_df = obj_df.rename(columns={0: 'envex', 1:'totex'})
     
     
-    table.columns = ['Full Name', 'Symbol', 'Variation', 'Minima', 'Maxima']
     
     
+    for u in Units:
+        size = (8,6)
+        figure(num=None, figsize=(size), dpi=300, facecolor='w', edgecolor='k')
+        plt.title(u + ' Probability distribution of Size')
+        table[u].hist()
+
+        
+        plt.gca().spines['top'].set_visible(False)
+        plt.gca().spines['right'].set_visible(False)
+        plt.xlabel('Installed capacity in kW or kWh')
+        plt.ylabel('Number of occurences')
+        plt.tight_layout()
     
-    # """ Plot the Pareto scatter graph """ 
-    # X = [sublist[1] for sublist in Pareto]
-    # Y = [sublist[2] for sublist in Pareto]
-    # unit = {'totex': '[MCHF/year]',
-    #         'opex': '[MCHF/year]',
-    #         'capex': '[MCHF/year]',
-    #         'envex': '[kt-CO2/year]'}
     
-    # Plot options
-    size = (6,5) if len(list_of_files) < 11 else (8,6)
+    size = (8,6)
     figure(num=None, figsize=(size), dpi=300, facecolor='w', edgecolor='k')
-    if not Feed_in_tariff:
-        plt.title('Pareto multi-objective optimization')
-        plt.ylabel(f'{Yaxis} in ' + str(unit[Yaxis]))
-    plt.xlabel(f'{Xaxis} in ' + str(unit[Xaxis]))
-    min_y = min(Y)*0.95 if min(Y) > 0 else min(Y)*1.05
-    min_x = min(X)*0.95 if min(X) > 0 else min(X)*1.05
-    plt.ylim(min_y, max(Y)*1.05)
-    plt.xlim(min_x, max(X)*1.05)
-    plt.gca().set_axisbelow(True)
-    plt.grid(b=True, which='major', color='lightgrey', linestyle='-')
+    obj_df.plot.scatter('totex', 'envex', color='black')
+
     plt.gca().spines['top'].set_visible(False)
     plt.gca().spines['right'].set_visible(False)
-    
-    if Feed_in_tariff:
-        plt.ylabel('Electricity feed-in tariff in [CHF/kWh]')
-        plt.title('Minimum TOTEX relative to feed-in tariffs')
-        plt.gca().yaxis.set_ticks(Y)
-    
-    # # # Add 20 - 80 lines
-    # plt.plot([min(X), max(X)], [Dy*0.2 + min(Y)]*2, color='black', ls='--')
-    # plt.text(max(X) - Dx*0.3, (Dy*0.2 + min(Y)) + Dy*0.02, '20% more than min opex')
-    # plt.plot([Dx*0.2 + min(X)]*2, [min(Y), max(Y)], color='black', ls='--')
-    # plt.text((Dx*0.2 + min(X)) + Dx*0.02, max(Y) - Dy*0.05, '20% more than min capex')
-    # # plt.scatter(X, Y, marker='o', color='black')    
-    
-    # Plot pareto point number
-    Dx, Dy = (max(X) - min(X)), (max(Y) - min(Y))
-    for i, _ in enumerate(X):
-        # Text on graph
-        plt.text(X[i] - Dx*0.02, Y[i] + Dy*0.01, f'{i + 1}')
-        # Rename directories according to the pareto points
-        rename_pareto_run_dir(path, Pareto[i][0], i + 1)
-    
-    plt.scatter(X, Y, marker='o', c=range(len(Pareto)), cmap='plasma')
+    plt.xlabel('TOTEX in [MCHF/year]')
+    plt.ylabel('ENVEX in [kt-CO2/year]')
     plt.tight_layout()
-    
-    # Save figure
-    os.makedirs(os.path.dirname(os.path.join(path, 'figures', '')), exist_ok=True)
-    fig_path = os.path.join(path, 'figures')
-    plt.savefig(os.path.join(fig_path, 'pareto.png'))
+
+
+    def renamethem():
+        def renameitfast(path, file_name, new_number):
+            name_chunks = file_name.split('_')
+            name_chunks[1] = f'{new_number}'
+            new_name = '_'.join(name_chunks)
+            cd_old = os.path.join(path, file_name)
+            cd_new = os.path.join(path, new_name)
+            os.rename(cd_old, cd_new)
         
+        # rename files
+        numbers = range(500,6000)
+        for i, f in enumerate(list_of_files):
+            renameitfast(path, f, numbers[i])
 
 
-   
+
+
+
     
     
 ###############################################################################

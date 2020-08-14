@@ -340,7 +340,7 @@ def sensitsivity_analysis():
               # 2.1.1 Get the TOTEX min for the current SFF scenario
             file_path = os.path.join(path, 'current_SFF.h5')
             S, _ = get_param('settings_SFF_current.csv')
-            totex_min_SFF[i] = slim_run('totex', ['totex'], file_path, 
+            _, totex_min_SFF[i] = slim_run('totex', ['totex'], file_path, 
                                         Limit=None, New_Pamar=P, New_Setting=S)            
               
               # 2.1.2 Get the ENVEX min undex TOTEX constrained at the current SFF value
@@ -354,7 +354,7 @@ def sensitsivity_analysis():
              # 2.2 Pinpoint and solve pareto point 15 on the envex-totex graph
               # 2.2.1 Get the absolute ENVEX minimum
             file_path = os.path.join(path, 'envex_min.h5')
-            envex_min[i] = slim_run('envex', ['envex'], file_path, 
+            _, envex_min[i] = slim_run('envex', ['envex'], file_path, 
                                     Limit=None, New_Pamar=P, New_Setting=S)
             
               # 2.2.2 Get the TOTEX minimu under ENVEX constrained at 7% above the min
@@ -524,11 +524,12 @@ def monte_carlo(Plot=False):
     mc_df = pd.DataFrame(columns=columns + index)
     mc_df.set_index(index, inplace=True)
     
-    Iterations = range(100)
+    Iterations = range(200, 500)
     for i in Pmc.index:
         Upper = P[i]*(1 + Pmc[i])
         Lower = P[i]*(1 - Pmc[i])
         mu, sigma = P[i], P[i]*Pmc[i]/3
+        print(i)
         for j in Iterations:
             value = np.random.default_rng().normal(mu, sigma)
             mc_df.loc[j, i[0], i[1]] = [value, '{:.2g}'.format(Upper), '{:.2g}'.format(Lower)]
@@ -567,9 +568,9 @@ def monte_carlo(Plot=False):
         for i in Pmc.index:
             Upper = P[i]*(1 + Pmc[i])
             Lower = P[i]*(1 - Pmc[i])
-            
+            mu, sigma = P[i], P[i]*Pmc[i]/3
             # mean and standard deviation
-            s = np.random.default_rng().normal(mu, sigma, 10000)
+            s = np.random.default_rng().normal(mu, sigma, 2500)
             
             count, bins, ignored = plt.hist(s, 30, density=True)
             plt.plot(bins, 1/(sigma * np.sqrt(2 * np.pi)) *

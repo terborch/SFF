@@ -1,7 +1,7 @@
 Category,Name,Value,Units,Description,Source,doi,Symbol,Full name,Uncertainty,min-max
 AD,Eff,0.37,-,AD efficiency,Thees 2017,,\eta_{AD},Efficiency,0.25,
 AD,Elec_cons,0.008,-,AD faction of electricity consumed,Carlini 2017,10.3390/en10081165,f_{AD_{EL/BG}},Electric consumption,0.25,
-AD,Heat_cons,0.32,-,Fraction of heat self consumed relative to the biogas procued,Thees 2017,,f_{AD_{Q/BG}},Heat consumption,0.25,
+AD,Heat_cons,0.32,-,Fraction of heat self consumed relative to the biogas procued,Thees 2017,,f_{AD_{Q/BG}},Heat consumption,0.5,
 AHP,COP,3,-,Coefficient of Performance,energyscope,,COP_{AHP},Coefficient of Performance,0.25,
 GHP,COP,4,-,Coefficient of Performance,Perego 2019,,COP_{GHP},Coefficient of Performance,0.25,3-5
 BAT,Eff,0.9,-,BAT roundtrip efficiency,Paul PHD,,\eta{BAT},Efficiency,0.05,

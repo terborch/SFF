@@ -1,9 +1,6 @@
-""" This module contains all functions necessary get data out of the 'model_data'
-    folder and into useable dataframes. The two key functions are:
-    weather_data_to_df(file, period_start, period_end, timestep)
-    default_data_to_df(file, df_index=None)
-    
-    #   TODO: add a way to calculate typical days and extreme days and their position
+""" This module contains all functions necessary get data out of the 'inputs'
+    folder and into useable dataframes. As well as other data handeling 
+    functions used by all other modules.
 """
 
 import pandas as pd

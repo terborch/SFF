@@ -1,9 +1,6 @@
-""" Getting results out of the model and into dictionnairies or dataframes
-    #   get_all returns two dicts of variables values and variable metadata
-    #   summmary prints and save 
-    #   TODO: add V_meta to time dep df
-    #   TODO: add lower and upper bound the time dep df
-    #   TDOD: add exception for SOC to normalize the result from 0 to 1
+""" Getting results out of the model and into dictionnairies or dataframes and
+    store them into a results.h5 file.
+    Make a excel result summary.
 """
 
 # External modules
@@ -133,7 +130,7 @@ def get_all(m, Threshold, Days, Hours, Periods):
 def save_df_to_hdf5(var_results, var_meta, path, Days, Hours, Periods):
     """ Save all variable results into 3 frames in the same hdf5 object.
         #TODO: single results should be stored as a serie
-        Signle for variables in 0D stored in a dataframe
+        Single for variables in 0D stored in a dataframe
         Daily for variables in 2D format Days by Hours stored as a serie
         Annual for variables in 1D format 8760 Periods stored as a serie
     """
