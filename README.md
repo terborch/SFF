@@ -10,13 +10,29 @@ Support for writing the optimization problem: Gurobipy - Python - Anaconda - Spy
 
 # Results visualization
 
-Results of the OPEX - CAPEX optimization for the base case scenario using 10 typical days
+Results of the OPEX - CAPEX optimization for the default scenario B using 10 typical days
 
-[links](https://terborch.github.io/SFF/sff_mip/Visualization/opex_10_cls_parcords.html)
+[Link to OPEX-CAPEX parallel coordinates graph](https://terborch.github.io/SFF/sff_mip/Visualization/default_opex_capex_parcords.html)
 
-Results of the ENVEX - TOTEX optimization for the base case scenario using 10 typical days
+Results of the ENVEX - TOTEX optimization for the default scenario B using 10 typical days
 
-[links](https://terborch.github.io/SFF/sff_mip/Visualization/envex_10_cls_parcords.html)
+[Link to ENVEX-TOTEX parallel coordinates graph](https://terborch.github.io/SFF/sff_mip/Visualization/default_totex_envex_parcords.html)
+
+Results of the ENVEX - TOTEX optimization for scenario C using 10 typical days
+
+[Link to "No Wood Boiler" ENVEX-TOTEX parallel coordinates graph](https://terborch.github.io/SFF/sff_mip/Visualization/no_wood_boiler_parcords.html)
+
+Results of the ENVEX - TOTEX optimization for scenario D using 10 typical days
+
+[Link to "Cheap PV" ENVEX-TOTEX parallel coordinates graph](https://terborch.github.io/SFF/sff_mip/Visualization/cheap_PV_parcords.html)
+
+Results of the ENVEX - TOTEX optimization for the scenario G using 10 typical days
+
+[Link to "Palezieux" ENVEX-TOTEX parallel coordinates graph](https://terborch.github.io/SFF/sff_mip/Visualization/palezieux_totex_envex_parcords.html)
+
+Results of the Tariff - TOTEX optimization for the scenario G using 10 typical days
+
+[Link to Feed-in Tariff-TOTEX parallel coordinates graph](https://terborch.github.io/SFF/sff_mip/Visualization/feed_in_tariff_parcords.html)
 
 ## sff_mip module structure
 

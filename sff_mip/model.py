@@ -491,6 +491,8 @@ def run(objective, Limit=None, New_Pamar=None, New_Setting=None, Relax=False):
         unit_capex, grid_import, grid_export)
     # Constraint for extreme case scenario
     extreme_case(m, unit_size)
+    
+    print(C_meta)
 
     """ Definie all possible objective function """
     def minimize_opex():

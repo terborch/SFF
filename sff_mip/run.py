@@ -598,7 +598,7 @@ if __name__ == "__main__":
     
     # pareto_incentive('totex', np.linspace(1, 5, 10))
     
-    # run('totex', Plot=True, Summary=True)
+    run('totex', Plot=True, Summary=True)
     
     # run('envex')
     
