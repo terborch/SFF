@@ -40,13 +40,12 @@ Results of the Tariff - TOTEX optimization for the scenario G using 10 typical d
 
 The Farm Energy System (FES) was developed with the programming language Python, using the Gurobi-python module provided by the Gurobi optimization software under academic licence. The FES model is available athttps://github.com/terborch/SFF and is free to use or modify, provided a licence for Gurobi can be obtained by the user. Feel free to contact me via GitHub and get my permission to branch this project. This user guide will give a short overview of the model structure in terms of folders, files and functions, then give a couple examples of how the FES could be used. Files that are not mentioned by the guide are not necessary to the default FES model.
 
-A foreword regarding the python code. It follows some but not all PEP8 guidelines. Comments where added to most functions and modules to describe them. The unit abbreviations are the same as in the report. When in doubt, all abbreviations are directly available in the 'global_set.py' module. The first letter of parameters, dictionaries and lists is an upper case letter to distinguish them from Gurobi variables which all start with a lower case. Python functions start with a lower case as per PEP8.
+A foreword regarding the python code. It follows some but not all PEP8 guidelines. Comments where added to most functions and modules to describe them. The unit abbreviations are the same as in the report. When in doubt, all abbreviations are directly available in the `global_set.py` module. The first letter of parameters, dictionaries and lists is an upper case letter to distinguish them from Gurobi variables which all start with a lower case. Python functions start with a lower case as per PEP8.
 
 ## Description of the essential files and folders
-The GitHub root directory or "Origine" contains mostly project metadata that can be safely ignored and the folder 'sff_mip' which contains the FES in the form of 9 .py files. The FES receives input data and settings located in the 'inputs' folder and produces outputs stored in the 'results' folder (This folder may have to be manually created by the user, since it is not shared on GitHub due to its size.)
+The GitHub root directory or "Origine" contains mostly project metadata that can be safely ignored and the folder `sff_mip` which contains the FES in the form of 9 .py files. The FES receives input data and settings located in the `inputs` folder and produces outputs stored in the `results` folder (This folder may have to be manually created by the user, since it is not shared on GitHub due to its size.)
 
 ![FSS information flow](/sff_mip/shared_results/Information_flow.PNG)
-
 
 
 
