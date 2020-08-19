@@ -1,6 +1,8 @@
 # EPFL Master Thesis - spring 2020
 Energetic, Environmental and Economic Model of a Farm: Case study Swiss Future Farm
 
+[Link to thesis](https://github.com/terborch/SFF/blob/master/sff_mip/shared_results/Report/EPFL_Master_Thesis_Nils_Ter-Borch_2020.pdf)
+
 Optimization tool: Gurobi - Academic Licencs
 
 Support for writing the optimization problem: Gurobipy - Python - Anaconda - Spyer 4
@@ -39,7 +41,7 @@ Results of the Tariff - TOTEX optimization for the scenario G using 10 typical d
 
 The Farm Energy System (FES) was developed with the programming language Python, using the Gurobi-python module provided by the Gurobi optimization software under academic licence. The FES model is available at https://github.com/terborch/SFF and is free to use or modify, provided a licence for Gurobi can be obtained by the user. Feel free to contact me via GitHub and get my permission to branch this project. This user guide will give a short overview of the model structure in terms of folders, files and functions, then give a couple examples of how the FES could be used. Files that are not mentioned by the guide are not necessary to the default FES model.
 
-A foreword regarding the python code. It follows some but not all PEP8 guidelines. Comments where added to most functions and modules to describe them. The unit abbreviations are the same as in the report. When in doubt, all abbreviations are directly available in the `global_set.py` module. The first letter of parameters, dictionaries and lists is an upper case letter to distinguish them from Gurobi variables which all start with a lower case. Python functions start with a lower case as per PEP8.
+A foreword regarding the python code. It follows some but not all PEP8 guidelines. Comments where added to most functions and modules to describe them. The unit abbreviations are the same as in the report. When in doubt, all abbreviations are directly available in the `global_set.py` module. The first letter of parameters, dictionaries and lists is an upper case letter to distinguish them from Gurobi variables which all start with a lower case. Python functions start with a lower case as per PEP8. Each of the model equation has a number in the C_meta dictionary that corresponds to the equation number in the project report. [Link to thesis](https://github.com/terborch/SFF/blob/master/sff_mip/shared_results/Report/EPFL_Master_Thesis_Nils_Ter-Borch_2020.pdf)
 
 ## Description of the essential files and folders
 The GitHub root directory or "Origine" contains mostly project metadata that can be safely ignored and the folder `sff_mip` which contains the FES in the form of 9 .py files. The FES receives input data and settings located in the `inputs` folder and produces outputs stored in the `results` folder (This folder may have to be manually created by the user, since it is not shared on GitHub due to its size.)
