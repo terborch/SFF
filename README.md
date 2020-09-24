@@ -1,7 +1,10 @@
 # EPFL Master Thesis - spring 2020
 Energetic, Environmental and Economic Model of a Farm: Case study Swiss Future Farm
 
-[Link to thesis](https://github.com/terborch/SFF/blob/master/sff_mip/shared_results/Report/EPFL_Master_Thesis_Nils_Ter-Borch_2020.pdf)
+[Link to fulltext thesis](https://github.com/terborch/SFF/blob/master/sff_mip/shared_results/Report/EPFL_Master_Thesis_Nils_Ter-Borch_2020.pdf)
+[Link to ppt presentation]()
+[Contact the author](https://www.linkedin.com/in/nils-terborch/)
+[Previous work - supplement]()
 
 Optimization tool: Gurobi - Academic Licencs
 
