@@ -1,10 +1,18 @@
 # EPFL Master Thesis - spring 2020
 Energetic, Environmental and Economic Model of a Farm: Case study Swiss Future Farm
 
-[Link to fulltext thesis](https://github.com/terborch/SFF/blob/master/sff_mip/shared_results/Report/EPFL_Master_Thesis_Nils_Ter-Borch_2020.pdf)
-[Link to ppt presentation]()
+[Link to fulltext thesis](https://github.com/terborch/SFF/raw/master/sff_mip/shared_results/Report/EPFL_Master_Thesis_Nils_Ter-Borch_2020.pdf)
+
+[Link to ppt presentation](https://github.com/terborch/SFF/raw/master/sff_mip/shared_results/Report/Presentation.pdf)
+
+[Nils Ter-Borch Semester Project EPFL - Cleaning of biomass derived gasses for Solid Oxide Fuel Cell
+applications (2020)](https://github.com/terborch/SFF/raw/master/sff_mip/shared_results/Report/Semester_Project_Report.pdf)
+[Supplement 1](https://htmlpreview.github.io/?https://github.com/terborch/SFF/blob/master/sff_mip/shared_results/Report/AD_costing_case-studies.html) 
+[Supplement 2](https://htmlpreview.github.io/?https://github.com/terborch/SFF/blob/master/sff_mip/shared_results/Report/AD_costing_ranges.html)
+[Supplement 2](https://htmlpreview.github.io/?https://github.com/terborch/SFF/blob/master/sff_mip/shared_results/Report/Biogas_Cleaning_costing.html)
+
 [Contact the author](https://www.linkedin.com/in/nils-terborch/)
-[Previous work - supplement]()
+
 
 Optimization tool: Gurobi - Academic Licencs
 
