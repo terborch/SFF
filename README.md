@@ -135,8 +135,9 @@ This module was created on windows 10 using Spyder 4 from Anaconda. It should ru
 
 Alternatively use a specific anaconda environment but this module can be used in the (base). Navigate to the module folder sff_mip in the consol .Install anaconda the environment sff_mip using the provided .yml file (only few external packages are used) and the following command: `conda env create -f environment.yml`. Activate the environment using this command: `conda activate sff_mip`.
 
+## MIT open source software licence
+
 ----------------------------------------------------------------------------------------------
-MIT open source software licence
 
 Copyright (c) 2020 nils ter-borch
 
