@@ -1,5 +1,6 @@
 # EPFL Master Thesis - spring 2020
 Energetic, Environmental and Economic Model of a Farm: Case study Swiss Future Farm
+(This Master project was completed as of 24.09.2020 and recieved the maximum grade)
 
 [Link to fulltext thesis](https://github.com/terborch/SFF/raw/master/sff_mip/shared_results/Report/EPFL_Master_Thesis_Nils_Ter-Borch_2020.pdf)
 
